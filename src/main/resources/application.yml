@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: smartrecruit
+  profiles:
+    active: dev
+
