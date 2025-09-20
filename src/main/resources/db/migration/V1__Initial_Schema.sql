@@ -498,3 +498,29 @@ CREATE TABLE testimonial
     content            TEXT         NOT NULL
 );
 
+-- =================================================================================
+-- INITIAL DATA SEEDING
+-- =================================================================================
+-- Dữ liệu khởi tạo mặc định cho các bảng hệ thống cốt lõi.
+-- Bao gồm: vai trò người dùng, trạng thái, cấu hình mặc định, v.v.
+
+-- =================================================================================
+-- ROLE TABLE: Các vai trò người dùng trong hệ thống
+-- =================================================================================
+-- Mục đích: Thiết lập các vai trò cơ bản để quản lý quyền truy cập và chức năng theo từng nhóm người dùng.
+-- Các vai trò:
+--   - ADMIN: Quản trị viên toàn hệ thống, có quyền cao nhất.
+--   - EMPLOYER: Nhà tuyển dụng, có quyền đăng tin tuyển dụng, quản lý hồ sơ ứng viên.
+--   - CANDIDATE: Ứng viên, có quyền tìm việc, nộp hồ sơ, theo dõi trạng thái ứng tuyển.
+--
+-- Lưu ý: Không nên xóa hoặc sửa đổi role_name của các bản ghi này vì chúng được sử dụng cứng trong code.
+-- =================================================================================
+
+INSERT INTO role (created_date, last_modified_date, role_name, description)
+VALUES (NOW(), NOW(), 'ADMIN', 'Quản trị viên hệ thống');
+
+INSERT INTO role (created_date, last_modified_date, role_name, description)
+VALUES (NOW(), NOW(), 'EMPLOYER', 'Nhà tuyển dụng');
+
+INSERT INTO role (created_date, last_modified_date, role_name, description)
+VALUES (NOW(), NOW(), 'CANDIDATE', 'Ứng viên');
