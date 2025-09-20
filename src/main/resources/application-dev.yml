@@ -36,8 +36,13 @@ springdoc:
     version: ${project.version}
   show-actuator: true
 
-jwt:
-  secret-key: hJ1sWDI69pxl2VThpiEaBAj5eYSVwey6
-  expiration: 86400000
+firebase:
+  service-account-path: "classpath:firebase-service-account.json"
 
-
+admin:
+  creation:
+    enabled: true # Cờ để bật/tắt chức năng
+    email: "admin@yourdomain.com"
+    password: "your-strong-secret-password" # Nên dùng biến môi trường cho production
+    full-name: "System Administrator"
+    username: "admin"
