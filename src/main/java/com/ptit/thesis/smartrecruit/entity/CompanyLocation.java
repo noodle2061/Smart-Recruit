@@ -12,7 +12,6 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class CompanyLocation extends BaseEntity{
 

@@ -11,7 +11,6 @@
     @Getter
     @Setter
     @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public class SavedCandidate extends BaseEntity {
 

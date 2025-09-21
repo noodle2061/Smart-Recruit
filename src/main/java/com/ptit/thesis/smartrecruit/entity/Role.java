@@ -10,7 +10,6 @@ import java.util.Set;
 @Table(name = "role")
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Role extends BaseEntity {
