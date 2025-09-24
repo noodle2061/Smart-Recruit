@@ -1,6 +1,6 @@
 package com.ptit.thesis.smartrecruit.dto.request;
 
-import com.ptit.thesis.smartrecruit.validation.ValidRole;
+import com.ptit.thesis.smartrecruit.validation.user.ValidRole;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

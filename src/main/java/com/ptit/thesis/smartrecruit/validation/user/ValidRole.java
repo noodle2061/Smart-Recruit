@@ -1,4 +1,4 @@
-package com.ptit.thesis.smartrecruit.validation;
+package com.ptit.thesis.smartrecruit.validation.user;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
