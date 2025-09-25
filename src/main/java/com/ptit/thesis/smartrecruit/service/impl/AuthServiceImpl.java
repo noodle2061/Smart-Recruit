@@ -3,6 +3,8 @@ package com.ptit.thesis.smartrecruit.service.impl;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -116,6 +118,24 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
+    public UserResponse login(Authentication authentication) {
+
+        User existingUser = (User) authentication.getPrincipal();
+
+        UserResponse userResponse = userMapper.toUserResponse(existingUser);
+            String roleName = existingUser.getUserRoles().stream()
+                    .findFirst()
+                    .map(userRole -> userRole.getRole().getRoleName())
+                    .orElse("");
+            userResponse.setRole(roleName);
+
+            log.info("Login completed successfully for email: {}", existingUser.getEmail());
+
+            return userResponse;
+    }
+
+    @Transactional
+    @Override
     public UserResponse processAuth2CallBack(String authorization, OAuthRegisterRequest request) {
 
         log.info("Processing OAuth2 callback for token.");
@@ -196,4 +216,6 @@ public class AuthServiceImpl implements AuthService {
 
         return userName;
     }
+
+    
 }
