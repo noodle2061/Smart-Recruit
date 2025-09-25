@@ -13,6 +13,7 @@ import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.entity.UserRole;
 import com.ptit.thesis.smartrecruit.repository.RoleRepository;
 import com.ptit.thesis.smartrecruit.repository.UserRepository;
+import com.ptit.thesis.smartrecruit.security.FirebaseUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class AdminAccountInitializer implements CommandLineRunner {
+
+    FirebaseUtil firebaseUtil;
     AdminAccountProperties adminAccountProperties;
     RoleRepository roleRepository;
     UserRepository userRepository;
@@ -36,8 +39,8 @@ public class AdminAccountInitializer implements CommandLineRunner {
         }
 
         if (userRepository.existsByEmail(adminAccountProperties.getEmail())) {
-            log.info("Admin account already exists. Skipping creation.");
-            return;
+                log.info("Admin account already exists. Skipping creation.");
+                return;
         }
 
         // Tạo tài khoản admin
@@ -47,18 +50,25 @@ public class AdminAccountInitializer implements CommandLineRunner {
                 .orElseThrow(() -> new RuntimeException("Admin role not found in the database."));
 
         try {
-            // Tạo tài khoản admin với các thuộc tính từ adminAccountProperties
-            // Lưu tài khoản admin vào firebase
-            // Tao nguoi dung trong firebase
-            UserRecord.CreateRequest request = new UserRecord.CreateRequest()
-                    .setEmail(adminAccountProperties.getEmail())
-                    .setEmailVerified(true)
-                    .setPassword(adminAccountProperties.getPassword())
-                    .setDisplayName(adminAccountProperties.getFullName())
-                    .setDisabled(false);
-            UserRecord userRecord = FirebaseAuth.getInstance().createUser(request);
-            log.info("Successfully created new user in Firebase: " + userRecord.getUid());
+            UserRecord userRecord = firebaseUtil.getUserByEmail(adminAccountProperties.getEmail());
+            if (userRecord == null) {
+                // Tạo tài khoản admin với các thuộc tính từ adminAccountProperties
+                // Lưu tài khoản admin vào firebase
+                // Tao nguoi dung trong firebase
+                UserRecord.CreateRequest request = new UserRecord.CreateRequest()
+                        .setEmail(adminAccountProperties.getEmail())
+                        .setEmailVerified(true)
+                        .setPassword(adminAccountProperties.getPassword())
+                        .setDisplayName(adminAccountProperties.getFullName())
+                        .setDisabled(false);
+                userRecord = FirebaseAuth.getInstance().createUser(request);
+                log.info("Successfully created new user in Firebase: " + userRecord.getUid());
 
+            } else {
+                log.warn("Admin account already exists in Firebase but was not initialized in database!");
+            }
+
+            log.info("Try to initialize the admin account in the database.");
             // Tạo entity User tương ứng và gán vai trò ADMIN
             User adminUser = new User();
             adminUser.setEmail(adminAccountProperties.getEmail());
