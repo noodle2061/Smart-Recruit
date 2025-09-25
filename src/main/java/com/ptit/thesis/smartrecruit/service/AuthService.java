@@ -6,6 +6,5 @@ import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
 
 public interface AuthService {
     public UserResponse register(RegisterRequest request);
-    public UserResponse registerWithOAuth(OAuthRegisterRequest request);
-    public void testMail();
+    public UserResponse processAuth2CallBack(String authorization, OAuthRegisterRequest request);
 }

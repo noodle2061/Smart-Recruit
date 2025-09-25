@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,9 +44,12 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/register-oauth")
-    public ResponseEntity<ApiResponse<UserResponse>> RegisterWithOAuth(@RequestBody OAuthRegisterRequest useroauth) {
-        UserResponse userResponse = authService.registerWithOAuth(useroauth);
+    @PostMapping("/callback")
+    public ResponseEntity<ApiResponse<UserResponse>> handleOAuth2Callback(
+                                    @RequestHeader("Authorization") String authorization,
+                                    @Valid @RequestBody OAuthRegisterRequest useroauth) {
+        String cleanToken = authorization.substring(7); // Loại bỏ "Bearer " khỏi đầu chuỗi
+        UserResponse userResponse = authService.processAuth2CallBack(cleanToken, useroauth);
         ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder()
             .status(HttpStatus.CREATED.value())
             .message("User registered successfully")
@@ -53,12 +57,5 @@ public class AuthController {
             .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    
-    @GetMapping("/test-mail")
-    public String testMail() {
-        authService.testMail();
-        return new String();
-    }
-    
     
 }

@@ -15,6 +15,5 @@ public interface UserMapper {
     UserResponse toUserResponse(User user);
 
     @Mapping(target = "userRoles", ignore = true)
-    @Mapping(target = "username", source = "userName")
     User toUserEntity(UserResponse userResponse);
 }
