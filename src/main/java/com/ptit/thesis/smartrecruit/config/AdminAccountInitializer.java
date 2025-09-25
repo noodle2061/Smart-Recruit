@@ -1,4 +1,4 @@
-package com.ptit.thesis.smartrecruit.utils;
+package com.ptit.thesis.smartrecruit.config;
 
 import java.util.Set;
 
@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserRecord;
-import com.ptit.thesis.smartrecruit.config.AdminAccountProperties;
 import com.ptit.thesis.smartrecruit.entity.Role;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.entity.UserRole;

@@ -39,7 +39,9 @@ public class SecurityConfig {
                 // các entpoint public không cần xác thực
                 .requestMatchers(
                     "/api/auth/**",
-                    "/swagger-ui/**"
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/api-docs/**"
                 ).permitAll()
 
                 // Các endpoint yêu cầu vai trò cụ thể

@@ -63,4 +63,63 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> handleRuntimeException(RuntimeException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+            .error("Internal Server Error")
+            .path(request.getDescription(false).replace("uri=", ""))
+            .message(ex.getMessage())
+            .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .statusCode(HttpStatus.NOT_FOUND.value())
+            .error("Not Found")
+            .path(request.getDescription(false).replace("uri=", ""))
+            .message(ex.getMessage())
+            .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(SendMailFailException.class)
+    public ResponseEntity<?> handleSendMailFailException(SendMailFailException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+            .error("Internal Server Error")
+            .path(request.getDescription(false).replace("uri=", ""))
+            .message(ex.getMessage())
+            .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(InvalidFieldException.class)
+    public ResponseEntity<?> handleInvalidFieldException(InvalidFieldException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .statusCode(HttpStatus.BAD_REQUEST.value())
+            .error("Bad Request")
+            .path(request.getDescription(false).replace("uri=", ""))
+            .message(ex.getMessage())
+            .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RegistrationException.class)
+    public ResponseEntity<?> handleRegistrationException(RegistrationException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+            .error("Internal Server Error")
+            .path(request.getDescription(false).replace("uri=", ""))
+            .message(ex.getMessage())
+            .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
