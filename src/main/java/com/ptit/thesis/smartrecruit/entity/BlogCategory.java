@@ -11,7 +11,6 @@ import java.util.Set;
 @Setter
 @Getter
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BlogCategory extends BaseEntity {
 

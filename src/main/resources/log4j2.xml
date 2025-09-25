@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info">
+    <Appenders>
+        <!-- Appender để ghi log ra Console -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{YYYY-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %msg%n" />
+        </Console>
+                                 
+        <!-- Appender để ghi log INFO vào file và tự động nén sau mỗi ngày -->
+        <RollingFile name="smartrecruit_service_INFO" filename="logs/smartrecruit_service.log" filepattern="logs/smartrecruit_service.%d{YYYY-MM-dd}.log.gz">
+            <PatternLayout pattern="%d{YYYY-MM-dd HH:mm:ss} %-5p %c{2}.%M %msg%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <!-- Tự động xóa file log cũ hơn 7 ngày -->
+            <DefaultRolloverStrategy>
+                <Delete basePath="logs">
+                    <IfFileName glob="smartrecruit_service.*.log.gz" />
+                    <IfLastModified age="P7D" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        
+        <!-- Appender chỉ để ghi log ERROR vào file riêng -->
+        <RollingFile name="smartrecruit_service_ERROR" filename="logs/smartrecruit_service_ERROR.log" filepattern="logs/smartrecruit_service_ERROR.%d{YYYY-MM-dd}.log.gz">
+            <PatternLayout pattern="%d{YYYY-MM-dd HH:mm:ss} %-5p %c{1} %msg%n" />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="300 MB" />
+            </Policies>
+            <!-- Chỉ chấp nhận các log có level ERROR -->
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <DefaultRolloverStrategy>
+                <Delete basePath="logs">
+                    <IfFileName glob="smartrecruit_service_ERROR.*.log.gz" />
+                    <IfLastModified age="P7D" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <!-- Cấu hình Logger gốc, tất cả log sẽ đi qua đây -->
+        <Root level="info">
+            <AppenderRef ref="smartrecruit_service_INFO" />
+            <AppenderRef ref="smartrecruit_service_ERROR" />
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

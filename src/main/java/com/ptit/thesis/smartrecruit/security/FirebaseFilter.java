@@ -44,9 +44,15 @@ public class FirebaseFilter extends OncePerRequestFilter {
 
         try {
             FirebaseToken decodedToken = firebaseUtil.verifyToken(clearTokenId);
-            String userId = decodedToken.getUid();
 
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(userId);
+            // Kiem tra email da duoc xac thuc chua
+            if (decodedToken.isEmailVerified() == false) {
+                throw new InvalidTokenException("Email not verified.");
+            }
+
+            String userUid = decodedToken.getUid();
+
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(userUid);
 
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
