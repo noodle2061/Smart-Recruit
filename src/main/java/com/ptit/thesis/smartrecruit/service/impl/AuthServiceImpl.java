@@ -40,9 +40,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
+    FirebaseUtil firebaseUtil;
     UserMapper userMapper;
     NotificationService notificationService;
-    FirebaseUtil firebaseUtil;
     UserRepository userRepository;
     RoleRepository roleRepository;
 
