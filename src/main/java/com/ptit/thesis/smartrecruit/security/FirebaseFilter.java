@@ -1,13 +1,17 @@
 package com.ptit.thesis.smartrecruit.security;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
+import org.apache.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.google.firebase.auth.FirebaseToken;
@@ -30,10 +34,16 @@ public class FirebaseFilter extends OncePerRequestFilter {
     FirebaseUtil firebaseUtil;
     CustomUserDetailsService customUserDetailsService;
 
+    private final List<String> publicEndpoints = Arrays.asList(
+            "/api/auth/**",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/api-docs/**");
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        
+
         final String authorizationHeader = request.getHeader("Authorization");
 
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
@@ -60,11 +70,23 @@ public class FirebaseFilter extends OncePerRequestFilter {
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         } catch (UsernameNotFoundException e) {
-            throw new InvalidTokenException("User associated with token not found.");
+            response.setStatus(HttpStatus.SC_UNAUTHORIZED);
+            response.getWriter().write("User is not registered in the System!");
+            return;
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.SC_UNAUTHORIZED);
+            response.getWriter().write("The token is invalid or expire!");
+            return;
         }
-        
+
         filterChain.doFilter(request, response);
     }
 
-    
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        AntPathMatcher pathMatcher = new AntPathMatcher();
+        return publicEndpoints.stream().anyMatch(p -> pathMatcher.match(p, path));
+    }
+
 }
