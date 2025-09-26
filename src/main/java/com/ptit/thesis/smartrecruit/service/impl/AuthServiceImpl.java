@@ -64,6 +64,7 @@ public class AuthServiceImpl implements AuthService {
 
         User newEntityUser = new User();
         String firebaseUid = null;
+        String customToken = null;
 
         UserRecord.CreateRequest createRequest = new UserRecord.CreateRequest()
                 .setEmail(request.getEmail())
@@ -77,6 +78,7 @@ public class AuthServiceImpl implements AuthService {
             UserRecord userRecord = FirebaseAuth.getInstance().createUser(createRequest);
             log.info("Successfully created new user: {}", userRecord.getUid());
             firebaseUid = userRecord.getUid();
+            customToken = FirebaseAuth.getInstance().createCustomToken(firebaseUid);
 
             // gửi mail xác thực
             // Tạm thời bỏ đi, ủy quyền sang cho Front End xử lý
@@ -114,6 +116,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserResponse userResponse = userMapper.toUserResponse(newEntityUser);
         userResponse.setRole(roleOfUser.getRoleName());
+        userResponse.setFirebaseCustomToken(customToken);
         return userResponse;
     }
 
