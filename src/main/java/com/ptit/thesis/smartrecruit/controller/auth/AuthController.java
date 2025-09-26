@@ -47,10 +47,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserResponse>> handleLogin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<ApiResponse<UserResponse>> handleLogin(@RequestHeader("Authorization") String authToken) {
+        String cleanToken = authToken.substring(7);
 
-        UserResponse userResponse = authService.login(authentication);
+        UserResponse userResponse = authService.login(cleanToken);
         ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder()
             .status(HttpStatus.OK.value())
             .message("User login successfully")

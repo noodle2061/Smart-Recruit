@@ -123,9 +123,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public UserResponse login(Authentication authentication) {
+    public UserResponse login(String authToken) {
 
-        User existingUser = (User) authentication.getPrincipal();
+        FirebaseToken firebaseToken = firebaseUtil.verifyToken(authToken);
+        String uid = firebaseToken.getUid();
+        User existingUser = userRepository.findByUserFirebaseUid(uid)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found user with uid: " + uid));
 
         UserResponse userResponse = userMapper.toUserResponse(existingUser);
             String roleName = existingUser.getUserRoles().stream()
