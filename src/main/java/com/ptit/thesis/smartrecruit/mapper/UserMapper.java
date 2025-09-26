@@ -12,6 +12,7 @@ public interface UserMapper {
     @Mapping(target = "firebaseUid", source = "userFirebaseUid")
     @Mapping(target = "userName", source = "username")
     @Mapping(target = "role", ignore = true)
+    @Mapping(target = "firebaseCustomToken", ignore = true)
     UserResponse toUserResponse(User user);
 
     @Mapping(target = "userRoles", ignore = true)

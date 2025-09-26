@@ -12,4 +12,5 @@ public class UserResponse {
     String userName;
     String email;
     String role;
+    String firebaseCustomToken;
 }
