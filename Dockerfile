@@ -1,5 +1,5 @@
 # --- Giai đoạn 1: Build ứng dụng với Maven ---
-# Sử dụng một image chứa JDK 21 và Maven để build file .jar, tương thích với cấu hình dự án của bạn.
+# Sử dụng một image chứa JDK 21 và Maven để build file .jar, tương thích với cấu hình dự án hiện tại.
 FROM maven:3-eclipse-temurin-21 AS build
 
 # Thiết lập thư mục làm việc bên trong container
