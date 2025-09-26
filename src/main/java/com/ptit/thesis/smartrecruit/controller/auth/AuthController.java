@@ -60,22 +60,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("/oauth2-callback")
-    public ResponseEntity<ApiResponse<UserResponse>> handleOAuth2Callback(
-                                    @RequestHeader("Authorization") String authorization,
-                                    @Valid @RequestBody OAuthRegisterRequest useroauth) {
-        String cleanToken = authorization.substring(7); // Loại bỏ "Bearer " khỏi đầu chuỗi
-
-        UserResponse userResponse = authService.processAuth2CallBack(cleanToken, useroauth);
-        ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder()
-            .status(HttpStatus.OK.value())
-            .message("User registered successfully")
-            .data(userResponse)
-            .build();
-            
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
     @PostMapping("/callback")
     public ResponseEntity<ApiResponse<UserResponse>> handleOAuth2Callback(
                                     @RequestHeader("Authorization") String authorization) {
