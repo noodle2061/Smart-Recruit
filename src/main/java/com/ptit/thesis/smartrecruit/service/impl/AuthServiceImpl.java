@@ -79,8 +79,9 @@ public class AuthServiceImpl implements AuthService {
             firebaseUid = userRecord.getUid();
 
             // gửi mail xác thực
-            String verificationLink = FirebaseAuth.getInstance().generateEmailVerificationLink(request.getEmail());
-            notificationService.sendVerificationMessage(request.getEmail(), request.getFullName(), verificationLink);
+            // Tạm thời bỏ đi, ủy quyền sang cho Front End xử lý
+            // String verificationLink = FirebaseAuth.getInstance().generateEmailVerificationLink(request.getEmail());
+            // notificationService.sendVerificationMessage(request.getEmail(), request.getFullName(), verificationLink);
         } catch (FirebaseAuthException e) {
             log.error("Error creating new user: {}", e.getMessage());
             throw new RegistrationException("Error creating new user from Firebase: " + e.getMessage());
