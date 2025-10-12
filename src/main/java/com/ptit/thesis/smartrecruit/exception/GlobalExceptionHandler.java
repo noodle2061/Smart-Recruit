@@ -122,4 +122,16 @@ public class GlobalExceptionHandler {
             .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(S3ErrorException.class)
+    public ResponseEntity<?> handleS3ErrorException(RegistrationException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+            .error("Internal Server Error")
+            .path(request.getDescription(false).replace("uri=", ""))
+            .message(ex.getMessage())
+            .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
