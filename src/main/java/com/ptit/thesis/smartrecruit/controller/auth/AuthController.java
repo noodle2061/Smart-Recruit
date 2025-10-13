@@ -2,16 +2,14 @@ package com.ptit.thesis.smartrecruit.controller.auth;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ptit.thesis.smartrecruit.dto.request.OAuthRegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterRequest;
+import com.ptit.thesis.smartrecruit.dto.request.RegisterWithAuthRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
 import com.ptit.thesis.smartrecruit.service.AuthService;
@@ -62,10 +60,11 @@ public class AuthController {
 
     @PostMapping("/callback")
     public ResponseEntity<ApiResponse<UserResponse>> handleOAuth2Callback(
-                                    @RequestHeader("Authorization") String authorization) {
-        String cleanToken = authorization.substring(7); // Loại bỏ "Bearer " khỏi đầu chuỗi
+                                    @RequestHeader("Authorization") String authorization,
+                                    @RequestBody RegisterWithAuthRequest request) {
+        String cleanToken = authorization.substring(7);
 
-        UserResponse userResponse = authService.processAuth2CallBack(cleanToken);
+        UserResponse userResponse = authService.processAuth2CallBack(cleanToken, request);
         ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder()
             .status(HttpStatus.OK.value())
             .message("User registered successfully")
