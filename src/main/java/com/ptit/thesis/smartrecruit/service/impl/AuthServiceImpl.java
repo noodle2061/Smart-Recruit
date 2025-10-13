@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
 import com.ptit.thesis.smartrecruit.dto.request.OAuthRegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterRequest;
+import com.ptit.thesis.smartrecruit.dto.request.RegisterWithAuthRequest;
 import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
 import com.ptit.thesis.smartrecruit.entity.Role;
 import com.ptit.thesis.smartrecruit.entity.User;
@@ -144,7 +145,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public UserResponse processAuth2CallBack(String authorization) {
+    public UserResponse processAuth2CallBack(String authorization, RegisterWithAuthRequest request) {
         log.info("Processing OAuth2 callback for token.");
 
         String cleanToken = (authorization.startsWith("Bearer ")) ? authorization.substring(7) : authorization;
@@ -171,7 +172,7 @@ public class AuthServiceImpl implements AuthService {
 
             log.info("No user found with Firebase UID: {}, process registration flow", firebaseUserUid);
 
-            String roleUpper = Constraint.CANDIDATE_ROLE;
+            String roleUpper = request.getRole().toUpperCase();
             User newEntityUser = new User();
             String email = decodedToken.getEmail();
             String userName = generateUniqueUsernameFromEmail(email);
