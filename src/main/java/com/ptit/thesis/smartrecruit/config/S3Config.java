@@ -14,7 +14,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Component
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class S3Config {
     
     S3Properties s3Properties;
