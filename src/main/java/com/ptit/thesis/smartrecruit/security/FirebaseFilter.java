@@ -25,10 +25,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class FirebaseFilter extends OncePerRequestFilter {
 
     FirebaseUtil firebaseUtil;
@@ -70,10 +72,12 @@ public class FirebaseFilter extends OncePerRequestFilter {
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         } catch (UsernameNotFoundException e) {
+            log.error("Error in FirebaseFilter: {}", e.getMessage());
             response.setStatus(HttpStatus.SC_UNAUTHORIZED);
             response.getWriter().write("User is not registered in the System!");
             return;
         } catch (Exception e) {
+            log.error("Error in FirebaseFilter: {}", e.getMessage());
             response.setStatus(HttpStatus.SC_UNAUTHORIZED);
             response.getWriter().write("The token is invalid or expire!");
             return;
