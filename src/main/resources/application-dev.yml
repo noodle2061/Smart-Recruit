@@ -38,6 +38,12 @@ spring:
             enable: true
           ssl:
             enable: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+        
 
 springdoc:
   api-docs:
@@ -53,13 +59,6 @@ springdoc:
 
 firebase:
   service-account-path: "classpath:firebase-service-account.json"
-
-aws:
-  s3:
-    region: {$AWS_REGION}
-    bucket-name: {$AWS_S3_BUCKET_NAME}
-    access-key-id: {$AWS_ACCESS_KEY_ID}
-    secret-access-key: {$AWS_SECRET_ACCESS_KEY}
 
 admin:
   creation:
