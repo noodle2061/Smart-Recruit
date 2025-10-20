@@ -2,7 +2,7 @@ package com.ptit.thesis.smartrecruit.utils;
 
 public class StringUtil {
 
-    public static int MAX_USERNAME_PREFIX_LENGTH = 20;
+    public static final Integer MAX_USERNAME_PREFIX_LENGTH = 20;
 
     public static String generateUsernameFromEmail(String email) {
         if (email == null || !email.contains("@")) {
