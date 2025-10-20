@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.Set;
 
 @Entity
-@Table(name = "blog_comment")
+@Table(name = "blog_comments")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,7 +16,7 @@ public class BlogComment extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
-    Post post;
+    Blog post;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

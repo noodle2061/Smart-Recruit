@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "post_category",
+@Table(name = "post_categories",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"post_id", "category_id"})
         }
@@ -18,7 +18,7 @@ public class PostCategory extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
-    Post post;
+    Blog post;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)

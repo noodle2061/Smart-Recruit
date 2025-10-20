@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "followed_company", 
+@Table(name = "followed_companies", 
             uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "company_id"})
 )
 @Getter

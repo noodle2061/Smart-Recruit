@@ -8,7 +8,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "testimonial")
+@Table(name = "testimonials")
 @Getter
 @Setter
 @NoArgsConstructor

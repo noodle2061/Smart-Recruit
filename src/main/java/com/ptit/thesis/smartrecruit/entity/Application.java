@@ -8,14 +8,14 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "job_application",
+@Table(name = "applications",
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "job_id"})
 )
 @Getter
 @Setter
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class JobApplication extends BaseEntity {
+public class Application extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "job_id", nullable = false)
@@ -37,9 +37,6 @@ public class JobApplication extends BaseEntity {
     @Column(nullable = false)
     JobApplicationStatus status;
 
-    @Column(nullable = false)
-    LocalDateTime appliedAt;
-
     @ManyToOne
     @JoinColumn(name = "status_column_id")
     ApplicationStatusColumn statusColumn;
@@ -48,10 +45,6 @@ public class JobApplication extends BaseEntity {
     public void prePersist() {
         if (status == null) {
             status = JobApplicationStatus.SUBMITTED;
-        }
-
-        if (appliedAt == null) {
-            appliedAt = LocalDateTime.now();
         }
     }
 }

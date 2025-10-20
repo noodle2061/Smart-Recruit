@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "job_jobcategory",
+@Table(name = "job_jobcategories",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"job_id", "category_id"})
         }

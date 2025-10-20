@@ -2,13 +2,15 @@ package com.ptit.thesis.smartrecruit.entity;
 
 import com.ptit.thesis.smartrecruit.enums.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "candidate_profile")
+@Table(name = "candidate_profiles")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,6 +20,11 @@ public class CandidateProfile extends BaseEntity{
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     User user;
+
+    @Column(nullable = false)
+    @NotBlank(message = "Full name is mandatory")
+    @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
+    String fullName;
 
     @Column(length = 512)
     String profilePictureUrl;

@@ -5,7 +5,7 @@
     import lombok.experimental.FieldDefaults;
 
     @Entity
-    @Table(name = "saved_candidate",
+    @Table(name = "saved_candidates",
             uniqueConstraints = @UniqueConstraint(columnNames = {"employer_user_id", "candidate_user_id"})
     )
     @Getter

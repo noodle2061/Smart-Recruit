@@ -9,12 +9,12 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "post")
+@Table(name = "blogs")
 @Getter
 @Setter
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Post extends BaseEntity {
+public class Blog extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -33,7 +33,7 @@ public class Post extends BaseEntity {
     String excerpt;
 
     @Column(length = 512)
-    String coverImageUrl;
+    String thumbnailUrl ;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
