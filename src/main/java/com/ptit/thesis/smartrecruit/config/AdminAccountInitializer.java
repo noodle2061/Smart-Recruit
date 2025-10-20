@@ -1,7 +1,5 @@
 package com.ptit.thesis.smartrecruit.config;
 
-import java.util.Set;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +8,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserRecord;
 import com.ptit.thesis.smartrecruit.entity.Role;
 import com.ptit.thesis.smartrecruit.entity.User;
-import com.ptit.thesis.smartrecruit.entity.UserRole;
 import com.ptit.thesis.smartrecruit.repository.RoleRepository;
 import com.ptit.thesis.smartrecruit.repository.UserRepository;
 import com.ptit.thesis.smartrecruit.security.FirebaseUtil;
@@ -59,7 +56,6 @@ public class AdminAccountInitializer implements CommandLineRunner {
                         .setEmail(adminAccountProperties.getEmail())
                         .setEmailVerified(true)
                         .setPassword(adminAccountProperties.getPassword())
-                        .setDisplayName(adminAccountProperties.getFullName())
                         .setDisabled(false);
                 userRecord = FirebaseAuth.getInstance().createUser(request);
                 log.info("Successfully created new user in Firebase: " + userRecord.getUid());
@@ -72,16 +68,10 @@ public class AdminAccountInitializer implements CommandLineRunner {
             // Tạo entity User tương ứng và gán vai trò ADMIN
             User adminUser = new User();
             adminUser.setEmail(adminAccountProperties.getEmail());
-            adminUser.setFullName(adminAccountProperties.getFullName());
+            // adminUser.setFullName(adminAccountProperties.getFullName());
             adminUser.setUserFirebaseUid(userRecord.getUid());
             adminUser.setUserName(adminAccountProperties.getUsername());
-            adminUser.setDeleted(false);
-
-            UserRole adminUserRole = new UserRole();
-            adminUserRole.setRole(adminRole);
-            adminUserRole.setUser(adminUser);
-
-            adminUser.setUserRoles(Set.of(adminUserRole));
+            adminUser.setRole(adminRole);
 
             // Lưu tài khoản admin vào database
             log.info("Admin account created successfully.");
