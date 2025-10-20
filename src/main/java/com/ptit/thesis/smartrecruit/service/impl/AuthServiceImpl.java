@@ -1,10 +1,7 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
 import java.util.Optional;
-import java.util.Set;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,13 +9,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
-import com.ptit.thesis.smartrecruit.dto.request.OAuthRegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterWithAuthRequest;
 import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
+import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Role;
 import com.ptit.thesis.smartrecruit.entity.User;
-import com.ptit.thesis.smartrecruit.entity.UserRole;
 import com.ptit.thesis.smartrecruit.exception.InvalidFieldException;
 import com.ptit.thesis.smartrecruit.exception.RegistrationException;
 import com.ptit.thesis.smartrecruit.exception.ResourceNotFoundException;
@@ -28,7 +24,6 @@ import com.ptit.thesis.smartrecruit.repository.RoleRepository;
 import com.ptit.thesis.smartrecruit.repository.UserRepository;
 import com.ptit.thesis.smartrecruit.security.FirebaseUtil;
 import com.ptit.thesis.smartrecruit.service.AuthService;
-import com.ptit.thesis.smartrecruit.utils.Constraint;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 
 import lombok.AccessLevel;
@@ -72,7 +67,6 @@ public class AuthServiceImpl implements AuthService {
                 .setEmail(request.getEmail())
                 .setEmailVerified(false)
                 .setPassword(request.getPassword())
-                .setDisplayName(request.getFullName())
                 .setDisabled(false);
 
         try {
@@ -84,8 +78,10 @@ public class AuthServiceImpl implements AuthService {
 
             // gửi mail xác thực
             // Tạm thời bỏ đi, ủy quyền sang cho Front End xử lý
-            // String verificationLink = FirebaseAuth.getInstance().generateEmailVerificationLink(request.getEmail());
-            // notificationService.sendVerificationMessage(request.getEmail(), request.getFullName(), verificationLink);
+            // String verificationLink =
+            // FirebaseAuth.getInstance().generateEmailVerificationLink(request.getEmail());
+            // notificationService.sendVerificationMessage(request.getEmail(),
+            // request.getFullName(), verificationLink);
         } catch (FirebaseAuthException e) {
             log.error("Error creating new user: {}", e.getMessage());
             throw new RegistrationException("Error creating new user from Firebase: " + e.getMessage());
@@ -99,25 +95,21 @@ public class AuthServiceImpl implements AuthService {
             throw new RegistrationException(
                     "Error creating new user (could not send verification email): " + e.getMessage());
         }
+
+        // lưu vào csdl
         newEntityUser.setEmail(request.getEmail());
         newEntityUser.setUserFirebaseUid(firebaseUid);
-        newEntityUser.setFullName(request.getFullName());
         newEntityUser.setUserName(request.getUserName());
-        newEntityUser.setDeleted(false);
 
         Role roleOfUser = roleRepository.findByRoleName(roleUpper)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRole()));
 
-        UserRole userRole = new UserRole();
-        userRole.setRole(roleOfUser);
-        userRole.setUser(newEntityUser);
-        newEntityUser.setUserRoles(Set.of(userRole));
+        newEntityUser.setRole(roleOfUser);
 
         User savedUser = userRepository.save(newEntityUser);
         log.info("User saved to database successfully with ID: {}", savedUser.getId());
 
         UserResponse userResponse = userMapper.toUserResponse(newEntityUser);
-        userResponse.setRole(roleOfUser.getRoleName());
         userResponse.setFirebaseCustomToken(customToken);
         return userResponse;
     }
@@ -132,15 +124,12 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("Not found user with uid: " + uid));
 
         UserResponse userResponse = userMapper.toUserResponse(existingUser);
-            String roleName = existingUser.getUserRoles().stream()
-                    .findFirst()
-                    .map(userRole -> userRole.getRole().getRoleName())
-                    .orElse("");
-            userResponse.setRole(roleName);
+        String roleName = existingUser.getRole().getRoleName();
+        userResponse.setRole(roleName);
 
-            log.info("Login completed successfully for email: {}", existingUser.getEmail());
+        log.info("Login completed successfully for email: {}", existingUser.getEmail());
 
-            return userResponse;
+        return userResponse;
     }
 
     @Override
@@ -152,20 +141,17 @@ public class AuthServiceImpl implements AuthService {
         FirebaseToken decodedToken = firebaseUtil.verifyToken(cleanToken);
         String firebaseUserUid = decodedToken.getUid();
 
-        Optional<User> existingUser = userRepository.findByUserFirebaseUid(firebaseUserUid);
+        Optional<User> existingUserOpt = userRepository.findByUserFirebaseUid(firebaseUserUid);
 
-        if (existingUser.isPresent()) { // User đã tồn tại, là luồng đăng nhập trả về thông tin user
+        if (existingUserOpt.isPresent()) { // User đã tồn tại, là luồng đăng nhập trả về thông tin user
 
             log.info("User already exists with Firebase UID: {}, process login flow", firebaseUserUid);
 
-            UserResponse userResponse = userMapper.toUserResponse(existingUser.get());
-            String roleName = existingUser.get().getUserRoles().stream()
-                    .findFirst()
-                    .map(userRole -> userRole.getRole().getRoleName())
-                    .orElse("");
-            userResponse.setRole(roleName);
+            User existingUser = existingUserOpt.get();
 
-            log.info("OAuth login completed successfully for email: {}", existingUser.get().getEmail());
+            UserResponse userResponse = userMapper.toUserResponse(existingUser);
+
+            log.info("OAuth login completed successfully for email: {}", existingUser.getEmail());
 
             return userResponse;
         } else { // User chưa tồn tại, là luồng đăng ký
@@ -179,18 +165,12 @@ public class AuthServiceImpl implements AuthService {
 
             newEntityUser.setEmail(email);
             newEntityUser.setUserFirebaseUid(firebaseUserUid);
-            newEntityUser.setFullName(decodedToken.getName());
             newEntityUser.setUserName(userName);
-            newEntityUser.setDeleted(false);
 
             Role roleOfUser = roleRepository.findByRoleName(roleUpper)
                     .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleUpper));
 
-            UserRole userRole = new UserRole();
-            userRole.setRole(roleOfUser);
-            userRole.setUser(newEntityUser);
-
-            newEntityUser.setUserRoles(Set.of(userRole));
+            newEntityUser.setRole(roleOfUser);
 
             try {
                 User savedUser = userRepository.save(newEntityUser);
@@ -215,17 +195,19 @@ public class AuthServiceImpl implements AuthService {
     private String generateUniqueUsernameFromEmail(String email) {
         String userName = StringUtil.generateUsernameFromEmail(email);
 
+        log.info("Generate unique name form {}", userName);
+
         if (userRepository.existsByUserName(userName)) {
             Optional<Integer> maxSuffixOpt = userRepository.findUserNameMaxSuffix(userName);
+            log.info("maxSuffixOpt: {}", maxSuffixOpt);
             String newSuffixStr = maxSuffixOpt.map(suffix -> String.valueOf(suffix + 1)).orElse("1");
-            int userNamePrefixLength = Math.min(30, userName.length()) - newSuffixStr.length();
+            int userNamePrefixLength = Math.min(30, userName.length()) - newSuffixStr.length() + 1;
             userName = userName.substring(0, userNamePrefixLength) + newSuffixStr;
         }
+
+        log.info("Finish generate unique name, name: {}", userName);
 
         return userName;
     }
 
-    
-
-    
 }

@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.Set;
 
 @Entity
-@Table(name = "blog_tag")
+@Table(name = "blog_tags")
 @Getter
 @Setter
 @NoArgsConstructor

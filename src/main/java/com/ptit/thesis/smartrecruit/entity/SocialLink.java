@@ -7,7 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "social_link", indexes = {
+@Table(name = "social_links", indexes = {
         @Index(name = "idx_social_link_polymorphic", columnList = "linkable_type, linkable_id")
 })
 @Getter

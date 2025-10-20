@@ -1,22 +1,34 @@
 package com.ptit.thesis.smartrecruit.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.stream.Collectors;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "app_user")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,11 +38,6 @@ public class User extends BaseEntity implements UserDetails {
     @Column(unique = true, nullable = false)
     @NotBlank(message = "Firebase UID is mandatory")
     String userFirebaseUid;
-
-    @Column(nullable = false)
-    @NotBlank(message = "Full name is mandatory")
-    @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
-    String fullName;
 
     @Column(nullable = false, unique = true, length = 50)
     @NotBlank(message = "Username is mandatory")
@@ -42,8 +49,7 @@ public class User extends BaseEntity implements UserDetails {
     @Email(message = "Email should be valid")
     String email;
 
-    @Column(nullable = false)
-    boolean isDeleted;
+    LocalDateTime deleteAt;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     CandidateProfile candidateProfile;
@@ -51,8 +57,8 @@ public class User extends BaseEntity implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Resume> resumes;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    Set<Company> companies;
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    Company companies;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<FollowedCompany> followedCompanies;
@@ -64,31 +70,27 @@ public class User extends BaseEntity implements UserDetails {
     Set<SavedCandidate> savedAsCandidate;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<JobApplication> jobApplications;
+    Set<Application> jobApplications;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<SavedJob> savedJobs;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<JobAlert> jobAlerts;
-
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<Post> posts;
+    Set<Blog> posts;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<BlogComment> blogComments;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<UserRole> userRoles;
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (userRoles == null || userRoles.isEmpty()) {
+        if (role == null) {
             return Collections.emptyList();
         }
-        return userRoles.stream()
-                .map(userRole -> new SimpleGrantedAuthority("ROLE_" + userRole.getRole().getRoleName().toUpperCase()))
-                .collect(Collectors.toSet());
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
     }
 
     /**
@@ -105,5 +107,10 @@ public class User extends BaseEntity implements UserDetails {
     @Override
     public String getUsername() {
         return this.userName;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return this.deleteAt == null;
     }
 }

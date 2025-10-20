@@ -59,7 +59,6 @@ admin:
     enabled: true
     email: ${ADMIN_EMAIL}
     password: ${ADMIN_PASSWORD}
-    full-name: ${ADMIN_FULLNAME}
     username: "admin"
 
 aws:
