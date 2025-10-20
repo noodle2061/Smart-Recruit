@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "job")
+@Table(name = "jobs")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -71,17 +71,12 @@ public class Job extends BaseEntity {
     @Column(nullable = false)
     JobStatus status;
 
-    @Column(nullable = false)
-    Boolean isFeatured;
-
-    @Column(nullable = false)
-    Boolean isHighlighted;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     JobApplyOn applyOn;
 
-    String applyUrlOrEmail;
+    @Column(nullable = false)
+    String slug;
 
     @Column(nullable = false)
     Boolean isDeleted;
@@ -93,7 +88,7 @@ public class Job extends BaseEntity {
     Set<JobToCategory> jobToCategories;
 
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<JobApplication> jobApplications;
+    Set<Application> jobApplications;
 
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<SavedJob> savedJobs;
@@ -106,14 +101,6 @@ public class Job extends BaseEntity {
         
         if (status == null) {
             status = JobStatus.ACTIVE;
-        }
-
-        if (isFeatured == null) {
-            isFeatured = false;
-        }
-
-        if (isHighlighted == null) {
-            isHighlighted = false;
         }
 
         if (isDeleted == null) {

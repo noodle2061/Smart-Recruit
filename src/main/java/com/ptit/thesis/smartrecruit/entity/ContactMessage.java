@@ -6,7 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "contact_message")
+@Table(name = "contact_messages")
 @Getter
 @Setter
 @NoArgsConstructor

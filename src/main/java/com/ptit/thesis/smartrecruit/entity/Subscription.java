@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
-@Table(name = "subscription")
+@Table(name = "subscriptions")
 @Getter
 @Setter
 @NoArgsConstructor

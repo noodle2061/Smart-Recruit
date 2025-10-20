@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "resume")
+@Table(name = "resumes")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,7 +32,7 @@ public class Resume extends BaseEntity {
     LocalDateTime uploadedAt;
 
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<JobApplication> jobApplications;
+    Set<Application> jobApplications;
 
     @PrePersist
     public void prePersist() {

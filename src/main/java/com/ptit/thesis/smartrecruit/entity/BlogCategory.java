@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.Set;
 
 @Entity
-@Table(name = "blog_category")
+@Table(name = "blog_categories")
 @Setter
 @Getter
 @NoArgsConstructor
@@ -16,9 +16,6 @@ public class BlogCategory extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 100)
     String name;
-
-    @Column(nullable = false, unique = true, length = 150)
-    String slug;
 
     @OneToMany(mappedBy = "blogCategory", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<PostCategory> postCategories;

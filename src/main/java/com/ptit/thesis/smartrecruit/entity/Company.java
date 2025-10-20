@@ -10,14 +10,14 @@ import lombok.experimental.FieldDefaults;
 import java.util.Set;
 
 @Entity
-@Table(name = "company")
+@Table(name = "companies")
 @Getter
 @Setter
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Company extends BaseEntity{
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     User user;
 
@@ -55,10 +55,6 @@ public class Company extends BaseEntity{
     @Column(columnDefinition = "TEXT")
     String companyVision;
 
-    @Lob
-    @Column(columnDefinition = "TEXT")
-    String companyBenefits;
-
     @Column(nullable = false,unique = true, length = 20)
     String phone;
 
@@ -70,6 +66,10 @@ public class Company extends BaseEntity{
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<CompanyLocation> locations;
+
+    @ManyToOne
+    @JoinColumn(name = "location_id", nullable = false)
+    Location location;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<FollowedCompany> followedCompanies;
