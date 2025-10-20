@@ -18,6 +18,5 @@ public class AdminAccountProperties {
     boolean enabled;
     String email;
     String password;
-    String fullName;
     String username;
 }

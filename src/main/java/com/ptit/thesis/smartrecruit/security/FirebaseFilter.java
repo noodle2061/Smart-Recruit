@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.UserRecord;
 import com.ptit.thesis.smartrecruit.config.CustomUserDetailsService;
 import com.ptit.thesis.smartrecruit.exception.InvalidTokenException;
 
@@ -67,6 +70,14 @@ public class FirebaseFilter extends OncePerRequestFilter {
 
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(userUid);
 
+            // Kiem tra tai khoan co bi khoa chua
+            UserRecord userRecord = FirebaseAuth.getInstance().getUser(userUid);
+
+            if (userDetails.isAccountNonLocked() || userRecord.isDisabled()) {
+                throw new LockedException("This account is locked. Please contact your administrator.");
+            }
+
+            // Dang nhap thanh cong, luu thong tin vao security context
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
