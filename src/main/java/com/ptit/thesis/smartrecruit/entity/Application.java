@@ -1,11 +1,22 @@
 package com.ptit.thesis.smartrecruit.entity;
 
 import com.ptit.thesis.smartrecruit.enums.JobApplicationStatus;
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "applications",
@@ -22,8 +33,8 @@ public class Application extends BaseEntity {
     Job job;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    User user;
+    @JoinColumn(name = "candidate_id", nullable = false)
+    CandidateProfile candidate;
 
     @ManyToOne
     @JoinColumn(name = "resume_id", nullable = false)
