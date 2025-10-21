@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Table(name = "candidate_profiles")
@@ -27,7 +28,7 @@ public class CandidateProfile extends BaseEntity{
     String fullName;
 
     @Column(length = 512)
-    String profilePictureUrl;
+    String avatarUrl;
 
     @Column(nullable = false, length = 255)
     String headline;
@@ -57,8 +58,21 @@ public class CandidateProfile extends BaseEntity{
     @Column(length = 255)
     String biography;
 
+    @Column(unique = true, length = 20)
+    String phone;
+
     @Column(nullable = false)
     Boolean isPublic;
+
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<Application> applications;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "location_id", nullable = false)
+    Location location;
+
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<SavedJob> savedJobs;
 
     @PrePersist
     public void prePersist() {

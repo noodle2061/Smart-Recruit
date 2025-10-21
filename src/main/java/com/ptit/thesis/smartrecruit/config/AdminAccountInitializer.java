@@ -43,7 +43,7 @@ public class AdminAccountInitializer implements CommandLineRunner {
         // Tạo tài khoản admin
         log.info("Creating admin account with email: " + adminAccountProperties.getEmail());
         // Tạo tài khoản admin với các thuộc tính từ adminAccountProperties
-        Role adminRole = roleRepository.findByRoleName("ADMIN")
+        Role adminRole = roleRepository.findByName("ADMIN")
                 .orElseThrow(() -> new RuntimeException("Admin role not found in the database."));
 
         try {
@@ -69,7 +69,7 @@ public class AdminAccountInitializer implements CommandLineRunner {
             User adminUser = new User();
             adminUser.setEmail(adminAccountProperties.getEmail());
             // adminUser.setFullName(adminAccountProperties.getFullName());
-            adminUser.setUserFirebaseUid(userRecord.getUid());
+            adminUser.setFirebaseUid(userRecord.getUid());
             adminUser.setUserName(adminAccountProperties.getUsername());
             adminUser.setRole(adminRole);
 

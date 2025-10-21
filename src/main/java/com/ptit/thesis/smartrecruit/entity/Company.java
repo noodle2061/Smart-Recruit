@@ -1,13 +1,29 @@
 package com.ptit.thesis.smartrecruit.entity;
 
+import java.time.LocalDateTime;
+import java.util.Set;
+
 import com.ptit.thesis.smartrecruit.enums.CompanyTeamSize;
 import com.ptit.thesis.smartrecruit.enums.IndustryType;
 import com.ptit.thesis.smartrecruit.enums.OrganizationType;
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
 
-import java.util.Set;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "companies")
@@ -22,13 +38,13 @@ public class Company extends BaseEntity{
     User user;
 
     @Column(nullable = false, unique = true, length = 255)
-    String companyName;
+    String name;
 
     @Column(length = 512)
     String logoUrl;
 
     @Column(length = 512)
-    String coverPhotoUrl;
+    String bannerUrl;
 
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -62,31 +78,15 @@ public class Company extends BaseEntity{
     String email;
 
     @Column(nullable = false)
-    Boolean isDeleted;
-
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<CompanyLocation> locations;
+    LocalDateTime deleteAt;
 
     @ManyToOne
     @JoinColumn(name = "location_id", nullable = false)
     Location location;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<FollowedCompany> followedCompanies;
-
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Job> jobs;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<ApplicationStatusColumn> applicationStatusColumns;
-
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<Subscription> subscriptions;
-
-    @PrePersist
-    public void prePersist() {
-        if (isDeleted == null) {
-            isDeleted = false;
-        }
-    }
 }

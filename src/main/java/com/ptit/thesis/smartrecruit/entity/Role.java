@@ -23,7 +23,7 @@ import lombok.experimental.FieldDefaults;
 public class Role extends BaseEntity {
 
     @Column(length = 50, nullable = false, unique = true)
-    String roleName;
+    String name;
 
     @Column(nullable = false, length = 150)
     String description;

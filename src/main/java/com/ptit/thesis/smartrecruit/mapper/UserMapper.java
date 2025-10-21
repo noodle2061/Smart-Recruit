@@ -11,9 +11,8 @@ import com.ptit.thesis.smartrecruit.entity.User;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    @Mapping(target = "firebaseUid", source = "userFirebaseUid")
     @Mapping(target = "userName", source = "username")
-    @Mapping(target = "role", source = "role.roleName")
+    @Mapping(target = "role", source = "role.name")
     @Mapping(target = "fullName", source = "candidateProfile", qualifiedByName = "getFullName")
     @Mapping(target = "firebaseCustomToken", ignore = true)
     UserResponse toUserResponse(User user);
