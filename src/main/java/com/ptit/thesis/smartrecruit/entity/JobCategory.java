@@ -17,9 +17,6 @@ public class JobCategory extends BaseEntity {
     @Column(unique = true, nullable = false, length = 100)
     String name;
 
-    @Column(nullable = false, unique = true, length = 150)
-    String slug;
-
-    @OneToMany(mappedBy = "jobCategory", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<JobToCategory> jobToCategories;
+    @ManyToMany(mappedBy = "jobCategories")
+    Set<Job> jobs;
 }

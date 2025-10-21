@@ -17,6 +17,6 @@ public class BlogCategory extends BaseEntity {
     @Column(nullable = false, unique = true, length = 100)
     String name;
 
-    @OneToMany(mappedBy = "blogCategory", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<PostCategory> postCategories;
+    @ManyToMany(mappedBy = "categories")
+    Set<Blog> blogs;
 }

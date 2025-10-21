@@ -30,10 +30,7 @@ public class Blog extends BaseEntity {
     @Column(columnDefinition = "TEXT", nullable = false)
     String content;
 
-    String excerpt;
-
-    @Column(length = 512)
-    String thumbnailUrl ;
+    String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -42,14 +39,17 @@ public class Blog extends BaseEntity {
     @Column(nullable = false)
     LocalDateTime publishedAt;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<PostCategory> postCategories;
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "blog_blogcategories",
+            joinColumns = @JoinColumn(name = "blog_id"),
+            inverseJoinColumns = @JoinColumn(name = "blogcategory_id"))
+    Set<BlogCategory> categories;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<BlogComment> blogComments;
-
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PostTag> postTags;
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "blog_tags",
+            joinColumns = @JoinColumn(name = "blog_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    Set<Tag> tags;
 
     @PrePersist
     public void prePersist() {

@@ -20,24 +20,14 @@ public class Resume extends BaseEntity {
     User user;
 
     @Column(nullable = false)
-    String resumeTitle;
+    String title;
 
     @Column(nullable = false, length = 512)
-    String fileUrl;
+    String storageKey;
 
     @Column(nullable = false)
-    Float fileSize;
-
-    @Column(nullable = false)
-    LocalDateTime uploadedAt;
+    Float size;
 
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Application> jobApplications;
-
-    @PrePersist
-    public void prePersist() {
-        if (uploadedAt == null) {
-            uploadedAt = LocalDateTime.now();
-        }
-    }
 }
