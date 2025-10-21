@@ -20,7 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUserFirebaseUid(username)
+        return userRepository.findByFirebaseUid(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with Firebase UID: " + username));
     }
     

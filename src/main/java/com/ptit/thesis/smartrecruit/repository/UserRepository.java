@@ -12,7 +12,7 @@ import com.ptit.thesis.smartrecruit.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     @EntityGraph(attributePaths = {"candidateProfile", "role"})
-    Optional<User> findByUserFirebaseUid(String userFirebaseUid);
+    Optional<User> findByFirebaseUid(String userFirebaseUid);
     
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);

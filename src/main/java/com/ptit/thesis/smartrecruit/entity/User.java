@@ -37,7 +37,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Column(unique = true, nullable = false)
     @NotBlank(message = "Firebase UID is mandatory")
-    String userFirebaseUid;
+    String firebaseUid;
 
     @Column(nullable = false, unique = true, length = 50)
     @NotBlank(message = "Username is mandatory")
@@ -60,26 +60,11 @@ public class User extends BaseEntity implements UserDetails {
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     Company companies;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<FollowedCompany> followedCompanies;
-
-    @OneToMany(mappedBy = "employerUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<SavedCandidate> savedAsEmployer;
-
-    @OneToMany(mappedBy = "candidateUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<SavedCandidate> savedAsCandidate;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<Application> jobApplications;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<SavedJob> savedJobs;
-
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Blog> posts;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<BlogComment> blogComments;
+    Set<Comment> blogComments;
 
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
@@ -90,7 +75,7 @@ public class User extends BaseEntity implements UserDetails {
         if (role == null) {
             return Collections.emptyList();
         }
-        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.getName()));
     }
 
     /**

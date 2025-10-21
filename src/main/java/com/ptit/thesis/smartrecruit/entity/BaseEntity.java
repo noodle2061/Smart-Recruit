@@ -35,5 +35,5 @@ public class BaseEntity {
 
     @LastModifiedDate
     @Column(nullable = false, updatable = false)
-    LocalDateTime lastModifiedAt;
+    LocalDateTime updatedAt;
 }

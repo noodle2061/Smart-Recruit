@@ -98,10 +98,10 @@ public class AuthServiceImpl implements AuthService {
 
         // lưu vào csdl
         newEntityUser.setEmail(request.getEmail());
-        newEntityUser.setUserFirebaseUid(firebaseUid);
+        newEntityUser.setFirebaseUid(firebaseUid);
         newEntityUser.setUserName(request.getUserName());
 
-        Role roleOfUser = roleRepository.findByRoleName(roleUpper)
+        Role roleOfUser = roleRepository.findByName(roleUpper)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRole()));
 
         newEntityUser.setRole(roleOfUser);
@@ -120,11 +120,11 @@ public class AuthServiceImpl implements AuthService {
 
         FirebaseToken firebaseToken = firebaseUtil.verifyToken(authToken);
         String uid = firebaseToken.getUid();
-        User existingUser = userRepository.findByUserFirebaseUid(uid)
+        User existingUser = userRepository.findByFirebaseUid(uid)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found user with uid: " + uid));
 
         UserResponse userResponse = userMapper.toUserResponse(existingUser);
-        String roleName = existingUser.getRole().getRoleName();
+        String roleName = existingUser.getRole().getName();
         userResponse.setRole(roleName);
 
         log.info("Login completed successfully for email: {}", existingUser.getEmail());
@@ -141,7 +141,7 @@ public class AuthServiceImpl implements AuthService {
         FirebaseToken decodedToken = firebaseUtil.verifyToken(cleanToken);
         String firebaseUserUid = decodedToken.getUid();
 
-        Optional<User> existingUserOpt = userRepository.findByUserFirebaseUid(firebaseUserUid);
+        Optional<User> existingUserOpt = userRepository.findByFirebaseUid(firebaseUserUid);
 
         if (existingUserOpt.isPresent()) { // User đã tồn tại, là luồng đăng nhập trả về thông tin user
 
@@ -164,10 +164,10 @@ public class AuthServiceImpl implements AuthService {
             String userName = generateUniqueUsernameFromEmail(email);
 
             newEntityUser.setEmail(email);
-            newEntityUser.setUserFirebaseUid(firebaseUserUid);
+            newEntityUser.setFirebaseUid(firebaseUserUid);
             newEntityUser.setUserName(userName);
 
-            Role roleOfUser = roleRepository.findByRoleName(roleUpper)
+            Role roleOfUser = roleRepository.findByName(roleUpper)
                     .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleUpper));
 
             newEntityUser.setRole(roleOfUser);
@@ -178,7 +178,7 @@ public class AuthServiceImpl implements AuthService {
                 log.info("User saved to database successfully with ID: {}", savedUser.getId());
 
                 UserResponse userResponse = userMapper.toUserResponse(newEntityUser);
-                userResponse.setRole(roleOfUser.getRoleName());
+                userResponse.setRole(roleOfUser.getName());
 
                 log.info("OAuth registration completed successfully for email: {}", email);
 
