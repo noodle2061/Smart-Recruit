@@ -17,4 +17,22 @@ public class StringUtil {
         }
         return username;
     }
+
+    // chuẩn hóa tên riêng
+    public static String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
+    // chuẩn hóa tên riêng gồm nhiều tiếng
+    public static String standardizeName(String name) {
+        String[] words = name.split(" ");
+        StringBuilder result = new StringBuilder();
+        for (String word : words) {
+            result.append(capitalizeFirstLetter(word)).append(" ");
+        }
+        return result.toString().trim();
+    }
 }
