@@ -11,5 +11,5 @@ import com.ptit.thesis.smartrecruit.entity.User;
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Long> {
     Optional<Company> findByUser(User user);
-    boolean existsByCompanyName(String name);
+    boolean existsByName(String name);
 }

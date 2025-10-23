@@ -154,11 +154,19 @@ public class AuthServiceImpl implements AuthService {
             log.info("OAuth login completed successfully for email: {}", existingUser.getEmail());
 
             return userResponse;
-        } else { // User chưa tồn tại, là luồng đăng ký
+        } else { // User chưa tồn tại, là luồng đăng ký, trong luồng này cần xem đã gửi request chưa, nếu chưa thì cần gửi lên request để xác nhận
+
+            if (request == null || request.getRole() == null) {
+                throw new InvalidFieldException("Role is required.");
+            }
 
             log.info("No user found with Firebase UID: {}, process registration flow", firebaseUserUid);
 
             String roleUpper = request.getRole().toUpperCase();
+
+            Role roleOfUser = roleRepository.findByName(roleUpper)
+                    .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleUpper));
+
             User newEntityUser = new User();
             String email = decodedToken.getEmail();
             String userName = generateUniqueUsernameFromEmail(email);
@@ -166,9 +174,6 @@ public class AuthServiceImpl implements AuthService {
             newEntityUser.setEmail(email);
             newEntityUser.setFirebaseUid(firebaseUserUid);
             newEntityUser.setUserName(userName);
-
-            Role roleOfUser = roleRepository.findByName(roleUpper)
-                    .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleUpper));
 
             newEntityUser.setRole(roleOfUser);
 

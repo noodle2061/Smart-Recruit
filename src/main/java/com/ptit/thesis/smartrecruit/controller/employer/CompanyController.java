@@ -16,10 +16,10 @@ import com.google.firebase.database.annotations.NotNull;
 import com.ptit.thesis.smartrecruit.dto.request.CompanyProfileRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyProfileResponse;
-import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.service.CompanyService;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -42,17 +42,17 @@ public class CompanyController {
     
 
     /**
-     * Dùng để cài đặt màn hình đầu tiên của giao diện setup company
+     * Dùng để thêm mới hoặc sửa đổi thông tin của company profile
      * @param user
      * @param request
      * @param logo
      * @param banner
-     * @return Thông tin Company sau khi cài đặt thành công màn đầu tiên
+     * @return Thông tin Company Profile
      */
     @PreAuthorize("hasRole('EMPLOYER')")
     @PostMapping(value = "/setup-info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<CompanyProfileResponse>> handleCompanyProfile(@AuthenticationPrincipal User user,
-                                                            @Valid @RequestPart("data") CompanyProfileRequest request,
+                                                            @Valid @RequestPart("data") @Schema(implementation = CompanyProfileRequest.class) CompanyProfileRequest request,
                                                             @NotNull @RequestPart("logo") MultipartFile logo,
                                                             @NotNull @RequestPart("banner") MultipartFile banner) {
         CompanyProfileResponse company = companyService.createOrUpdateCompanyProfile(user, request, logo, banner);

@@ -11,4 +11,5 @@ import com.ptit.thesis.smartrecruit.enums.LinkableType;
 @Repository
 public interface SocialLinkRepository extends JpaRepository<SocialLink, Long> {
     List<SocialLink> findByLinkableIdAndLinkableType(Long linkableId, LinkableType linkableType);
+    void deleteAllByLinkableIdAndLinkableType(Long linkableId, LinkableType linkableType);
 }
