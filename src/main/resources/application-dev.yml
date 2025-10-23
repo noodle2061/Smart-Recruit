@@ -38,6 +38,12 @@ spring:
             enable: true
           ssl:
             enable: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+        
 
 springdoc:
   api-docs:
