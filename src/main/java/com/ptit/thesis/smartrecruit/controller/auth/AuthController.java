@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ptit.thesis.smartrecruit.dto.request.OAuthRegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterWithAuthRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
@@ -61,7 +62,7 @@ public class AuthController {
     @PostMapping("/callback")
     public ResponseEntity<ApiResponse<UserResponse>> handleOAuth2Callback(
                                     @RequestHeader("Authorization") String authorization,
-                                    @RequestBody RegisterWithAuthRequest request) {
+                                    @RequestBody(required = false) OAuthRegisterRequest request) {
         String cleanToken = authorization.substring(7);
 
         UserResponse userResponse = authService.processAuth2CallBack(cleanToken, request);

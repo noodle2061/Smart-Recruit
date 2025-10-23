@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
+import com.ptit.thesis.smartrecruit.dto.request.OAuthRegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterWithAuthRequest;
 import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
@@ -134,7 +135,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public UserResponse processAuth2CallBack(String authorization, RegisterWithAuthRequest request) {
+    public UserResponse processAuth2CallBack(String authorization, OAuthRegisterRequest request) {
         log.info("Processing OAuth2 callback for token.");
 
         String cleanToken = (authorization.startsWith("Bearer ")) ? authorization.substring(7) : authorization;
