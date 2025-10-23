@@ -68,7 +68,7 @@ public class S3ServiceImpl implements S3Service {
             log.info("File upload successfully to S3");
         } catch (S3Exception e) {
             log.error("Fail to upload file to S3: {}", e.getMessage());
-            throw new RuntimeException("Fail to upload file to S3: " + e.getMessage());
+            throw new S3ErrorException("Fail to upload file to S3: " + e.getMessage());
         }
 
         return key;
@@ -105,7 +105,7 @@ public class S3ServiceImpl implements S3Service {
             return url;
         } catch (S3Exception e) {
             log.error("Fail to generate pre-signed Url: {}", e.getMessage());
-            throw new RuntimeException("Fail to generate pre-signed Url: " + e.getMessage());
+            throw new S3ErrorException("Fail to generate pre-signed Url: " + e.getMessage());
         }
     }
 
@@ -141,7 +141,7 @@ public class S3ServiceImpl implements S3Service {
             deleteFileByKey(key);
         } catch (Exception e) {
             log.error("An unexpected error occurred while trying to delete file from S3 [{}]: {}", fileUrl, e.getMessage());
-            throw new RuntimeException("An unexpected error occurred during S3 file deletion", e);
+            throw new S3ErrorException("An unexpected error occurred during S3 file deletion: " + e);
         }
     }
 
@@ -151,7 +151,7 @@ public class S3ServiceImpl implements S3Service {
             return url.getPath().substring(1);
         } catch (Exception e) {
             log.error("Invalid S3 URL format: {}", fileUrl);
-            throw new IllegalArgumentException("Invalid S3 URL format");
+            throw new S3ErrorException("Invalid S3 URL format");
         }
     }
 }

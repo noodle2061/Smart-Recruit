@@ -2,6 +2,7 @@ package com.ptit.thesis.smartrecruit.dto.response;
 
 import java.util.List;
 
+import com.ptit.thesis.smartrecruit.dto.common.LocationDTO;
 import com.ptit.thesis.smartrecruit.dto.common.SocialLinkDTO;
 import com.ptit.thesis.smartrecruit.enums.CompanyTeamSize;
 import com.ptit.thesis.smartrecruit.enums.IndustryType;
@@ -14,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompanyProfileResponse {
-    String companyName;
+    String name;
     String description;
     String logoUrl;
     String bannerUrl;
@@ -28,7 +29,7 @@ public class CompanyProfileResponse {
 
     List<SocialLinkDTO> socialLinks;
 
-    String mapLocation;
+    LocationDTO location;
     String email;
     String phone;
 }
