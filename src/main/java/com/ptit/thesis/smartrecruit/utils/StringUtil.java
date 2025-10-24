@@ -35,4 +35,8 @@ public class StringUtil {
         }
         return result.toString().trim();
     }
+
+    public static String generateSlug(String name) {
+        return name.strip().toLowerCase().replaceAll("\\s+", "-") + "-" + System.currentTimeMillis();
+    }
 }
