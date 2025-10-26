@@ -25,6 +25,7 @@ import com.ptit.thesis.smartrecruit.repository.RoleRepository;
 import com.ptit.thesis.smartrecruit.repository.UserRepository;
 import com.ptit.thesis.smartrecruit.security.FirebaseUtil;
 import com.ptit.thesis.smartrecruit.service.AuthService;
+import com.ptit.thesis.smartrecruit.utils.Constraint;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 
 import lombok.AccessLevel;
@@ -107,6 +108,12 @@ public class AuthServiceImpl implements AuthService {
 
         newEntityUser.setRole(roleOfUser);
 
+        if (roleOfUser.getName().equals(Constraint.CANDIDATE_ROLE)) {
+            CandidateProfile newCandidateProfile = new CandidateProfile();
+            newCandidateProfile.setUser(newEntityUser);
+            newEntityUser.setCandidateProfile(newCandidateProfile);
+        }
+
         User savedUser = userRepository.save(newEntityUser);
         log.info("User saved to database successfully with ID: {}", savedUser.getId());
 
@@ -155,7 +162,8 @@ public class AuthServiceImpl implements AuthService {
             log.info("OAuth login completed successfully for email: {}", existingUser.getEmail());
 
             return userResponse;
-        } else { // User chưa tồn tại, là luồng đăng ký, trong luồng này cần xem đã gửi request chưa, nếu chưa thì cần gửi lên request để xác nhận
+        } else { // User chưa tồn tại, là luồng đăng ký, trong luồng này cần xem đã gửi request
+                 // chưa, nếu chưa thì cần gửi lên request để xác nhận
 
             if (request == null || request.getRole() == null) {
                 throw new InvalidFieldException("Role is required.");
@@ -175,8 +183,13 @@ public class AuthServiceImpl implements AuthService {
             newEntityUser.setEmail(email);
             newEntityUser.setFirebaseUid(firebaseUserUid);
             newEntityUser.setUserName(userName);
-
             newEntityUser.setRole(roleOfUser);
+
+            if (roleOfUser.getName().equals(Constraint.CANDIDATE_ROLE)) {
+                CandidateProfile newCandidateProfile = new CandidateProfile();
+                newCandidateProfile.setUser(newEntityUser);
+                newEntityUser.setCandidateProfile(newCandidateProfile);
+            }
 
             try {
                 User savedUser = userRepository.save(newEntityUser);
