@@ -22,22 +22,17 @@ public class CandidateProfile extends BaseEntity{
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     User user;
 
-    @Column(nullable = false)
-    @NotBlank(message = "Full name is mandatory")
     @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
     String fullName;
 
     @Column(length = 512)
     String avatarUrl;
 
-    @Column(nullable = false, length = 255)
     String headline;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     ExperienceLevel experienceLevel;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     EducationLevel educationLevel;
 
@@ -68,7 +63,6 @@ public class CandidateProfile extends BaseEntity{
     Set<Application> applications;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "location_id", nullable = false)
     Location location;
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

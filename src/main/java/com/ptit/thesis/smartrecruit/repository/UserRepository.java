@@ -32,4 +32,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "AND user_name REGEXP CONCAT('^', :userName, '[0-9]+$')",
         nativeQuery = true)
     Optional<Integer> findUserNameMaxSuffix(@Param("userName") String userName);
+
+    @Query(value = "SELECT email FROM users WHERE firebase_uid = :firebaseUid", nativeQuery = true)
+    String findUserEmailByFirebaseUid(String firebaseUid);
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
@@ -133,5 +134,29 @@ public class GlobalExceptionHandler {
             .message(ex.getMessage())
             .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class) 
+    public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .statusCode(HttpStatus.NOT_FOUND.value())
+            .error("Entity Not Found")
+            .path(request.getDescription(false).replace("uri=", ""))
+            .message(ex.getMessage())
+            .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<?> handleConflictException(ConflictException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .statusCode(HttpStatus.CONFLICT.value())
+            .error("Resource Conflict")
+            .path(request.getDescription(false).replace("uri=", ""))
+            .message(ex.getMessage())
+            .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 }
