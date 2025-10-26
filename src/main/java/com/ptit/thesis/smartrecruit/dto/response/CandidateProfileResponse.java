@@ -35,6 +35,4 @@ public class CandidateProfileResponse {
     Boolean isPublic; // mặc định là true
     LocationDTO location;
     List<SocialLinkDTO> socialLinks;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
 }
