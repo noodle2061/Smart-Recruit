@@ -1,5 +1,6 @@
 package com.ptit.thesis.smartrecruit.entity;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -24,11 +25,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Location extends BaseEntity {
 
-    @Column(nullable = false)
-    Float latitude;
+    @Column(precision = 10, scale = 8, nullable = false)
+    BigDecimal latitude;
 
-    @Column(nullable = false)
-    Float longitude;
+    @Column(precision = 11, scale = 8, nullable = false)
+    BigDecimal longitude;
 
     @Column(unique = true, nullable = false)
     String country;
