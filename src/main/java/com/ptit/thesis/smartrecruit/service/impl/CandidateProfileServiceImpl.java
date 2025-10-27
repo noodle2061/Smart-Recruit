@@ -105,7 +105,6 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
                         () -> new EntityNotFoundException("Candidate profile not found for user: " + user.getId()));
         candidateProfileMapper.updateEntity(request, candidateProfile);
 
-        user.setEmail(request.getEmail());
         User savedUser = userRepository.save(user);
 
         // location

@@ -8,9 +8,10 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
     String firebaseUid;
-    String fullName;
+    String fullName; // candidate
     String userName;
     String email;
     String role;
     String firebaseCustomToken;
+    boolean isCompanySetup; // copmpany
 }

@@ -11,7 +11,6 @@ import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
 import com.ptit.thesis.smartrecruit.dto.request.OAuthRegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterRequest;
-import com.ptit.thesis.smartrecruit.dto.request.RegisterWithAuthRequest;
 import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Role;
@@ -21,6 +20,8 @@ import com.ptit.thesis.smartrecruit.exception.RegistrationException;
 import com.ptit.thesis.smartrecruit.exception.ResourceNotFoundException;
 import com.ptit.thesis.smartrecruit.mapper.UserMapper;
 import com.ptit.thesis.smartrecruit.notification.NotificationService;
+import com.ptit.thesis.smartrecruit.repository.CandidateProfileRepository;
+import com.ptit.thesis.smartrecruit.repository.CompanyRepository;
 import com.ptit.thesis.smartrecruit.repository.RoleRepository;
 import com.ptit.thesis.smartrecruit.repository.UserRepository;
 import com.ptit.thesis.smartrecruit.security.FirebaseUtil;
@@ -44,6 +45,8 @@ public class AuthServiceImpl implements AuthService {
     NotificationService notificationService;
     UserRepository userRepository;
     RoleRepository roleRepository;
+    CandidateProfileRepository candidateProfileRepository;
+    CompanyRepository companyRepository;
 
     @Transactional
     @Override
@@ -118,7 +121,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("User saved to database successfully with ID: {}", savedUser.getId());
 
         UserResponse userResponse = userMapper.toUserResponse(newEntityUser);
-        userResponse.setFirebaseCustomToken(customToken);
+        userResponse.setFirebaseCustomToken(customToken); // gửi token để gửi email.
         return userResponse;
     }
 
@@ -131,9 +134,7 @@ public class AuthServiceImpl implements AuthService {
         User existingUser = userRepository.findByFirebaseUid(uid)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found user with uid: " + uid));
 
-        UserResponse userResponse = userMapper.toUserResponse(existingUser);
-        String roleName = existingUser.getRole().getName();
-        userResponse.setRole(roleName);
+        UserResponse userResponse = toUserResponse(existingUser);
 
         log.info("Login completed successfully for email: {}", existingUser.getEmail());
 
@@ -157,7 +158,7 @@ public class AuthServiceImpl implements AuthService {
 
             User existingUser = existingUserOpt.get();
 
-            UserResponse userResponse = userMapper.toUserResponse(existingUser);
+            UserResponse userResponse = toUserResponse(existingUser);
 
             log.info("OAuth login completed successfully for email: {}", existingUser.getEmail());
 
@@ -165,7 +166,7 @@ public class AuthServiceImpl implements AuthService {
         } else { // User chưa tồn tại, là luồng đăng ký, trong luồng này cần xem đã gửi request
                  // chưa, nếu chưa thì cần gửi lên request để xác nhận
 
-            if (request == null || request.getRole() == null) {
+            if (request == null || request.getRole() == null) { // phần này nhằm kiểm tra người dùng đã chọn role chưa, chưa có thì trả về exception để giao diện sẽ hiện role để chọn, mặc định ban đầu là không hiện role ra
                 throw new InvalidFieldException("Role is required.");
             }
 
@@ -229,4 +230,15 @@ public class AuthServiceImpl implements AuthService {
         return userName;
     }
 
+
+    public UserResponse toUserResponse(User savedUser) {
+        UserResponse response = userMapper.toUserResponse(savedUser);
+        String roleString = savedUser.getRole().getName();
+        if (roleString.equals(Constraint.CANDIDATE_ROLE)) {
+            response.setFullName(candidateProfileRepository.findFullNameByUser(savedUser));
+        } else if (roleString.equals(Constraint.EMPLOYEE_ROLE)) {
+            response.setCompanySetup(companyRepository.existsByUser(savedUser));
+        }
+        return response;
+    }
 }

@@ -19,4 +19,6 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     "c.name, c.logoUrl, c.foundedIn, c.website, c.email, c.phone, c.teamSize)" +
     "FROM Company c WHERE c.user = :user")
     CompanyBasicInfoDTO findBasicInfoByUser(User user);
+
+    boolean existsByUser(User user);
 }
