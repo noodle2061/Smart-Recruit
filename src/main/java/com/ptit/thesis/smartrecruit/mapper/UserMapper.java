@@ -11,20 +11,19 @@ import com.ptit.thesis.smartrecruit.entity.User;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
+    /**
+     * chuyển doi tu User -> UserResponse
+     * <p>
+     * Các thuộc tính fullName, firebaseCustomToken cần tự cập nhật sau khi gọi hàm
+     * @param user
+     * @return
+     */
     @Mapping(target = "userName", source = "username")
     @Mapping(target = "role", source = "role.name")
-    @Mapping(target = "fullName", source = "candidateProfile", qualifiedByName = "getFullName")
+    @Mapping(target = "fullName", ignore = true)
     @Mapping(target = "firebaseCustomToken", ignore = true)
     UserResponse toUserResponse(User user);
 
     @Mapping(target = "role", ignore = true)
     User toUserEntity(UserResponse userResponse);
-
-    @Named("getFullName")
-    default String getFullName(CandidateProfile candidateProfile) {
-        if (candidateProfile != null) {
-            return candidateProfile.getFullName();
-        }
-        return null;
-    }
 }
