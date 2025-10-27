@@ -10,24 +10,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ptit.thesis.smartrecruit.dto.request.OAuthRegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterRequest;
-import com.ptit.thesis.smartrecruit.dto.request.RegisterWithAuthRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
 import com.ptit.thesis.smartrecruit.service.AuthService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-
-
 @RestController
 @RequestMapping("/api/auth")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "AuthController", description = "Xác thực người dùng")
 public class AuthController {
 
     AuthService authService;

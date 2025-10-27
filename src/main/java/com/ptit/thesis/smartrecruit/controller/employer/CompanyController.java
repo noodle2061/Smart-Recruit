@@ -20,6 +20,7 @@ import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.service.CompanyService;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import lombok.experimental.FieldDefaults;
 @RequestMapping("api/employer/company")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Tag(name="CompanyController", description="Quản lý công ty")
 public class CompanyController {
     
     CompanyService companyService;
