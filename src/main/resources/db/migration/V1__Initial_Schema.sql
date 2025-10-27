@@ -1,13 +1,3 @@
--- Flyway migration script for SmartRecruit application
--- Version: 1
--- Description: Creates the initial database schema, synchronized with JPA entities.
--- Refactored for consistency with entity definitions (updatedAt field).
-
--- =================================================================================
--- CORE TABLES (Users, Roles, Companies, Locations)
--- =================================================================================
-
--- Bảng vai trò (Role)
 CREATE TABLE roles
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -17,7 +7,6 @@ CREATE TABLE roles
     updated_at         DATETIME(6)  NOT NULL
 );
 
--- Bảng người dùng (User)
 CREATE TABLE users
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -31,12 +20,11 @@ CREATE TABLE users
     CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles (id)
 );
 
--- Bảng địa điểm (Location)
 CREATE TABLE locations
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    latitude           FLOAT        NOT NULL,
-    longitude          FLOAT        NOT NULL,
+    latitude           DECIMAL(10, 8) NOT NULL,
+    longitude          DECIMAL(11, 8) NOT NULL,
     country            VARCHAR(255) NOT NULL,
     province_city      VARCHAR(255) NOT NULL,
     commune            VARCHAR(100),
@@ -45,7 +33,6 @@ CREATE TABLE locations
     UNIQUE KEY uk_location_lat_lng (latitude, longitude)
 );
 
--- Bảng công ty (Company)
 CREATE TABLE companies
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -70,20 +57,15 @@ CREATE TABLE companies
     CONSTRAINT fk_companies_location FOREIGN KEY (location_id) REFERENCES locations (id)
 );
 
--- =================================================================================
--- CANDIDATE & RESUME TABLES
--- =================================================================================
-
--- Bảng hồ sơ ứng viên (CandidateProfile)
 CREATE TABLE candidate_profiles
 (
     id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id             BIGINT       NOT NULL UNIQUE,
-    full_name           VARCHAR(100) NOT NULL,
+    full_name           VARCHAR(100) NULL,
     avatar_url          VARCHAR(512),
-    headline            VARCHAR(255) NOT NULL,
-    experience_level    VARCHAR(255) NOT NULL,
-    education_level     VARCHAR(255) NOT NULL,
+    headline            VARCHAR(255) NULL,
+    experience_level    VARCHAR(255) NULL,
+    education_level     VARCHAR(255) NULL,
     personal_website    VARCHAR(512),
     nationality         VARCHAR(255),
     date_of_birth       DATE,
@@ -92,14 +74,13 @@ CREATE TABLE candidate_profiles
     biography           VARCHAR(255),
     phone               VARCHAR(20) UNIQUE,
     is_public           BOOLEAN      NOT NULL,
-    location_id         BIGINT       NOT NULL,
+    location_id         BIGINT       NULL,
     created_at          DATETIME(6)  NOT NULL,
     updated_at          DATETIME(6)  NOT NULL,
     CONSTRAINT fk_candidateprofiles_user FOREIGN KEY (user_id) REFERENCES users (id),
     CONSTRAINT fk_candidateprofiles_location FOREIGN KEY (location_id) REFERENCES locations (id)
 );
 
--- Bảng CV/Resume
 CREATE TABLE resumes
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -112,11 +93,6 @@ CREATE TABLE resumes
     CONSTRAINT fk_resumes_user FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
--- =================================================================================
--- JOB, CATEGORY, TAG & APPLICATION TABLES
--- =================================================================================
-
--- Bảng danh mục công việc (JobCategory)
 CREATE TABLE job_categories
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -125,14 +101,12 @@ CREATE TABLE job_categories
     updated_at         DATETIME(6)  NOT NULL
 );
 
--- Bảng thẻ (Tag)
 CREATE TABLE tags
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
     name               VARCHAR(100) NOT NULL UNIQUE
 );
 
--- Bảng công việc (Job)
 CREATE TABLE jobs
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -160,7 +134,6 @@ CREATE TABLE jobs
     CONSTRAINT fk_jobs_location FOREIGN KEY (location_id) REFERENCES locations (id)
 );
 
--- Bảng quan hệ Công việc - Danh mục (job_jobcategories)
 CREATE TABLE job_jobcategories
 (
     job_id             BIGINT NOT NULL,
@@ -170,7 +143,6 @@ CREATE TABLE job_jobcategories
     CONSTRAINT fk_jobjobcategories_category FOREIGN KEY (category_id) REFERENCES job_categories (id) ON DELETE CASCADE
 );
 
--- Bảng quan hệ Công việc - Thẻ (job_tags)
 CREATE TABLE job_tags
 (
     job_id             BIGINT NOT NULL,
@@ -180,7 +152,6 @@ CREATE TABLE job_tags
     CONSTRAINT fk_jobtags_tag FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE
 );
 
--- Bảng cột trạng thái ứng tuyển (ApplicationStatusColumn)
 CREATE TABLE application_status_columns
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -192,7 +163,6 @@ CREATE TABLE application_status_columns
     CONSTRAINT fk_appstatuscols_company FOREIGN KEY (company_id) REFERENCES companies (id)
 );
 
--- Bảng đơn ứng tuyển (Application)
 CREATE TABLE applications
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -211,11 +181,6 @@ CREATE TABLE applications
     UNIQUE KEY uk_application_candidate_job (candidate_id, job_id)
 );
 
--- =================================================================================
--- INTERACTION TABLES (Saved Jobs, Followed Companies)
--- =================================================================================
-
--- Bảng công việc đã lưu (SavedJob)
 CREATE TABLE saved_jobs
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -228,7 +193,6 @@ CREATE TABLE saved_jobs
     UNIQUE KEY uk_savedjob_candidate_job (candidate_id, job_id)
 );
 
--- Bảng theo dõi công ty (CandidateCompany)
 CREATE TABLE candidate_companies
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -242,11 +206,6 @@ CREATE TABLE candidate_companies
     UNIQUE KEY uk_candidate_company (candidate_id, company_id)
 );
 
--- =================================================================================
--- BLOG & CONTENT TABLES
--- =================================================================================
-
--- Bảng danh mục Blog (BlogCategory)
 CREATE TABLE blog_categories
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -255,7 +214,6 @@ CREATE TABLE blog_categories
     updated_at         DATETIME(6)  NOT NULL
 );
 
--- Bảng bài viết (Blog)
 CREATE TABLE blogs
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -271,7 +229,6 @@ CREATE TABLE blogs
     CONSTRAINT fk_blogs_user FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
--- Bảng quan hệ Bài viết - Danh mục (blog_blogcategories)
 CREATE TABLE blog_blogcategories
 (
     blog_id            BIGINT NOT NULL,
@@ -281,7 +238,6 @@ CREATE TABLE blog_blogcategories
     CONSTRAINT fk_blogblogcategories_category FOREIGN KEY (blogcategory_id) REFERENCES blog_categories (id) ON DELETE CASCADE
 );
 
--- Bảng quan hệ Bài viết - Thẻ (blog_tags)
 CREATE TABLE blog_tags
 (
     blog_id            BIGINT NOT NULL,
@@ -291,7 +247,6 @@ CREATE TABLE blog_tags
     CONSTRAINT fk_blogtags_tag FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE
 );
 
--- Bảng bình luận (Comment) - Polymorphic
 CREATE TABLE comments
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -306,11 +261,6 @@ CREATE TABLE comments
     CONSTRAINT fk_comments_parent FOREIGN KEY (parent_id) REFERENCES comments (id)
 );
 
--- =================================================================================
--- MISCELLANEOUS TABLES
--- =================================================================================
-
--- Bảng liên kết mạng xã hội (SocialLink) - Polymorphic
 CREATE TABLE social_links
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -323,11 +273,8 @@ CREATE TABLE social_links
     INDEX idx_social_links_polymorphic (linkable_type, linkable_id)
 );
 
--- =================================================================================
--- INITIAL DATA SEEDING
--- =================================================================================
-
 INSERT INTO roles (name, description, created_at, updated_at)
 VALUES ('ADMIN', 'Quản trị viên hệ thống', NOW(), NOW()),
        ('EMPLOYER', 'Nhà tuyển dụng', NOW(), NOW()),
        ('CANDIDATE', 'Ứng viên', NOW(), NOW());
+
