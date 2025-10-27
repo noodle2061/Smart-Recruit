@@ -23,6 +23,7 @@ import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.service.CandidateProfileService;
 
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -37,7 +38,7 @@ public class CandidateProfileController {
     
     @PreAuthorize("hasRole('CANDIDATE')")
     @PatchMapping("basic-info")
-    public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateBasicInfo(@RequestBody CandidateBasicInfoRequest request,
+    public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateBasicInfo(@Valid @RequestBody CandidateBasicInfoRequest request,
                                 @AuthenticationPrincipal User user) {
         CandidateProfileResponse entity = candidateProfileService.updateProfile(request, user);
         
@@ -51,7 +52,7 @@ public class CandidateProfileController {
 
     @PreAuthorize("hasRole('CANDIDATE')")
     @PatchMapping("info-detail")
-    public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateInfoDetail(@RequestBody CandidateProfileDetailRequest request,
+    public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateInfoDetail(@Valid @RequestBody CandidateProfileDetailRequest request,
                                 @AuthenticationPrincipal User user) {
         
         CandidateProfileResponse entity = candidateProfileService.updateProfile(request, user);
@@ -66,7 +67,7 @@ public class CandidateProfileController {
 
     @PreAuthorize("hasRole('CANDIDATE')")
     @PatchMapping("social-links")
-    public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateSocialLinks(@RequestBody List<SocialLinkDTO> socialLinks,
+    public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateSocialLinks(@Valid @RequestBody List<SocialLinkDTO> socialLinks,
                                                                                     @AuthenticationPrincipal User user) {
         CandidateProfileResponse entity = candidateProfileService.updateProfile(socialLinks, user);
         
@@ -80,7 +81,7 @@ public class CandidateProfileController {
 
     @PreAuthorize("hasRole('CANDIDATE')")
     @PatchMapping("contact-info")
-    public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateContactInfo(@RequestBody CandidateContactInfoRequest request,
+    public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateContactInfo(@Valid @RequestBody CandidateContactInfoRequest request,
                                                                                     @AuthenticationPrincipal User user) {
         CandidateProfileResponse entity = candidateProfileService.updateProfile(request, user);
         

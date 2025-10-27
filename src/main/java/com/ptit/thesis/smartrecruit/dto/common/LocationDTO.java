@@ -1,6 +1,8 @@
 package com.ptit.thesis.smartrecruit.dto.common;
 
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -17,8 +19,8 @@ public class LocationDTO {
     String commune;
 
     @NotNull(message = "Latitude is mandatory")
-    Float latitude;
+    BigDecimal latitude;
 
     @NotNull(message = "Longitude is mandatory")
-    Float longitude;
+    BigDecimal longitude;
 }
