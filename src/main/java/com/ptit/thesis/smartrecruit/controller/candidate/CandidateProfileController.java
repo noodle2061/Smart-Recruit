@@ -23,6 +23,7 @@ import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.service.CandidateProfileService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ import lombok.experimental.FieldDefaults;
 @RequestMapping("/api/candidate/profile")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@Tag(name="CandidateProfileController", description="Quản lý thông tin Candidate")
 public class CandidateProfileController {
 
     CandidateProfileService candidateProfileService;

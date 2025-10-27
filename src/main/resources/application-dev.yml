@@ -50,12 +50,8 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
-  default-produces-media-type: application/json
-  info:
-    title: SmartRecruit API
-    description: "API Document for project"
-    version: ${project.version}
-  show-actuator: true
+    persist-authorization: true
+    tags-sorter: alpha
 
 firebase:
   service-account-path: "classpath:firebase-service-account.json"

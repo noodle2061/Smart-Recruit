@@ -14,6 +14,7 @@ import com.ptit.thesis.smartrecruit.dto.response.JobDetailResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.service.JobService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @RequestMapping("/api/employer")
+@Tag(name="JobController", description="Quản lý công việc")
 public class JobController {
 
     JobService jobService;
