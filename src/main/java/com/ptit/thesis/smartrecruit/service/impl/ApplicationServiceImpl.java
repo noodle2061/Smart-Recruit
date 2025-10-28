@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ptit.thesis.smartrecruit.dto.response.ResumeResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Resume;
 import com.ptit.thesis.smartrecruit.entity.User;
@@ -33,7 +34,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void uploadResume(MultipartFile file, String title, User user) {
+    public ResumeResponse uploadResume(MultipartFile file, String title, User user) {
         log.info("Saving resume for candidate with username {}", user.getUsername());
         CandidateProfile candidateProfile = candidateProfileRepository.findByUser(user)
                 .orElseThrow(
@@ -48,7 +49,15 @@ public class ApplicationServiceImpl implements ApplicationService {
             resume.setTitle(title);
             resume.setCandidate(candidateProfile);
             
-            resumeRepository.save(resume);
+            Resume savedResume = resumeRepository.save(resume);
+
+            ResumeResponse resumeResponse = ResumeResponse.builder()
+                    .id(savedResume.getId())
+                    .title(savedResume.getTitle())
+                    .size(savedResume.getSize())
+                    .build();
+
+            return resumeResponse;
         } catch (IOException e) {
             throw new S3ErrorException("Error uploading resume to the S3: " + e.getMessage());
         } catch (Exception e) {

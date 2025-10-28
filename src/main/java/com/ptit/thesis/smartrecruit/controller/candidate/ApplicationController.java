@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
+import com.ptit.thesis.smartrecruit.dto.response.ResumeResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.service.ApplicationService;
 
@@ -27,10 +29,16 @@ public class ApplicationController {
     
     @PreAuthorize("hasRole('CANDIDATE')")
     @PostMapping(value = "/resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateResume(@RequestPart("resume") MultipartFile resumeFile,
+    public ResponseEntity<ApiResponse<ResumeResponse>> updateResume(@RequestPart("resume") MultipartFile resumeFile,
                                             @RequestPart("title") String title,
                                            @AuthenticationPrincipal User user) {
-        applicationService.uploadResume(resumeFile, title, user);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+        ResumeResponse resume = applicationService.uploadResume(resumeFile, title, user);
+
+        ApiResponse<ResumeResponse> response = ApiResponse.<ResumeResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Resume uploaded successfully")
+                .data(resume)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
