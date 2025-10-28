@@ -34,7 +34,7 @@ public class SwaggerConfig {
                         .name("Frontend")))
                 .externalDocs(new ExternalDocumentation()
                         .description("Database Diagram")
-                .url("https://www.dbdiagram.io/d/SmartRecruitment-68c29a31841b2935a6fd951a"))
+                        .url("https://www.dbdiagram.io/d/SmartRecruitment-68c29a31841b2935a6fd951a"))
                 .addServersItem(new Server()
                         .url("http://localhost:8080")
                         .description("localhost"))
@@ -44,14 +44,14 @@ public class SwaggerConfig {
                                 .scheme("bearer")
                                 .bearerFormat("JWT")))
                 .security(List.of(new SecurityRequirement()
-                        .addList("bearerAuth")));
+                        .addList("bearer")));
     }
 
-        @Bean
-        public GroupedOpenApi groupedOpenApi() {
-                return GroupedOpenApi.builder()
-                                .group("api-version")
-                                .packagesToScan("com.ptit.thesis.smartrecruit.controller")
-                                .build();
-        }
+    @Bean
+    public GroupedOpenApi groupedOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("api-version")
+                .packagesToScan("com.ptit.thesis.smartrecruit.controller")
+                .build();
+    }
 }
