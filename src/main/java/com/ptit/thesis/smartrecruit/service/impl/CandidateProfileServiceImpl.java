@@ -3,7 +3,6 @@ package com.ptit.thesis.smartrecruit.service.impl;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +13,7 @@ import com.ptit.thesis.smartrecruit.dto.request.CandidateProfileDetailRequest;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Location;
+import com.ptit.thesis.smartrecruit.entity.Resume;
 import com.ptit.thesis.smartrecruit.entity.SocialLink;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.LinkableType;
@@ -23,6 +23,7 @@ import com.ptit.thesis.smartrecruit.mapper.LocationMapper;
 import com.ptit.thesis.smartrecruit.mapper.SocialLinkMapper;
 import com.ptit.thesis.smartrecruit.repository.CandidateProfileRepository;
 import com.ptit.thesis.smartrecruit.repository.LocationRepository;
+import com.ptit.thesis.smartrecruit.repository.ResumeRepository;
 import com.ptit.thesis.smartrecruit.repository.SocialLinkRepository;
 import com.ptit.thesis.smartrecruit.repository.UserRepository;
 import com.ptit.thesis.smartrecruit.service.CandidateProfileService;
@@ -33,16 +34,19 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@Slf4j
 public class CandidateProfileServiceImpl implements CandidateProfileService {
 
     CandidateProfileRepository candidateProfileRepository;
     SocialLinkRepository socialLinkRepository;
     UserRepository userRepository;
     LocationRepository locationRepository;
+    ResumeRepository resumeRepository;
 
     SocialLinkMapper socialLinkMapper;
     CandidateProfileMapper candidateProfileMapper;
@@ -142,6 +146,35 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         }
     }
 
+    @Override
+    @Transactional
+    public void uploadResume(MultipartFile file, String title, User user) {
+        log.info("Saving resume for candidate with username {}", user.getUsername());
+        CandidateProfile candidateProfile = candidateProfileRepository.findByUser(user)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Candidate profile not found for user: " + user.getId()));
+
+        String newResumeKey = null;
+        try {
+            newResumeKey = s3Service.uploadFile(file, "candidate/resume/");
+            Resume resume = new Resume();
+            resume.setStorageKey(newResumeKey);
+            resume.setSize((file.getSize() / (1024.0f * 1024.0f)));
+            resume.setTitle(title);
+            resume.setCandidate(candidateProfile);
+            
+            resumeRepository.save(resume);
+        } catch (IOException e) {
+            throw new S3ErrorException("Error uploading resume to the S3: " + e.getMessage());
+        } catch (Exception e) {
+            if (newResumeKey != null) {
+                s3Service.deleteFileByKey(newResumeKey);
+            }
+            log.error("Error uploading resume to the database: {}", e.getMessage());
+            throw new S3ErrorException("Error uploading resume to the database: " + e.getMessage());
+        }
+    }
+
     /**
      * Cập nhật trường email, avatar url sau khi mapper
      * 
@@ -165,4 +198,6 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
 
         return dto;
     }
+
+    
 }

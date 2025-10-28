@@ -84,13 +84,13 @@ CREATE TABLE candidate_profiles
 CREATE TABLE resumes
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id            BIGINT       NOT NULL,
+    candidate_id            BIGINT       NOT NULL,
     title              VARCHAR(255) NOT NULL,
     storage_key        VARCHAR(512) NOT NULL,
     size               FLOAT        NOT NULL,
     created_at         DATETIME(6)  NOT NULL,
     updated_at         DATETIME(6)  NOT NULL,
-    CONSTRAINT fk_resumes_user FOREIGN KEY (user_id) REFERENCES users (id)
+    CONSTRAINT fk_resumes_candidate FOREIGN KEY (candidate_id) REFERENCES candidate_profiles (id)
 );
 
 CREATE TABLE job_categories
