@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 import com.ptit.thesis.smartrecruit.dto.common.SocialLinkDTO;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateBasicInfoRequest;
@@ -39,7 +41,7 @@ public class CandidateProfileController {
     CandidateProfileService candidateProfileService;
     
     @PreAuthorize("hasRole('CANDIDATE')")
-    @PatchMapping("basic-info")
+    @PatchMapping("/basic-info")
     public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateBasicInfo(@Valid @RequestBody CandidateBasicInfoRequest request,
                                 @AuthenticationPrincipal User user) {
         CandidateProfileResponse entity = candidateProfileService.updateProfile(request, user);
@@ -53,7 +55,7 @@ public class CandidateProfileController {
     }
 
     @PreAuthorize("hasRole('CANDIDATE')")
-    @PatchMapping("info-detail")
+    @PatchMapping("/info-detail")
     public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateInfoDetail(@Valid @RequestBody CandidateProfileDetailRequest request,
                                 @AuthenticationPrincipal User user) {
         
@@ -68,7 +70,7 @@ public class CandidateProfileController {
     }
 
     @PreAuthorize("hasRole('CANDIDATE')")
-    @PatchMapping("social-links")
+    @PatchMapping("/social-links")
     public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateSocialLinks(@Valid @RequestBody List<SocialLinkDTO> socialLinks,
                                                                                     @AuthenticationPrincipal User user) {
         CandidateProfileResponse entity = candidateProfileService.updateProfile(socialLinks, user);
@@ -82,7 +84,7 @@ public class CandidateProfileController {
     }
 
     @PreAuthorize("hasRole('CANDIDATE')")
-    @PatchMapping("contact-info")
+    @PatchMapping("/contact-info")
     public ResponseEntity<ApiResponse<CandidateProfileResponse>> updateContactInfo(@Valid @RequestBody CandidateContactInfoRequest request,
                                                                                     @AuthenticationPrincipal User user) {
         CandidateProfileResponse entity = candidateProfileService.updateProfile(request, user);
@@ -96,10 +98,19 @@ public class CandidateProfileController {
     }
 
     @PreAuthorize("hasRole('CANDIDATE')")
-    @PostMapping("avatar")
+    @PostMapping("/avatar")
     public ResponseEntity<?> updateAvatar(@RequestParam("avatar") MultipartFile avatarFile,
                                            @AuthenticationPrincipal User user) {
         candidateProfileService.uploadAvatar(avatarFile, user);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+    }
+
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @PostMapping(value = "/resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateResume(@RequestPart("resume") MultipartFile resumeFile,
+                                            @RequestPart("title") String title,
+                                           @AuthenticationPrincipal User user) {
+        candidateProfileService.uploadResume(resumeFile, title, user);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
 }

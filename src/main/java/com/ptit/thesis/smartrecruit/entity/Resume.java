@@ -16,8 +16,8 @@ import java.util.Set;
 public class Resume extends BaseEntity {
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    User user;
+    @JoinColumn(name = "candidate_id", nullable = false)
+    CandidateProfile candidate;
 
     @Column(nullable = false)
     String title;

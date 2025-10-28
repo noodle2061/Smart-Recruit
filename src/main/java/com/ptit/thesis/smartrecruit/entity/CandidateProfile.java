@@ -68,6 +68,9 @@ public class CandidateProfile extends BaseEntity{
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<SavedJob> savedJobs;
 
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<Resume> resumes;
+
     @PrePersist
     public void prePersist() {
         if (isPublic == null) {
