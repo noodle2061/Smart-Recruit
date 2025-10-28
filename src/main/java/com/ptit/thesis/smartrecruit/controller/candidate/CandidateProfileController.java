@@ -104,13 +104,4 @@ public class CandidateProfileController {
         candidateProfileService.uploadAvatar(avatarFile, user);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
-
-    @PreAuthorize("hasRole('CANDIDATE')")
-    @PostMapping(value = "/resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateResume(@RequestPart("resume") MultipartFile resumeFile,
-                                            @RequestPart("title") String title,
-                                           @AuthenticationPrincipal User user) {
-        candidateProfileService.uploadResume(resumeFile, title, user);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
-    }
 }
