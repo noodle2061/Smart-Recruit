@@ -35,6 +35,14 @@ public class JobController {
 
     JobService jobService;
     
+    @PreAuthorize("hasRole('EMPLOYER')")
+    @GetMapping("jobs/accessible")
+    public String getMethodName(@RequestParam String param) {
+        return new String();
+    }
+    
+
+    @PreAuthorize("hasRole('EMPLOYER')")
     @PostMapping("/job")
     public ResponseEntity<ApiResponse<JobDetailResponse>> createJob(@Valid @RequestBody PostJobRequest job,
                                     @AuthenticationPrincipal User user) {
