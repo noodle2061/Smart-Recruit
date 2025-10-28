@@ -1,17 +1,25 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ptit.thesis.smartrecruit.dto.request.CompanyProfileRequest;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyProfileResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CompanySetupMetadata;
 import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.SocialLink;
 import com.ptit.thesis.smartrecruit.entity.User;
+import com.ptit.thesis.smartrecruit.enums.CompanyTeamSize;
+import com.ptit.thesis.smartrecruit.enums.IndustryType;
 import com.ptit.thesis.smartrecruit.enums.LinkableType;
+import com.ptit.thesis.smartrecruit.enums.OrganizationType;
+import com.ptit.thesis.smartrecruit.enums.PlatformName;
 import com.ptit.thesis.smartrecruit.exception.InvalidFieldException;
 import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
 import com.ptit.thesis.smartrecruit.mapper.CompanyMapper;
@@ -121,5 +129,25 @@ public class CompanyServiceImpl implements CompanyService {
         if (socialLinks != null && socialLinks.size() > 0) {
             socialLinkRepository.saveAll(socialLinks);
         }
+    }
+
+    @Override
+    public CompanySetupMetadata getCompanySetupMetadata() {
+        Map<String, String> organizationTypes = Arrays.stream(OrganizationType.values())
+                        .collect(Collectors.toMap(OrganizationType::name, OrganizationType::getDisplayValue));
+        Map<String, String> industryTypes = Arrays.stream(IndustryType.values())
+                        .collect(Collectors.toMap(IndustryType::name, IndustryType::getDisplayValue));
+        Map<String, String> teamSizes = Arrays.stream(CompanyTeamSize.values())
+                        .collect(Collectors.toMap(CompanyTeamSize::name, CompanyTeamSize::getDisplayValue));
+        Map<String, String> platformNames = Arrays.stream(PlatformName.values())
+                        .collect(Collectors.toMap(p -> p.name(), p -> p.getDisplayName()));
+
+        CompanySetupMetadata metadata = CompanySetupMetadata.builder()
+                        .organizationTypes(organizationTypes)
+                        .industryTypes(industryTypes)
+                        .teamSizes(teamSizes)
+                        .platformNames(platformNames)
+                        .build();
+        return metadata;
     }
 }
