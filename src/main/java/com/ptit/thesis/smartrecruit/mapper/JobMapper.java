@@ -71,12 +71,12 @@ public abstract class JobMapper {
 
 
         // tag
-        List<Tag> tags = tagRepository.findAllById(dto.getTagIds());
-        if (tags.size() != dto.getTagIds().size()) {
-            throw new InvalidFieldException("Lack of tags. Please reload the page. (this situation happen because admin delete some tags)");
-        }
-        Set<Tag> tagSet = new HashSet<>(tags);
-        job.setTags(tagSet);
+        // List<Tag> tags = tagRepository.findAllById(dto.getTagIds());
+        // if (tags.size() != dto.getTagIds().size()) {
+        //     throw new InvalidFieldException("Lack of tags. Please reload the page. (this situation happen because admin delete some tags)");
+        // }
+        // Set<Tag> tagSet = new HashSet<>(tags);
+        // job.setTags(tagSet);
 
         // category
         List<JobCategory> categories = jobCategoryRepository.findAllById(dto.getCategoryIds());

@@ -39,6 +39,5 @@ public class JobDetailResponse {
     String slug;
     Boolean isFeatured;
     LocalDateTime postedAt;
-    List<TagDTO> tags;
     List<JobCategoryDTO> jobCategories;
 }

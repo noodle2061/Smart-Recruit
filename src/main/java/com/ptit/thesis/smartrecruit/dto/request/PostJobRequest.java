@@ -62,8 +62,5 @@ public class PostJobRequest {
     @FutureOrPresent(message = "Expiration date must be in the present or future")
     LocalDate expirationDate;
 
-    // Optional fields
-    List<Long> tagIds;
-
     List<Long> categoryIds;
 }
