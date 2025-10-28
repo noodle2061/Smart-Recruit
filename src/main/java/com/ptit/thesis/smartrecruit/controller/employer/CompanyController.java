@@ -16,6 +16,7 @@ import com.google.firebase.database.annotations.NotNull;
 import com.ptit.thesis.smartrecruit.dto.request.CompanyProfileRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyProfileResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CompanySetupMetadata;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.service.CompanyService;
 
@@ -25,6 +26,8 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -66,4 +69,17 @@ public class CompanyController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
+    @PreAuthorize("hasRole('EMPLOYER')")
+    @GetMapping("/metadata")
+    public ResponseEntity<ApiResponse<CompanySetupMetadata>> getCompanySetupMetadata() {
+        
+        CompanySetupMetadata metadata = companyService.getCompanySetupMetadata();
+
+        ApiResponse<CompanySetupMetadata> response = ApiResponse.<CompanySetupMetadata>builder()
+            .status(HttpStatus.OK.value())
+            .message("Get company setup metadata successfully")
+            .data(metadata)
+            .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
