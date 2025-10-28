@@ -146,35 +146,6 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         }
     }
 
-    @Override
-    @Transactional
-    public void uploadResume(MultipartFile file, String title, User user) {
-        log.info("Saving resume for candidate with username {}", user.getUsername());
-        CandidateProfile candidateProfile = candidateProfileRepository.findByUser(user)
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Candidate profile not found for user: " + user.getId()));
-
-        String newResumeKey = null;
-        try {
-            newResumeKey = s3Service.uploadFile(file, "candidate/resume/");
-            Resume resume = new Resume();
-            resume.setStorageKey(newResumeKey);
-            resume.setSize((file.getSize() / (1024.0f * 1024.0f)));
-            resume.setTitle(title);
-            resume.setCandidate(candidateProfile);
-            
-            resumeRepository.save(resume);
-        } catch (IOException e) {
-            throw new S3ErrorException("Error uploading resume to the S3: " + e.getMessage());
-        } catch (Exception e) {
-            if (newResumeKey != null) {
-                s3Service.deleteFileByKey(newResumeKey);
-            }
-            log.error("Error uploading resume to the database: {}", e.getMessage());
-            throw new S3ErrorException("Error uploading resume to the database: " + e.getMessage());
-        }
-    }
-
     /**
      * Cập nhật trường email, avatar url sau khi mapper
      * 

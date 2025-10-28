@@ -17,5 +17,4 @@ public interface CandidateProfileService {
     CandidateProfileResponse updateProfile(List<SocialLinkDTO> socialLinks, User user);
     CandidateProfileResponse updateProfile(CandidateContactInfoRequest request, User user);
     void uploadAvatar(MultipartFile file, User user);
-    void uploadResume(MultipartFile file, String title, User user);
 }
