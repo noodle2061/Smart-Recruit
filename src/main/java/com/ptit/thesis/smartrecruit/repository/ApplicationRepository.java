@@ -9,5 +9,5 @@ import com.ptit.thesis.smartrecruit.entity.Resume;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
-    boolean exexistsByJobAndResume(Job job, Resume resume);
+    boolean existsByJobAndResume(Job job, Resume resume);
 }
