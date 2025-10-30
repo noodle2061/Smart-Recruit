@@ -203,7 +203,7 @@ CREATE TABLE candidate_companies
     updated_at         DATETIME(6) NOT NULL,
     CONSTRAINT fk_candidatecompanies_candidate FOREIGN KEY (candidate_id) REFERENCES candidate_profiles (id),
     CONSTRAINT fk_candidatecompanies_company FOREIGN KEY (company_id) REFERENCES companies (id),
-    UNIQUE KEY uk_candidate_company (candidate_id, company_id)
+    UNIQUE KEY uk_candidate_company_type (candidate_id, company_id, type)
 );
 
 CREATE TABLE blog_categories
@@ -277,4 +277,3 @@ INSERT INTO roles (name, description, created_at, updated_at)
 VALUES ('ADMIN', 'Quản trị viên hệ thống', NOW(), NOW()),
        ('EMPLOYER', 'Nhà tuyển dụng', NOW(), NOW()),
        ('CANDIDATE', 'Ứng viên', NOW(), NOW());
-

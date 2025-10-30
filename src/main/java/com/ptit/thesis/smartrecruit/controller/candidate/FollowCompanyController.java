@@ -1,8 +1,7 @@
-package com.ptit.thesis.smartrecruit.controller.employer;
+package com.ptit.thesis.smartrecruit.controller.candidate;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,39 +20,38 @@ import lombok.experimental.FieldDefaults;
 
 
 @RestController
-@RequestMapping("/api/employer/saved-candidates")
+@RequestMapping("/api/candidate/save-company")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-@Tag(name = "Saved Candidate Controller", description = "Company lưu candidate")
-public class SavedCandidateController {
-
-    CandidateCompanyFollowService savedCandidateService;
+@Tag(name = "Follow company Controller", description = "Candidate theo dõi company")
+public class FollowCompanyController {
     
-    @PreAuthorize("hasRole('EMPLOYER')")
-    @PostMapping("/{candidateId}")
-    public ResponseEntity<ApiResponse<?>> saveCandidate(@PathVariable Long candidateId,
-                                                        @AuthenticationPrincipal User user) {
+    CandidateCompanyFollowService candidateCompanyFollowService;
+
+    @PostMapping("/{companyId}")
+    public ResponseEntity<ApiResponse<?>> followCompany(@PathVariable Long companyId,
+                                 @AuthenticationPrincipal User user) {
         
-        savedCandidateService.companySaveCandidate(candidateId, user);
+        candidateCompanyFollowService.candidateFollowCompany(companyId, user);
 
         ApiResponse<?> response = ApiResponse.builder()
             .status(HttpStatus.OK.value())
-            .message("Saved candidate successfully")
+            .message("Follow company successfully")
+            .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @DeleteMapping("/{companyId}")
+    public ResponseEntity<ApiResponse<?>> unfollowCompany(@PathVariable Long companyId,
+                                 @AuthenticationPrincipal User user) {
+        
+        candidateCompanyFollowService.candidateUnfollowCompany(companyId, user);
+
+        ApiResponse<?> response = ApiResponse.builder()
+            .status(HttpStatus.OK.value())
+            .message("Unfollow company successfully")
             .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
-    @PreAuthorize("hasRole('EMPLOYER')")
-    @DeleteMapping("/{candidateId}")
-    public ResponseEntity<ApiResponse<?>> unsaveCandidate(@PathVariable Long candidateId,
-                                                          @AuthenticationPrincipal User user) {
-
-        savedCandidateService.companyUnsaveCandidate(candidateId, user);
-
-        ApiResponse<?> response = ApiResponse.builder()
-            .status(HttpStatus.OK.value())
-            .message("Unsaved candidate successfully")
-            .build();
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
 }

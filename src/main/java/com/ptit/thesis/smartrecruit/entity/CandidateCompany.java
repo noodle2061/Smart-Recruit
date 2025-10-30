@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,10 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "candidate_companies")
+@Table(name = "candidate_companies",
+    uniqueConstraints = {
+           @UniqueConstraint(columnNames = {"candidate_id", "company_id", "type"})
+       })
 public class CandidateCompany extends BaseEntity {
 
     @ManyToOne
