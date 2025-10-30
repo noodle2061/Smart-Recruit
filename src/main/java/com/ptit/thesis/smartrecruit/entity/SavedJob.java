@@ -6,7 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "saved_jobs",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "job_id"})
+    uniqueConstraints = @UniqueConstraint(columnNames = {"candidate_id", "job_id"})
 )
 @Getter
 @Setter
