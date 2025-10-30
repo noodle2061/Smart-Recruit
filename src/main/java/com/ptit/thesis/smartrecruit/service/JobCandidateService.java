@@ -5,4 +5,6 @@ import com.ptit.thesis.smartrecruit.entity.User;
 
 public interface JobCandidateService {
     void applyJob(ApplyJobRequest request, User user);
+    void followJob(Long jobId, User user);
+    void unfollowJob(Long jobId, User user);
 }

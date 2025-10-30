@@ -1,5 +1,7 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import com.ptit.thesis.smartrecruit.dto.request.ApplyJobRequest;
@@ -7,13 +9,14 @@ import com.ptit.thesis.smartrecruit.entity.Application;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Job;
 import com.ptit.thesis.smartrecruit.entity.Resume;
+import com.ptit.thesis.smartrecruit.entity.SavedJob;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.JobApplicationStatus;
-import com.ptit.thesis.smartrecruit.exception.InvalidFieldException;
 import com.ptit.thesis.smartrecruit.repository.ApplicationRepository;
 import com.ptit.thesis.smartrecruit.repository.CandidateProfileRepository;
 import com.ptit.thesis.smartrecruit.repository.JobRepository;
 import com.ptit.thesis.smartrecruit.repository.ResumeRepository;
+import com.ptit.thesis.smartrecruit.repository.SavedJobRepository;
 import com.ptit.thesis.smartrecruit.service.JobCandidateService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -33,6 +36,7 @@ public class JobCandidateServiceImpl implements JobCandidateService {
     ResumeRepository resumeRepository;
     ApplicationRepository applicationRepository;
     JobRepository jobRepository;
+    SavedJobRepository savedJobRepository;
 
     @Override
     @Transactional
@@ -65,6 +69,42 @@ public class JobCandidateServiceImpl implements JobCandidateService {
             applicationRepository.save(application);
         }
         log.info("Apply job successfully.");
+    }
+
+    @Override
+    @Transactional
+    public void followJob(Long jobId, User user) {
+        log.info("Following Job: From candidate with ID: " + user.getId() + " to Job with ID " + jobId);
+        CandidateProfile candidate = candidateProfileRepository.findByUser(user)
+                .orElseThrow(() -> new EntityNotFoundException("Can not found candidate with ID: " + user.getId()));
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new EntityNotFoundException("Can not found job with ID: " + jobId));
+
+        Optional<SavedJob> savedJobOpt = savedJobRepository.findByCandidateAndJob(candidate, job);
+
+        if (savedJobOpt.isEmpty()) {
+            SavedJob savedJob = new SavedJob();
+            savedJob.setCandidate(candidate);
+            savedJob.setJob(job);
+            savedJobRepository.save(savedJob);
+            log.info("Following Job successfully.");
+        } else {
+            log.warn("Candidate with ID: " + user.getId() + " is already following Job with ID: " + jobId);
+        }
+        
+        
+    }
+
+    @Override
+    @Transactional
+    public void unfollowJob(Long jobId, User user) {
+        log.info("Unfollowing Job: From candidate with ID: " + user.getId() + " to Job with ID " + jobId);
+        CandidateProfile candidate = candidateProfileRepository.findByUser(user)
+                .orElseThrow(() -> new EntityNotFoundException("Can not found candidate with ID: " + user.getId()));
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new EntityNotFoundException("Can not found job with ID: " + jobId));
+        savedJobRepository.deleteByCandidateAndJob(candidate, job);
+        log.info("Unfollowing Job successfully.");
     }
     
 }
