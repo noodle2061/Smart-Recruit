@@ -32,4 +32,6 @@ public class CompanyProfileResponse {
     LocationDTO location;
     String email;
     String phone;
+
+    Boolean isFavorite;
 }

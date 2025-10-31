@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Tag(name="CompanyController", description="Quản lý công ty")
-public class CompanyController {
+public class CompanyProfileController {
     
     CompanyService companyService;
     
