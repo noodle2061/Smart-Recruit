@@ -1,5 +1,6 @@
 package com.ptit.thesis.smartrecruit.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,5 @@ import com.ptit.thesis.smartrecruit.entity.Resume;
 @Repository
 public interface ResumeRepository extends JpaRepository<Resume, Long> {
     Optional<Resume> findByIdAndCandidate(Long id, CandidateProfile candidate);
+    List<Resume> findAllByCandidate(CandidateProfile candidate);
 }

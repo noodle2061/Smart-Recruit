@@ -17,4 +17,5 @@ public class ResumeResponse {
     Long id;
     String title;
     Float size;
+    String url;
 }

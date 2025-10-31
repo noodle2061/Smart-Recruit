@@ -1,6 +1,7 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,11 +52,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             
             Resume savedResume = resumeRepository.save(resume);
 
-            ResumeResponse resumeResponse = ResumeResponse.builder()
-                    .id(savedResume.getId())
-                    .title(savedResume.getTitle())
-                    .size(savedResume.getSize())
-                    .build();
+            ResumeResponse resumeResponse = toDTO(savedResume);
 
             return resumeResponse;
         } catch (IOException e) {
@@ -67,5 +64,21 @@ public class ApplicationServiceImpl implements ApplicationService {
             log.error("Error uploading resume to the database: {}", e.getMessage());
             throw new S3ErrorException("Error uploading resume to the database: " + e.getMessage());
         }
+    }
+
+    @Override
+    public List<ResumeResponse> getAllCandidateResumes(User user) {
+        CandidateProfile candidateProfile = candidateProfileRepository.findByUser(user)
+                .orElseThrow(() -> new EntityNotFoundException("Candidate profile not found for user: " + user.getId()));
+        return resumeRepository.findAllByCandidate(candidateProfile).stream().map(resume -> toDTO(resume)).toList();
+    }
+
+    public ResumeResponse toDTO(Resume resume) {
+        return ResumeResponse.builder()
+                .id(resume.getId())
+                .title(resume.getTitle())
+                .size(resume.getSize())
+                .url(s3Service.generatePresignedUrl(resume.getStorageKey()))
+                .build();
     }
 }
