@@ -24,7 +24,7 @@ import lombok.experimental.FieldDefaults;
 
 
 @RestController
-@RequestMapping("/candidate/jobs")
+@RequestMapping("api/candidate/jobs")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Tag(name = "Job Candidate", description = "Quản lý các thao tác với jobs của ứng viên")
