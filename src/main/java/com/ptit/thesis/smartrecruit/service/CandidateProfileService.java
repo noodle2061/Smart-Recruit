@@ -24,4 +24,5 @@ public interface CandidateProfileService {
     CandidateProfileResponse updateProfile(CandidateContactInfoRequest request, User user);
     void uploadAvatar(MultipartFile file, User user);
     Page<CandidatePageResponse> getAllCandidates(Pageable pageable, String keyword, String location, String category, ExperienceLevel experienceLevel, List<EducationLevel> educationLevels, Gender gender);
+    CandidateProfileResponse getCandidateDetail(Long candidateId);
 }
