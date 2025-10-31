@@ -9,15 +9,16 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidatePageResponse;
-import com.ptit.thesis.smartrecruit.entity.User;
+import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
 import com.ptit.thesis.smartrecruit.enums.Gender;
@@ -60,4 +61,16 @@ public class CandidateController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
     
+    @PreAuthorize("hasRole('EMPLOYER')")
+    @GetMapping("/candidate-detail/{candidateId}")
+    public ResponseEntity<ApiResponse<CandidateProfileResponse>> searchCandidateDetail(@PathVariable Long candidateId) {
+
+        CandidateProfileResponse response = candidateProfileService.getCandidateDetail(candidateId);
+        ApiResponse<CandidateProfileResponse> apiResponse = ApiResponse.<CandidateProfileResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Get candidate detail successfully")
+                .data(response)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
 }

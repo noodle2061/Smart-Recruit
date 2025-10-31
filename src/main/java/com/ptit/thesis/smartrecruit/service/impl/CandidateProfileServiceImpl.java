@@ -18,7 +18,6 @@ import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.Location;
-import com.ptit.thesis.smartrecruit.entity.Resume;
 import com.ptit.thesis.smartrecruit.entity.SocialLink;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
@@ -179,6 +178,16 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
      * @param user
      * @return dto
      */
+    
+
+    @Override
+    @Transactional
+    public CandidateProfileResponse getCandidateDetail(Long candidateId) {
+        CandidateProfile candidateProfile = candidateProfileRepository.findById(candidateId)
+                .orElseThrow(() -> new EntityNotFoundException("Candidate profile not found for id: " + candidateId));
+        return toResponseDTO(candidateProfile, candidateProfile.getUser());
+    }
+
     public CandidateProfileResponse toResponseDTO(CandidateProfile savedCandidateProfile, User user) {
         CandidateProfileResponse dto = candidateProfileMapper.toDTO(savedCandidateProfile);
 
@@ -195,8 +204,6 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
 
         return dto;
     }
-
-    
 
     
 }
