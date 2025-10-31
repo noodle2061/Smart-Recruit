@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,11 +25,15 @@ import com.ptit.thesis.smartrecruit.exception.InvalidFieldException;
 import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
 import com.ptit.thesis.smartrecruit.mapper.CompanyMapper;
 import com.ptit.thesis.smartrecruit.mapper.SocialLinkMapper;
+import com.ptit.thesis.smartrecruit.repository.CandidateCompanyRepository;
+import com.ptit.thesis.smartrecruit.repository.CandidateProfileRepository;
 import com.ptit.thesis.smartrecruit.repository.CompanyRepository;
 import com.ptit.thesis.smartrecruit.repository.SocialLinkRepository;
 import com.ptit.thesis.smartrecruit.service.CompanyService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
+import com.ptit.thesis.smartrecruit.utils.Constraint;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +50,8 @@ public class CompanyServiceImpl implements CompanyService {
     CompanyRepository companyRepository;
     CompanyMapper companyMapper;
     SocialLinkRepository socialLinkRepository;
+    CandidateCompanyRepository candidateCompanyRepository;
+
     SocialLinkMapper socialLinkMapper;
 
     @Override
@@ -149,5 +156,22 @@ public class CompanyServiceImpl implements CompanyService {
                         .platformNames(platformNames)
                         .build();
         return metadata;
+    }
+
+    @Override
+    @Transactional
+    public CompanyProfileResponse getCompanyInfo(Long companyId) {
+        Company company = companyRepository.findById(companyId)
+                                .orElseThrow(() -> new EntityNotFoundException("Company not found"));
+        CompanyProfileResponse response = companyMapper.toCompanyProfileResponse(company);
+        Object principle = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principle != null) {
+            User user = (User) principle;
+            String roleUpper = user.getRole().getName();
+            if (roleUpper.equals(Constraint.CANDIDATE_ROLE)) {
+                response.setIsFavorite(candidateCompanyRepository.existsByCandidateAndCompany(user.getCandidateProfile(), company));
+            }
+        }
+        return response;
     }
 }

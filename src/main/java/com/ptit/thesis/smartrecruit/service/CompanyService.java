@@ -10,4 +10,5 @@ import com.ptit.thesis.smartrecruit.entity.User;
 public interface CompanyService {
     public CompanyProfileResponse createOrUpdateCompanyProfile(User user, CompanyProfileRequest request, MultipartFile logo, MultipartFile banner);
     public CompanySetupMetadata getCompanySetupMetadata();
+    public CompanyProfileResponse getCompanyInfo(Long companyId);
 }
