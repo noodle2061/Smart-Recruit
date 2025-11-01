@@ -39,4 +39,8 @@ public class StringUtil {
     public static String generateSlug(String name) {
         return name.strip().toLowerCase().replaceAll("\\s+", "-") + "-" + System.currentTimeMillis();
     }
+
+    public static boolean hasText(String text) {
+        return text != null && text.trim().length() > 0;
+    }
 }
