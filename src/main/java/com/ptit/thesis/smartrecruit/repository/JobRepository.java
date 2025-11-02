@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.ptit.thesis.smartrecruit.entity.Job;
 
 @Repository
-public interface JobRepository extends JpaRepository<Job, Long> {
+public interface JobRepository extends JpaRepository<Job, Long>, JobRepositoryCustom {
     
     @Query("SELECT j FROM Job j WHERE j.id = :id AND j.status = 'ACTIVE'")
     Optional<Job> findAvailableJobById(Long id);
