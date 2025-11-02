@@ -8,4 +8,5 @@ import com.ptit.thesis.smartrecruit.entity.User;
 public interface JobService {
     public JobDetailResponse createAJob(PostJobRequest job, User user);
     public PostJobMetadataResponse getPostJobMetadata();
+    public JobDetailResponse getJobDetail(String slug);
 }

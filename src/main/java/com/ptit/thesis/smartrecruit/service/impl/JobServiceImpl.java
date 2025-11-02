@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.ptit.thesis.smartrecruit.dto.common.CompanyBasicInfoDTO;
 import com.ptit.thesis.smartrecruit.dto.request.PostJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.JobDetailResponse;
 import com.ptit.thesis.smartrecruit.dto.response.PostJobMetadataResponse;
+import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.Job;
 import com.ptit.thesis.smartrecruit.entity.JobCategory;
@@ -19,11 +21,15 @@ import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.SalaryType;
 import com.ptit.thesis.smartrecruit.exception.ResourceNotFoundException;
 import com.ptit.thesis.smartrecruit.mapper.JobMapper;
+import com.ptit.thesis.smartrecruit.repository.ApplicationRepository;
+import com.ptit.thesis.smartrecruit.repository.CandidateProfileRepository;
 import com.ptit.thesis.smartrecruit.repository.CompanyRepository;
 import com.ptit.thesis.smartrecruit.repository.JobCategoryRepository;
 import com.ptit.thesis.smartrecruit.repository.JobRepository;
+import com.ptit.thesis.smartrecruit.repository.SavedJobRepository;
 import com.ptit.thesis.smartrecruit.service.JobService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
+import com.ptit.thesis.smartrecruit.utils.Constraint;
 
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -41,6 +47,9 @@ public class JobServiceImpl implements JobService {
     JobRepository jobRepository;
     CompanyRepository companyRepository;
     JobCategoryRepository jobCategoryRepository;
+    SavedJobRepository savedJobRepository;
+    ApplicationRepository applicationRepository;
+    CandidateProfileRepository candidateProfileRepository;
 
     S3Service s3Service;
 
@@ -65,14 +74,7 @@ public class JobServiceImpl implements JobService {
 
         log.info("Create new job for company {} successfully.", company.getName());
 
-        JobDetailResponse jobDetailResponse = jobMapper.toJobDetailResponse(savedJob);
-
-        // company basic info
-        CompanyBasicInfoDTO companyBasicInfoDTO = companyRepository.findBasicInfoByUser(user);
-
-        String avatarStorageKey = companyBasicInfoDTO.getLogoUrl();
-        companyBasicInfoDTO.setLogoUrl(s3Service.generatePresignedUrl(avatarStorageKey));
-        jobDetailResponse.setCompany(companyBasicInfoDTO);
+        JobDetailResponse jobDetailResponse = getJobDetailResponseFromEntity(savedJob, company);
 
         return jobDetailResponse;
     }
@@ -101,6 +103,43 @@ public class JobServiceImpl implements JobService {
                 .jobTypes(jobTypes)
                 .jobCategories(jobCategories)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public JobDetailResponse getJobDetail(String slug) {
+        Job job = jobRepository.findAvailableJobWithCompany(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found for slug: " + slug));
+        Company ownerCompany = job.getCompany();
+
+        JobDetailResponse response = getJobDetailResponseFromEntity(job, ownerCompany);
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User) { // không phải khách vãng lai
+            User user = (User) principal;
+            String roleUpper = user.getRole().getName();
+            if (roleUpper.equals(Constraint.CANDIDATE_ROLE)) { // role candidate thì set thêm trường isFavorite và isApplied
+                CandidateProfile candidate = candidateProfileRepository.findByUser(user)
+                        .orElseThrow(() -> new ResourceNotFoundException("Candidate not found for user: " + user.getId()));
+                response.setIsFavorite(savedJobRepository.existsByCandidateAndJob(candidate, job));
+                response.setIsApplied(applicationRepository.existsByCandidateAndJob(candidate, job));
+            }
+        }
+
+        return response;
+    }
+
+    public JobDetailResponse getJobDetailResponseFromEntity(Job job, Company company) {
+            JobDetailResponse jobDetailResponse = jobMapper.toJobDetailResponse(job);
+
+        // company basic info
+        CompanyBasicInfoDTO companyBasicInfoDTO = companyRepository.findBasicInfoById(company.getId());
+
+        String avatarStorageKey = companyBasicInfoDTO.getLogoUrl();
+        companyBasicInfoDTO.setLogoUrl(s3Service.generatePresignedUrl(avatarStorageKey));
+        jobDetailResponse.setCompany(companyBasicInfoDTO);
+
+        return jobDetailResponse;
     }
 
 }
