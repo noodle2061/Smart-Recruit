@@ -25,5 +25,10 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpec
     "FROM Company c WHERE c.user = :user")
     CompanyBasicInfoDTO findBasicInfoByUser(User user);
 
+    @Query("SELECT new com.ptit.thesis.smartrecruit.dto.common.CompanyBasicInfoDTO(" +
+    "c.name, c.logoUrl, c.foundedIn, c.website, c.email, c.phone, c.teamSize)" +
+    "FROM Company c WHERE c.id = :id")
+    CompanyBasicInfoDTO findBasicInfoById(Long id);
+
     boolean existsByUser(User user);
 }

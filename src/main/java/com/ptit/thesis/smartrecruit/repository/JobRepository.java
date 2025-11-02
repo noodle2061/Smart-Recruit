@@ -13,4 +13,10 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     
     @Query("SELECT j FROM Job j WHERE j.id = :id AND j.status = 'ACTIVE'")
     Optional<Job> findAvailableJobById(Long id);
+
+    @Query("SELECT j FROM Job j " +
+    "LEFT JOIN FETCH j.company c " + 
+    "LEFT JOIN FETCH c.location l " +
+    "WHERE j.slug = :slug AND j.status = 'ACTIVE'")
+    Optional<Job> findAvailableJobWithCompany(String slug);
 }

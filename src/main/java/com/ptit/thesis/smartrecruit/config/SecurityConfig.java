@@ -42,7 +42,9 @@ public class SecurityConfig {
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/api-docs/**",
-                    "/api/public/**"
+                    "/api/public/**",
+                    "/api/job/**",
+                    "/api/jobs"
                 ).permitAll()
 
                 // Các endpoint yêu cầu vai trò cụ thể

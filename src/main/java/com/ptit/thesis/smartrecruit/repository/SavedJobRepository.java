@@ -13,4 +13,5 @@ import com.ptit.thesis.smartrecruit.entity.SavedJob;
 public interface SavedJobRepository extends JpaRepository<SavedJob, Long> {
     Optional<SavedJob> findByCandidateAndJob(CandidateProfile candidate, Job job);
     void deleteByCandidateAndJob(CandidateProfile candidate, Job job);
+    boolean existsByCandidateAndJob(CandidateProfile candidate, Job job);
 }   
