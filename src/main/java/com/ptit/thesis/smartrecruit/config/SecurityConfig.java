@@ -2,6 +2,7 @@ package com.ptit.thesis.smartrecruit.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -43,6 +44,7 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/api-docs/**"
                 ).permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/blogs/**").permitAll()
 
                 // Các endpoint yêu cầu vai trò cụ thể
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

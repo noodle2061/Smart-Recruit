@@ -1,8 +1,13 @@
 package com.ptit.thesis.smartrecruit.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import io.swagger.v3.oas.annotations.Hidden;
+
 public enum BlogStatus {
-    FULLTIME("FullTime"),
-    PARTTIME("PartTime");
+    DRAFT("DRAFT"),
+    PUBLISHED("PUBLISHED"),
+    REQUESTED("REQUESTED");
 
     private final String displayValue;
 
@@ -10,12 +15,9 @@ public enum BlogStatus {
         this.displayValue = displayValue;
     }
 
+    @Hidden
     public String getDisplayValue() {
         return this.displayValue;
     }
 
-    @Override
-    public String toString() {
-        return this.displayValue;        
-    }
 }

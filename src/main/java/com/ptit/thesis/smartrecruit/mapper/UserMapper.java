@@ -2,10 +2,8 @@ package com.ptit.thesis.smartrecruit.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
-import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.User;
 
 @Mapper(componentModel = "spring")
