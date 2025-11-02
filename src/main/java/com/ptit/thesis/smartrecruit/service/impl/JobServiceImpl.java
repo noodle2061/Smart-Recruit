@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.ptit.thesis.smartrecruit.dto.common.CompanyBasicInfoDTO;
 import com.ptit.thesis.smartrecruit.dto.request.PostJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.JobDetailResponse;
+import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.PostJobMetadataResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Company;
@@ -18,6 +21,8 @@ import com.ptit.thesis.smartrecruit.entity.Job;
 import com.ptit.thesis.smartrecruit.entity.JobCategory;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
+import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
+import com.ptit.thesis.smartrecruit.enums.JobType;
 import com.ptit.thesis.smartrecruit.enums.SalaryType;
 import com.ptit.thesis.smartrecruit.exception.ResourceNotFoundException;
 import com.ptit.thesis.smartrecruit.mapper.JobMapper;
@@ -129,8 +134,29 @@ public class JobServiceImpl implements JobService {
         return response;
     }
 
+    @Override
+    public Slice<JobPageResponse> searchJobsWithFilter(Pageable pageable, 
+                                                String keyword, 
+                                                String location, 
+                                                String category, 
+                                                Long minSalary, 
+                                                Long maxSalary, 
+                                                ExperienceLevel experienceLevel, 
+                                                List<EducationLevel> educationLevels, 
+                                                List<JobType> jobTypes) {
+        
+        Slice<JobPageResponse> jobSlice = jobRepository.searchJobsWithFilter(
+                keyword, location, category, minSalary, maxSalary, 
+                experienceLevel, educationLevels, jobTypes, pageable
+                ).map(job -> {
+                        job.setCompanyLogoUrl(s3Service.generatePresignedUrl(job.getCompanyLogoUrl()));
+                        return job;
+                });
+        return jobSlice;
+    }
+
     public JobDetailResponse getJobDetailResponseFromEntity(Job job, Company company) {
-            JobDetailResponse jobDetailResponse = jobMapper.toJobDetailResponse(job);
+        JobDetailResponse jobDetailResponse = jobMapper.toJobDetailResponse(job);
 
         // company basic info
         CompanyBasicInfoDTO companyBasicInfoDTO = companyRepository.findBasicInfoById(company.getId());
