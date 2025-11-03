@@ -205,5 +205,18 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         return dto;
     }
 
+    @Override
+    public CandidateProfileResponse getOwnerCandidateProfile() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User) {
+            User user = (User) principal;
+            CandidateProfile candidateProfile = candidateProfileRepository.findByUser(user)
+                    .orElseThrow(() -> new EntityNotFoundException("Candidate profile not found for user: " + user.getId()));
+            return toResponseDTO(candidateProfile, user);
+        } else {
+            throw new EntityNotFoundException("User not found");
+        }
+    }
+
     
 }
