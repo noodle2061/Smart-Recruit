@@ -9,4 +9,5 @@ import com.ptit.thesis.smartrecruit.entity.Tag;
 
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Long> {
+    List<Tag> findAllByNameIn(List<String> names);
 }

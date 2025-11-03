@@ -6,9 +6,9 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class TagDTO {
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class BlogCategoryDTO {
     Long id;
     String name;
 }

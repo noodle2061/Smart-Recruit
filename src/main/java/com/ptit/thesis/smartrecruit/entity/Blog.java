@@ -1,6 +1,6 @@
 package com.ptit.thesis.smartrecruit.entity;
 
-import com.ptit.thesis.smartrecruit.enums.PostStatus;
+import com.ptit.thesis.smartrecruit.enums.BlogStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -23,6 +23,9 @@ public class Blog extends BaseEntity {
     @Column(nullable = false)
     String title;
 
+    @Column(nullable = true)
+    String thumbnail;
+
     @Column(nullable = false, unique = true, length = 150)
     String slug;
 
@@ -34,7 +37,7 @@ public class Blog extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    PostStatus status;
+    BlogStatus status;
 
     @Column(nullable = false)
     LocalDateTime publishedAt;
@@ -54,7 +57,7 @@ public class Blog extends BaseEntity {
     @PrePersist
     public void prePersist() {
         if (status == null) {
-                status = PostStatus.DRAFT;
+                status = BlogStatus.DRAFT;
         }
 
         if (publishedAt == null) {
