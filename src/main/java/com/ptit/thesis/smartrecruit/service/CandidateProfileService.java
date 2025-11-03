@@ -25,4 +25,5 @@ public interface CandidateProfileService {
     void uploadAvatar(MultipartFile file, User user);
     Page<CandidatePageResponse> getAllCandidates(Pageable pageable, String keyword, String location, String category, ExperienceLevel experienceLevel, List<EducationLevel> educationLevels, Gender gender);
     CandidateProfileResponse getCandidateDetail(Long candidateId);
+    CandidateProfileResponse getOwnerCandidateProfile();
 }

@@ -30,6 +30,8 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 @RestController
 @RequestMapping("/api/candidate/profile")
@@ -39,6 +41,19 @@ import lombok.experimental.FieldDefaults;
 public class CandidateProfileController {
 
     CandidateProfileService candidateProfileService;
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<CandidateProfileResponse>> getCandidateProfile() {
+        CandidateProfileResponse profile = candidateProfileService.getOwnerCandidateProfile();
+
+        ApiResponse<CandidateProfileResponse> response = ApiResponse.<CandidateProfileResponse>builder()
+            .status(HttpStatus.OK.value())
+            .message("Get candidate profile successfully")
+            .data(profile)
+            .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
     
     @PreAuthorize("hasRole('CANDIDATE')")
     @PatchMapping("/basic-info")
