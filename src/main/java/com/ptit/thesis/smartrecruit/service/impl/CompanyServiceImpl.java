@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -202,5 +201,12 @@ public class CompanyServiceImpl implements CompanyService {
         });
 
         return companyResponses;
+    }
+
+    @Override
+    public CompanyProfileResponse getCompanyDetails(User user) {
+        Company company = companyRepository.findByUser(user)
+                        .orElseThrow(() -> new EntityNotFoundException("Company not found for user: " + user.getId()));
+        return getCompanyDetails(company.getId());
     }
 }

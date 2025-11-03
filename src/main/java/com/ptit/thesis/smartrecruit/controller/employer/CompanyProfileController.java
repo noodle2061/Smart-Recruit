@@ -40,9 +40,15 @@ public class CompanyProfileController {
     CompanyService companyService;
     
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse> getCompanyInfo(@AuthenticationPrincipal User user) {
-        // chưa xử lý
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+    public ResponseEntity<ApiResponse<CompanyProfileResponse>> getCompanyInfo(@AuthenticationPrincipal User user) {
+        CompanyProfileResponse company = companyService.getCompanyDetails(user);
+
+        ApiResponse<CompanyProfileResponse> response = ApiResponse.<CompanyProfileResponse>builder()
+            .status(HttpStatus.OK.value())
+            .message("Get company profile successfully")
+            .data(company)
+            .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
 
