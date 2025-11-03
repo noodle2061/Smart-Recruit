@@ -17,5 +17,6 @@ public interface CompanyService {
     public CompanyProfileResponse createOrUpdateCompanyProfile(User user, CompanyProfileRequest request, MultipartFile logo, MultipartFile banner);
     public CompanySetupMetadata getCompanySetupMetadata();
     public CompanyProfileResponse getCompanyDetails(Long companyId);
+    public CompanyProfileResponse getCompanyDetails(User user);
     public Page<CompanyPageResponse> searchCompanies(Pageable pageable, String keyword, String location, OrganizationType organizationType, IndustryType industryType, CompanyTeamSize teamSize, Integer foundedIn);
 }
