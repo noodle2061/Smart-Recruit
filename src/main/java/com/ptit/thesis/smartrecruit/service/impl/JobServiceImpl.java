@@ -1,12 +1,16 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +18,7 @@ import com.ptit.thesis.smartrecruit.dto.common.CompanyBasicInfoDTO;
 import com.ptit.thesis.smartrecruit.dto.request.PostJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.JobDetailResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
+import com.ptit.thesis.smartrecruit.dto.response.MyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.PostJobMetadataResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Company;
@@ -22,6 +27,7 @@ import com.ptit.thesis.smartrecruit.entity.JobCategory;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
+import com.ptit.thesis.smartrecruit.enums.JobStatus;
 import com.ptit.thesis.smartrecruit.enums.JobType;
 import com.ptit.thesis.smartrecruit.enums.SalaryType;
 import com.ptit.thesis.smartrecruit.exception.ResourceNotFoundException;
@@ -34,6 +40,7 @@ import com.ptit.thesis.smartrecruit.repository.JobRepository;
 import com.ptit.thesis.smartrecruit.repository.SavedJobRepository;
 import com.ptit.thesis.smartrecruit.service.JobService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
+import com.ptit.thesis.smartrecruit.specification.EmployerJobSpecification;
 import com.ptit.thesis.smartrecruit.utils.Constraint;
 
 import jakarta.transaction.Transactional;
@@ -166,6 +173,20 @@ public class JobServiceImpl implements JobService {
         jobDetailResponse.setCompany(companyBasicInfoDTO);
 
         return jobDetailResponse;
+    }
+
+    @Override
+    public Page<MyJobPageResponse> getMyJob(Pageable pageable, JobStatus jobStatus) {
+        Company company = companyRepository.findByUser((User)SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+                                                                .orElseThrow(() -> new ResourceNotFoundException("Company not found for user: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal()));
+        Specification<Job> specification = EmployerJobSpecification.getPredicate(jobStatus, company);
+        Page<Job> jobs = jobRepository.findAll(specification, pageable);
+        return jobs.map(job -> {
+            MyJobPageResponse myJobPageResponse = jobMapper.toMyJobPageResponse(job);
+            myJobPageResponse.setDaysRemaining(ChronoUnit.DAYS.between(LocalDate.now(), job.getExpirationDate()));
+            myJobPageResponse.setNumberOfapplications(jobRepository.countAplication(job));
+            return myJobPageResponse;
+        });
     }
 
 }
