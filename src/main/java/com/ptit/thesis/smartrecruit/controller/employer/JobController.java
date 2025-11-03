@@ -1,19 +1,27 @@
 package com.ptit.thesis.smartrecruit.controller.employer;
 
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ptit.thesis.smartrecruit.dto.request.PostJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobDetailResponse;
+import com.ptit.thesis.smartrecruit.dto.response.MyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.PostJobMetadataResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
+import com.ptit.thesis.smartrecruit.enums.JobStatus;
 import com.ptit.thesis.smartrecruit.service.JobService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,8 +29,6 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 
@@ -36,9 +42,18 @@ public class JobController {
     JobService jobService;
     
     @PreAuthorize("hasRole('EMPLOYER')")
-    @GetMapping("jobs/accessible")
-    public String getMethodName(@RequestParam String param) {
-        return new String();
+    @GetMapping("jobs")
+    public ResponseEntity<ApiResponse<Page<MyJobPageResponse>>> getMyJob(
+            @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
+            @RequestParam(required = false) JobStatus jobStatus
+    ) {
+        Page<MyJobPageResponse> myJobPageResponse = jobService.getMyJob(pageable, jobStatus);
+        ApiResponse<Page<MyJobPageResponse>> response = ApiResponse.<Page<MyJobPageResponse>>builder()
+            .status(HttpStatus.OK.value())
+            .message("Get my job successfully")
+            .data(myJobPageResponse)
+            .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
 
