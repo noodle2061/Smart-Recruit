@@ -2,16 +2,21 @@ package com.ptit.thesis.smartrecruit.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.ptit.thesis.smartrecruit.dto.common.CompanyBasicInfoDTO;
+import com.ptit.thesis.smartrecruit.dto.response.CompanyPageResponse;
 import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.User;
 
 @Repository
-public interface CompanyRepository extends JpaRepository<Company, Long> {
+public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpecificationExecutor<Company> {
     Optional<Company> findByUser(User user);
     boolean existsByName(String name);
 
@@ -19,6 +24,11 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     "c.name, c.logoUrl, c.foundedIn, c.website, c.email, c.phone, c.teamSize)" +
     "FROM Company c WHERE c.user = :user")
     CompanyBasicInfoDTO findBasicInfoByUser(User user);
+
+    @Query("SELECT new com.ptit.thesis.smartrecruit.dto.common.CompanyBasicInfoDTO(" +
+    "c.name, c.logoUrl, c.foundedIn, c.website, c.email, c.phone, c.teamSize)" +
+    "FROM Company c WHERE c.id = :id")
+    CompanyBasicInfoDTO findBasicInfoById(Long id);
 
     boolean existsByUser(User user);
 }

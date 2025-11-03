@@ -35,14 +35,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Tag(name="CompanyController", description="Quản lý công ty")
-public class CompanyController {
+public class CompanyProfileController {
     
     CompanyService companyService;
     
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse> getCompanyInfo(@AuthenticationPrincipal User user) {
-        // chưa xử lý
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+    public ResponseEntity<ApiResponse<CompanyProfileResponse>> getCompanyInfo(@AuthenticationPrincipal User user) {
+        CompanyProfileResponse company = companyService.getCompanyDetails(user);
+
+        ApiResponse<CompanyProfileResponse> response = ApiResponse.<CompanyProfileResponse>builder()
+            .status(HttpStatus.OK.value())
+            .message("Get company profile successfully")
+            .data(company)
+            .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
 

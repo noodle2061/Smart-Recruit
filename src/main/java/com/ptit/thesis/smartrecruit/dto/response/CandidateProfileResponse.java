@@ -19,6 +19,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CandidateProfileResponse {
+    Long id;
     String fullName;
     String avatarUrl;
     String headline;

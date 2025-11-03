@@ -1,9 +1,11 @@
 package com.ptit.thesis.smartrecruit.dto.response;
 
+import java.time.LocalDate;
+
+import com.ptit.thesis.smartrecruit.enums.JobStatus;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -12,10 +14,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ResumeResponse {
+public class MyJobPageResponse {
     Long id;
+    String slug;
     String title;
-    Float size;
-    String url;
+    Long daysRemaining;
+    JobStatus status;
+    Long numberOfapplications;
 }

@@ -15,6 +15,8 @@ import com.ptit.thesis.smartrecruit.enums.FollowType;
 public interface CandidateCompanyRepository extends JpaRepository<CandidateCompany, Long> {
     Optional<CandidateCompany> findByCandidateAndCompany(CandidateProfile candidate, Company company);
 
+    Boolean existsByCandidateAndCompany(CandidateProfile candidate, Company company);
+
     @Query("SELECT c FROM CandidateCompany c WHERE c.company.id = :companyId AND c.candidate.id = :candidateId AND c.type = :type")
     Optional<CandidateCompany> findByIdAndType(Long companyId, Long candidateId, FollowType type);
 }

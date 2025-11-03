@@ -3,6 +3,9 @@ package com.ptit.thesis.smartrecruit.service.impl;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,18 +13,23 @@ import com.ptit.thesis.smartrecruit.dto.common.SocialLinkDTO;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateBasicInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateContactInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateProfileDetailRequest;
+import com.ptit.thesis.smartrecruit.dto.response.CandidatePageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
+import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.Location;
-import com.ptit.thesis.smartrecruit.entity.Resume;
 import com.ptit.thesis.smartrecruit.entity.SocialLink;
 import com.ptit.thesis.smartrecruit.entity.User;
+import com.ptit.thesis.smartrecruit.enums.EducationLevel;
+import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
+import com.ptit.thesis.smartrecruit.enums.Gender;
 import com.ptit.thesis.smartrecruit.enums.LinkableType;
 import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
 import com.ptit.thesis.smartrecruit.mapper.CandidateProfileMapper;
 import com.ptit.thesis.smartrecruit.mapper.LocationMapper;
 import com.ptit.thesis.smartrecruit.mapper.SocialLinkMapper;
 import com.ptit.thesis.smartrecruit.repository.CandidateProfileRepository;
+import com.ptit.thesis.smartrecruit.repository.CompanyRepository;
 import com.ptit.thesis.smartrecruit.repository.LocationRepository;
 import com.ptit.thesis.smartrecruit.repository.ResumeRepository;
 import com.ptit.thesis.smartrecruit.repository.SocialLinkRepository;
@@ -47,6 +55,7 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
     UserRepository userRepository;
     LocationRepository locationRepository;
     ResumeRepository resumeRepository;
+    CompanyRepository companyRepository;
 
     SocialLinkMapper socialLinkMapper;
     CandidateProfileMapper candidateProfileMapper;
@@ -146,6 +155,22 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         }
     }
 
+    @Override
+    public Page<CandidatePageResponse> getAllCandidates(Pageable pageable, String keyword, String location,
+            String category, ExperienceLevel experienceLevel, List<EducationLevel> educationLevels, Gender gender) {
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Company company = companyRepository.findByUser(user)
+                            .orElseThrow(() -> new EntityNotFoundException("Company not found for user: " + user.getId()));
+
+        Page<CandidatePageResponse> candidatePageResponses = candidateProfileRepository.searchCandidates(
+                                keyword, location, category, experienceLevel, educationLevels, gender, company.getId(), pageable);
+        return  candidatePageResponses.map(candidatePageResponse -> {
+            candidatePageResponse.setAvatarUrl(s3Service.generatePresignedUrl(candidatePageResponse.getAvatarUrl()));// đổi từ key sang url
+            return candidatePageResponse;
+        });
+    }
+
     /**
      * Cập nhật trường email, avatar url sau khi mapper
      * 
@@ -153,6 +178,16 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
      * @param user
      * @return dto
      */
+    
+
+    @Override
+    @Transactional
+    public CandidateProfileResponse getCandidateDetail(Long candidateId) {
+        CandidateProfile candidateProfile = candidateProfileRepository.findById(candidateId)
+                .orElseThrow(() -> new EntityNotFoundException("Candidate profile not found for id: " + candidateId));
+        return toResponseDTO(candidateProfile, candidateProfile.getUser());
+    }
+
     public CandidateProfileResponse toResponseDTO(CandidateProfile savedCandidateProfile, User user) {
         CandidateProfileResponse dto = candidateProfileMapper.toDTO(savedCandidateProfile);
 
@@ -168,6 +203,19 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         dto.setSocialLinks(socialLinkMapper.toSocialLinkDTOs(socialLinks));
 
         return dto;
+    }
+
+    @Override
+    public CandidateProfileResponse getOwnerCandidateProfile() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User) {
+            User user = (User) principal;
+            CandidateProfile candidateProfile = candidateProfileRepository.findByUser(user)
+                    .orElseThrow(() -> new EntityNotFoundException("Candidate profile not found for user: " + user.getId()));
+            return toResponseDTO(candidateProfile, user);
+        } else {
+            throw new EntityNotFoundException("User not found");
+        }
     }
 
     

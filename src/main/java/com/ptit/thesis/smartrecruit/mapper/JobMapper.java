@@ -14,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ptit.thesis.smartrecruit.dto.request.PostJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.JobDetailResponse;
+import com.ptit.thesis.smartrecruit.dto.response.MyJobPageResponse;
 import com.ptit.thesis.smartrecruit.entity.Job;
 import com.ptit.thesis.smartrecruit.entity.JobCategory;
-import com.ptit.thesis.smartrecruit.entity.Tag;
 import com.ptit.thesis.smartrecruit.enums.JobStatus;
 import com.ptit.thesis.smartrecruit.exception.InvalidFieldException;
 import com.ptit.thesis.smartrecruit.repository.JobCategoryRepository;
@@ -61,6 +61,8 @@ public abstract class JobMapper {
     @Mapping(target = "company", ignore = true)
     @Mapping(target = "jobType", source = "type")
     abstract public JobDetailResponse toJobDetailResponse(Job job);
+
+    abstract public MyJobPageResponse toMyJobPageResponse(Job job);
 
     @AfterMapping
     void updateJobEntity(PostJobRequest dto, @MappingTarget Job job) { // status, isFeatured, postedAt, 

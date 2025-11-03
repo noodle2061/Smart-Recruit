@@ -6,10 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ptit.thesis.smartrecruit.dto.request.CompanyProfileRequest;
+import com.ptit.thesis.smartrecruit.dto.response.CompanyPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyProfileResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanySetupMetadata;
 import com.ptit.thesis.smartrecruit.entity.Company;
@@ -24,11 +28,15 @@ import com.ptit.thesis.smartrecruit.exception.InvalidFieldException;
 import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
 import com.ptit.thesis.smartrecruit.mapper.CompanyMapper;
 import com.ptit.thesis.smartrecruit.mapper.SocialLinkMapper;
+import com.ptit.thesis.smartrecruit.repository.CandidateCompanyRepository;
 import com.ptit.thesis.smartrecruit.repository.CompanyRepository;
+import com.ptit.thesis.smartrecruit.repository.CompanyRepositoryCustom;
 import com.ptit.thesis.smartrecruit.repository.SocialLinkRepository;
 import com.ptit.thesis.smartrecruit.service.CompanyService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
+import com.ptit.thesis.smartrecruit.utils.Constraint;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +53,9 @@ public class CompanyServiceImpl implements CompanyService {
     CompanyRepository companyRepository;
     CompanyMapper companyMapper;
     SocialLinkRepository socialLinkRepository;
+    CandidateCompanyRepository candidateCompanyRepository;
+    CompanyRepositoryCustom companyRepositoryCustom;
+
     SocialLinkMapper socialLinkMapper;
 
     @Override
@@ -149,5 +160,53 @@ public class CompanyServiceImpl implements CompanyService {
                         .platformNames(platformNames)
                         .build();
         return metadata;
+    }
+
+    @Override
+    @Transactional
+    public CompanyProfileResponse getCompanyDetails(Long companyId) {
+        log.info("Getting company details.");
+        Company company = companyRepository.findById(companyId)
+                                .orElseThrow(() -> new EntityNotFoundException("Company not found"));
+        CompanyProfileResponse response = companyMapper.toCompanyProfileResponse(company);
+        Object principle = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principle instanceof User) {
+            log.info("User already login.");
+            User user = (User) principle;
+            String roleUpper = user.getRole().getName();
+            if (roleUpper.equals(Constraint.CANDIDATE_ROLE)) {
+                response.setIsFavorite(candidateCompanyRepository.existsByCandidateAndCompany(user.getCandidateProfile(), company));
+            }
+        } else {
+            log.info("User not login.");
+        }
+        log.info("Getting company details successfully.");
+        return response;
+    }
+
+    @Override
+    public Page<CompanyPageResponse> searchCompanies(Pageable pageable, String keyword, String location,
+            OrganizationType organizationType, IndustryType industryType, CompanyTeamSize teamSize, Integer foundedIn) {
+        
+        Page<CompanyPageResponse> companyResponses = companyRepositoryCustom.searchCompany(
+                        keyword, 
+                        location, 
+                        organizationType, 
+                        industryType, 
+                        teamSize, 
+                        foundedIn, 
+                        pageable).map(companyResponse -> {
+                                companyResponse.setLogoUrl(s3Service.generatePresignedUrl(companyResponse.getLogoUrl()));
+            return companyResponse;
+        });
+
+        return companyResponses;
+    }
+
+    @Override
+    public CompanyProfileResponse getCompanyDetails(User user) {
+        Company company = companyRepository.findByUser(user)
+                        .orElseThrow(() -> new EntityNotFoundException("Company not found for user: " + user.getId()));
+        return getCompanyDetails(company.getId());
     }
 }
