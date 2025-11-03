@@ -22,6 +22,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class JobDetailResponse {
+    Long id;
     CompanyBasicInfoDTO company;
     String title;
     String description;
