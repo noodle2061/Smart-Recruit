@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.ptit.thesis.smartrecruit.dto.request.ApplyJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CandidateFavoriteJobResponse;
 import com.ptit.thesis.smartrecruit.entity.Application;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Job;
@@ -115,7 +116,7 @@ public class JobCandidateServiceImpl implements JobCandidateService {
     }
 
     @Override
-    public Page<AppliedJobResponse> getAppliedJobsForCandidateDashboard(Pageable pageable, String keyword, JobStatus status) {
+    public Page<AppliedJobResponse> getAppliedJobs(Pageable pageable, String keyword, JobStatus status) {
         Page<AppliedJobResponse> appliedJobs = jobRepository.getCandidateAppliedJobs(pageable, keyword, status).map(
             jobResponse -> {
                 jobResponse.setCompanyLogoUrl(s3Service.generatePresignedUrl(jobResponse.getCompanyLogoUrl()));
@@ -124,6 +125,19 @@ public class JobCandidateServiceImpl implements JobCandidateService {
         );
 
         return appliedJobs;
+    }
+
+    @Override
+    public Page<CandidateFavoriteJobResponse> getFavoriteJobs(Pageable pageable, String keyword,
+            JobStatus status) {
+        Page<CandidateFavoriteJobResponse> favoriteJobs = jobRepository.getCandidateFavoriteJobs(pageable, keyword, status).map(
+            jobResponse -> {
+                jobResponse.setCompanyLogoUrl(s3Service.generatePresignedUrl(jobResponse.getCompanyLogoUrl()));
+                return jobResponse;
+            }
+        );
+
+        return favoriteJobs;
     }
     
 }

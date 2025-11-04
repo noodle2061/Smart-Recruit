@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ptit.thesis.smartrecruit.dto.request.ApplyJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CandidateFavoriteJobResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.JobStatus;
 import com.ptit.thesis.smartrecruit.service.JobCandidateService;
@@ -50,9 +51,28 @@ public class JobCandidateController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) JobStatus status
     ) {
-        Page<AppliedJobResponse> entity = jobCandidateService.getAppliedJobsForCandidateDashboard(pageable, keyword, status);
+        Page<AppliedJobResponse> entity = jobCandidateService.getAppliedJobs(pageable, keyword, status);
 
         ApiResponse<Page<AppliedJobResponse>> response = ApiResponse.<Page<AppliedJobResponse>>builder()
+            .status(HttpStatus.OK.value())
+            .message("Get applied jobs successfully")
+            .data(entity)
+            .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @GetMapping("/favorite-jobs")
+    @Operation(summary = "Lấy danh sách các job đã yêu thích/theo dõi trong candidate dashboard")
+    public ResponseEntity<ApiResponse<Page<CandidateFavoriteJobResponse>>> getFavoriteJobs(
+            @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) JobStatus status
+    ) {
+        Page<CandidateFavoriteJobResponse> entity = jobCandidateService.getFavoriteJobs(pageable, keyword, status);
+
+        ApiResponse<Page<CandidateFavoriteJobResponse>> response = ApiResponse.<Page<CandidateFavoriteJobResponse>>builder()
             .status(HttpStatus.OK.value())
             .message("Get applied jobs successfully")
             .data(entity)
@@ -68,6 +88,7 @@ public class JobCandidateController {
      */
     @PreAuthorize("hasRole('CANDIDATE')")
     @PostMapping("/apply")
+    @Operation(summary = "Ứng viên apply một công việc")
     public ResponseEntity<ApiResponse<?>> applyJob(@Valid @RequestBody ApplyJobRequest request,
                                                     @AuthenticationPrincipal User user) {
         
@@ -83,6 +104,7 @@ public class JobCandidateController {
     
     @PreAuthorize("hasRole('CANDIDATE')")
     @PostMapping("/follow/{jobId}")
+    @Operation(summary = "Ứng viên theo dõi một công việc")
     public ResponseEntity<ApiResponse<?>> followJob(@PathVariable Long jobId,
                                                     @AuthenticationPrincipal User user) {
         
@@ -99,6 +121,7 @@ public class JobCandidateController {
     
     @PreAuthorize("hasRole('CANDIDATE')")
     @DeleteMapping("/unfollow/{jobId}")
+    @Operation(summary = "Ứng viên bỏ theo dõi một công việc")
     public ResponseEntity<ApiResponse<?>> unfollowJob(@PathVariable Long jobId,
                                                     @AuthenticationPrincipal User user) {
         
