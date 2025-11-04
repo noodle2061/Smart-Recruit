@@ -11,6 +11,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CandidateFavoriteJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
 import com.ptit.thesis.smartrecruit.entity.QApplication;
@@ -29,6 +30,7 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -249,4 +251,69 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
         return new PageImpl<>(results, pageable, total);
     }
     
+    @Override
+    public Page<CandidateFavoriteJobResponse> getCandidateFavoriteJobs(
+            Pageable pageable, 
+            String keyword,
+            JobStatus status) 
+    {
+        QCompany company = QCompany.company;
+        QJob job = QJob.job;
+        QLocation location = QLocation.location;
+
+        BooleanBuilder predicate = new BooleanBuilder();
+
+        NumberExpression<Long> daysRemaining = Expressions.numberTemplate(
+            Long.class, 
+            "DATEDIFF({0}, {1})", 
+            job.expirationDate,
+            Expressions.currentDate())
+            .as("daysRemaining");
+
+        if (status != null) {
+            predicate.and(job.status.eq(status));
+        }
+        
+        if (StringUtil.hasText(keyword)) {
+            predicate.and(job.title.containsIgnoreCase(keyword)
+                            .or(company.name.containsIgnoreCase(keyword))
+                            .or(location.provinceCity.containsIgnoreCase(keyword))
+            );
+        }
+
+        var query = jpaQueryFactory
+            .select(Projections.constructor(CandidateFavoriteJobResponse.class,
+                job.id,
+                job.slug,
+                job.title,
+                location.provinceCity,
+                company.name,
+                company.logoUrl,
+                job.minSalary,
+                job.maxSalary,
+                job.salaryType,
+                job.type,
+                job.status,
+                daysRemaining
+            ))
+            .from(job)
+            .leftJoin(job.company, company)
+            .leftJoin(job.location, location)
+            .where(predicate)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .distinct();
+
+        List<CandidateFavoriteJobResponse> results = query.fetch();
+
+        Long total = jpaQueryFactory
+            .select(job.id.count())
+            .from(job)
+            .leftJoin(job.company, company)
+            .leftJoin(job.location, location)
+            .where(predicate)
+            .fetchOne();
+        return new PageImpl<>(results, pageable, total);
+    }
+
 }
