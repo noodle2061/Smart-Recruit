@@ -1,8 +1,8 @@
 package com.ptit.thesis.smartrecruit.dto.response;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.ptit.thesis.smartrecruit.enums.JobStatus;
 import com.ptit.thesis.smartrecruit.enums.JobType;
 import com.ptit.thesis.smartrecruit.enums.SalaryType;
@@ -14,20 +14,22 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class AppliedJobResponse {
+public class CompanyJobPageResponse {
     Long id;
     String slug;
     String jobTitle;
-    String provinceCity;
-    String companyName;
-    String companyLogoUrl;
+    JobType jobType;
     BigDecimal minSalary;
     BigDecimal maxSalary;
     SalaryType salaryType;
-    JobType type;
-    JobStatus jobStatus;
-    LocalDateTime appliedDate;
+
+    // Các trường này sẽ chỉ hiển thị cho candidate đã đăng nhập
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    Boolean isFavorite;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    Boolean isApplied;
 }

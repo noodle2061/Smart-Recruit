@@ -45,7 +45,9 @@ public class SecurityConfig {
                     "/api-docs/**",
                     "/api/public/**",
                     "/api/job/**",
-                    "/api/jobs"
+                    "/api/jobs/**",
+                    "/api/company/**",
+                    "/api/companies/**"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/blogs/**").permitAll()
 
