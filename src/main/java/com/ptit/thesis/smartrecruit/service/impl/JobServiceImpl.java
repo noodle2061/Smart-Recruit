@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.ptit.thesis.smartrecruit.dto.common.CompanyBasicInfoDTO;
 import com.ptit.thesis.smartrecruit.dto.request.PostJobRequest;
+import com.ptit.thesis.smartrecruit.dto.response.CompanyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobDetailResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.MyJobPageResponse;
@@ -187,6 +188,35 @@ public class JobServiceImpl implements JobService {
             myJobPageResponse.setNumberOfapplications(jobRepository.countAplication(job));
             return myJobPageResponse;
         });
+    }
+
+    @Override
+    public Page<CompanyJobPageResponse> getJobsByCompany(Long companyId, Pageable pageable) {
+
+        log.info("Getting page of jobs of company with id: " + companyId);
+
+        Long candidateId = null;
+
+        // Kiểm tra xem người dùng đã đăng nhập và có phải là CANDIDATE không
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User) {
+            User user = (User) principal;
+            if (user.getRole().getName().equals(Constraint.CANDIDATE_ROLE)) {
+                // Lấy candidateProfileId
+                CandidateProfile candidate = candidateProfileRepository.findByUser(user).orElse(null);
+                if (candidate != null) {
+                    candidateId = candidate.getId();
+                }
+            }
+        }
+        
+        // Repository custom sẽ xử lý việc candidateId có thể là null
+        Page<CompanyJobPageResponse> jobsPage = jobRepository.findJobsByCompanyId(companyId, candidateId, pageable);
+
+        log.info("Getting successfully job page of company with id " + companyId);
+
+        // Không cần xử lý S3 URL vì DTO này không chứa hình ảnh
+        return jobsPage;
     }
 
 }

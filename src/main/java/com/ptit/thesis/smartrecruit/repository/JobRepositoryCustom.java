@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
 import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CompanyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
@@ -28,4 +29,6 @@ public interface JobRepositoryCustom {
             Pageable pageable, 
             String keyword,
             JobStatus status);
+    
+    public Page<CompanyJobPageResponse> findJobsByCompanyId(Long companyId, Long candidateId, Pageable pageable);
 }

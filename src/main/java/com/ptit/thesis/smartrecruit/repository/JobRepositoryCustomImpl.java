@@ -11,20 +11,26 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CompanyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
 import com.ptit.thesis.smartrecruit.entity.QApplication;
 import com.ptit.thesis.smartrecruit.entity.QCompany;
 import com.ptit.thesis.smartrecruit.entity.QJob;
 import com.ptit.thesis.smartrecruit.entity.QJobCategory;
 import com.ptit.thesis.smartrecruit.entity.QLocation;
+import com.ptit.thesis.smartrecruit.entity.QSavedJob;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
 import com.ptit.thesis.smartrecruit.enums.JobStatus;
 import com.ptit.thesis.smartrecruit.enums.JobType;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.AccessLevel;
@@ -136,13 +142,6 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
         QLocation location = QLocation.location;
         QApplication application = QApplication.application;
 
-        StringExpression salaryExpression = job.minSalary.stringValue()
-            .concat(" - ")
-            .concat(job.maxSalary.stringValue())
-            .concat("/")
-            .concat(job.salaryType.stringValue())
-            .as("salary");
-
         BooleanBuilder predicate = new BooleanBuilder();
 
         if (status != null) {
@@ -164,7 +163,9 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
                 location.provinceCity,
                 company.name,
                 company.logoUrl,
-                salaryExpression,
+                job.minSalary,
+                job.maxSalary,
+                job.salaryType,
                 job.type,
                 job.status,
                 application.createdAt
@@ -186,6 +187,63 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
             .leftJoin(job.company, company)
             .leftJoin(job.location, location)
             .leftJoin(job.jobApplications, application)
+            .where(predicate)
+            .fetchOne();
+        return new PageImpl<>(results, pageable, total);
+    }
+
+    @Override
+    public Page<CompanyJobPageResponse> findJobsByCompanyId(Long companyId, Long candidateId, Pageable pageable) {
+        QJob job = QJob.job;
+        
+        BooleanBuilder predicate = new BooleanBuilder();
+        predicate.and(job.company.id.eq(companyId));
+        predicate.and(job.status.eq(JobStatus.ACTIVE));
+
+        Expression<Boolean> isFollowed = Expressions.nullExpression(Boolean.class);
+        Expression<Boolean> isApplied = Expressions.nullExpression(Boolean.class);
+
+        if (candidateId != null) {
+            QApplication application = QApplication.application;
+            QSavedJob savedJob = QSavedJob.savedJob;
+            isFollowed = new JPAQuery<>()
+                .select(savedJob.id)
+                .from(savedJob)
+                .where(savedJob.candidate.id.eq(candidateId))
+                .where(savedJob.job.id.eq(job.id))
+                .exists();
+
+            isApplied = new JPAQuery<>()
+                .select(application.id)
+                .from(application)
+                .where(application.job.id.eq(job.id))
+                .where(application.candidate.id.eq(candidateId))
+                .exists();
+        }
+
+        var query = jpaQueryFactory
+            .select(Projections.constructor(CompanyJobPageResponse.class,
+                job.id,
+                job.slug,
+                job.title,
+                job.type,
+                job.minSalary,
+                job.maxSalary,
+                job.salaryType,
+                isFollowed,
+                isApplied
+            ))
+            .from(job)
+            .where(predicate)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .distinct();
+
+        List<CompanyJobPageResponse> results = query.fetch();
+
+        Long total = jpaQueryFactory
+            .select(job.id.count())
+            .from(job)
             .where(predicate)
             .fetchOne();
         return new PageImpl<>(results, pageable, total);
