@@ -10,6 +10,7 @@ import com.ptit.thesis.smartrecruit.dto.common.SocialLinkDTO;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateBasicInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateContactInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateProfileDetailRequest;
+import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidatePageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
 import com.ptit.thesis.smartrecruit.entity.User;

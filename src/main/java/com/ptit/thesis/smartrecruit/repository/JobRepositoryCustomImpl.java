@@ -3,12 +3,16 @@ package com.ptit.thesis.smartrecruit.repository;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
+import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
+import com.ptit.thesis.smartrecruit.entity.QApplication;
 import com.ptit.thesis.smartrecruit.entity.QCompany;
 import com.ptit.thesis.smartrecruit.entity.QJob;
 import com.ptit.thesis.smartrecruit.entity.QJobCategory;
@@ -20,6 +24,7 @@ import com.ptit.thesis.smartrecruit.enums.JobType;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.AccessLevel;
@@ -119,6 +124,71 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
         }
 
         return new SliceImpl<>(results, pageable, hasNext);
+    }
+
+    @Override
+    public Page<AppliedJobResponse> getCandidateAppliedJobs(
+                                    Pageable pageable, 
+                                    String keyword,
+                                    JobStatus status) {
+        QCompany company = QCompany.company;
+        QJob job = QJob.job;
+        QLocation location = QLocation.location;
+        QApplication application = QApplication.application;
+
+        StringExpression salaryExpression = job.minSalary.stringValue()
+            .concat(" - ")
+            .concat(job.maxSalary.stringValue())
+            .concat("/")
+            .concat(job.salaryType.stringValue())
+            .as("salary");
+
+        BooleanBuilder predicate = new BooleanBuilder();
+
+        if (status != null) {
+            predicate.and(job.status.eq(status));
+        }
+        
+        if (StringUtil.hasText(keyword)) {
+            predicate.and(job.title.containsIgnoreCase(keyword)
+                            .or(company.name.containsIgnoreCase(keyword))
+                            .or(location.provinceCity.containsIgnoreCase(keyword))
+            );
+        }
+
+        var query = jpaQueryFactory
+            .select(Projections.constructor(AppliedJobResponse.class,
+                job.id,
+                job.slug,
+                job.title,
+                location.provinceCity,
+                company.name,
+                company.logoUrl,
+                salaryExpression,
+                job.type,
+                job.status,
+                application.createdAt
+            ))
+            .from(job)
+            .leftJoin(job.company, company)
+            .leftJoin(job.location, location)
+            .leftJoin(job.jobApplications, application)
+            .where(predicate)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .distinct();
+
+        List<AppliedJobResponse> results = query.fetch();
+
+        Long total = jpaQueryFactory
+            .select(job.id.count())
+            .from(job)
+            .leftJoin(job.company, company)
+            .leftJoin(job.location, location)
+            .leftJoin(job.jobApplications, application)
+            .where(predicate)
+            .fetchOne();
+        return new PageImpl<>(results, pageable, total);
     }
     
 }

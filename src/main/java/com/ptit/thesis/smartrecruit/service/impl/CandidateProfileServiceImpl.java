@@ -13,6 +13,7 @@ import com.ptit.thesis.smartrecruit.dto.common.SocialLinkDTO;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateBasicInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateContactInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateProfileDetailRequest;
+import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidatePageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
@@ -30,6 +31,7 @@ import com.ptit.thesis.smartrecruit.mapper.LocationMapper;
 import com.ptit.thesis.smartrecruit.mapper.SocialLinkMapper;
 import com.ptit.thesis.smartrecruit.repository.CandidateProfileRepository;
 import com.ptit.thesis.smartrecruit.repository.CompanyRepository;
+import com.ptit.thesis.smartrecruit.repository.JobRepository;
 import com.ptit.thesis.smartrecruit.repository.LocationRepository;
 import com.ptit.thesis.smartrecruit.repository.ResumeRepository;
 import com.ptit.thesis.smartrecruit.repository.SocialLinkRepository;
@@ -56,6 +58,7 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
     LocationRepository locationRepository;
     ResumeRepository resumeRepository;
     CompanyRepository companyRepository;
+    JobRepository jobRepository;
 
     SocialLinkMapper socialLinkMapper;
     CandidateProfileMapper candidateProfileMapper;
@@ -216,7 +219,5 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         } else {
             throw new EntityNotFoundException("User not found");
         }
-    }
-
-    
+    }    
 }

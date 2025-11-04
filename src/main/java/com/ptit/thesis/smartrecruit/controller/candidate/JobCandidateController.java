@@ -1,21 +1,30 @@
 package com.ptit.thesis.smartrecruit.controller.candidate;
 
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ptit.thesis.smartrecruit.dto.request.ApplyJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
+import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
+import com.ptit.thesis.smartrecruit.enums.JobStatus;
 import com.ptit.thesis.smartrecruit.service.JobCandidateService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -31,6 +40,26 @@ import lombok.experimental.FieldDefaults;
 public class JobCandidateController {
 
     JobCandidateService jobCandidateService;
+
+
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @GetMapping("/applied-jobs")
+    @Operation(summary = "Lấy danh sách các job đã applied trong candidate dashboard")
+    public ResponseEntity<ApiResponse<Page<AppliedJobResponse>>> getAppliedJobs(
+            @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) JobStatus status
+    ) {
+        Page<AppliedJobResponse> entity = jobCandidateService.getAppliedJobsForCandidateDashboard(pageable, keyword, status);
+
+        ApiResponse<Page<AppliedJobResponse>> response = ApiResponse.<Page<AppliedJobResponse>>builder()
+            .status(HttpStatus.OK.value())
+            .message("Get applied jobs successfully")
+            .data(entity)
+            .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
     
     /**
      * Apply for a job

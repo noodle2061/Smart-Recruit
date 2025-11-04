@@ -2,9 +2,12 @@ package com.ptit.thesis.smartrecruit.service.impl;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.ptit.thesis.smartrecruit.dto.request.ApplyJobRequest;
+import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
 import com.ptit.thesis.smartrecruit.entity.Application;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Job;
@@ -12,12 +15,14 @@ import com.ptit.thesis.smartrecruit.entity.Resume;
 import com.ptit.thesis.smartrecruit.entity.SavedJob;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.JobApplicationStatus;
+import com.ptit.thesis.smartrecruit.enums.JobStatus;
 import com.ptit.thesis.smartrecruit.repository.ApplicationRepository;
 import com.ptit.thesis.smartrecruit.repository.CandidateProfileRepository;
 import com.ptit.thesis.smartrecruit.repository.JobRepository;
 import com.ptit.thesis.smartrecruit.repository.ResumeRepository;
 import com.ptit.thesis.smartrecruit.repository.SavedJobRepository;
 import com.ptit.thesis.smartrecruit.service.JobCandidateService;
+import com.ptit.thesis.smartrecruit.service.S3Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -37,6 +42,8 @@ public class JobCandidateServiceImpl implements JobCandidateService {
     ApplicationRepository applicationRepository;
     JobRepository jobRepository;
     SavedJobRepository savedJobRepository;
+
+    S3Service s3Service;
 
     @Override
     @Transactional
@@ -105,6 +112,18 @@ public class JobCandidateServiceImpl implements JobCandidateService {
                 .orElseThrow(() -> new EntityNotFoundException("Can not found job with ID: " + jobId));
         savedJobRepository.deleteByCandidateAndJob(candidate, job);
         log.info("Unfollowing Job successfully.");
+    }
+
+    @Override
+    public Page<AppliedJobResponse> getAppliedJobsForCandidateDashboard(Pageable pageable, String keyword, JobStatus status) {
+        Page<AppliedJobResponse> appliedJobs = jobRepository.getCandidateAppliedJobs(pageable, keyword, status).map(
+            jobResponse -> {
+                jobResponse.setCompanyLogoUrl(s3Service.generatePresignedUrl(jobResponse.getCompanyLogoUrl()));
+                return jobResponse;
+            }
+        );
+
+        return appliedJobs;
     }
     
 }
