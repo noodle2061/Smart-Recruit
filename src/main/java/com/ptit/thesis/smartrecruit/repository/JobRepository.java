@@ -1,5 +1,7 @@
 package com.ptit.thesis.smartrecruit.repository;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -11,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.ptit.thesis.smartrecruit.entity.Job;
+import com.ptit.thesis.smartrecruit.enums.JobStatus;
 
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long>, JobRepositoryCustom {
@@ -29,4 +32,6 @@ public interface JobRepository extends JpaRepository<Job, Long>, JobRepositoryCu
 
     @Query("SELECT COUNT(a) FROM Application a WHERE a.job = :job")
     Long countAplication(Job job);
+
+    List<Job> findByStatusAndExpirationDateBefore(JobStatus status, LocalDate expirationDate);
 }
