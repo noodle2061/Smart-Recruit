@@ -2,6 +2,7 @@ package com.ptit.thesis.smartrecruit.controller.candidate;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import com.ptit.thesis.smartrecruit.dto.request.BlogRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateBlogRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.BlogResponse;
+import com.ptit.thesis.smartrecruit.dto.response.PageResponse;
 import com.ptit.thesis.smartrecruit.service.BlogService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,17 +43,17 @@ public class BlogController {
     @Operation(summary = "Lấy danh sách bài viết")
     @SecurityRequirements()
     public ResponseEntity<ApiResponse<List<BlogResponse>>> listWithPage(
-        @RequestParam(required = false) String keyword,
-        @RequestParam(defaultValue = "0") Integer page,
-        @RequestParam(defaultValue = "10") Integer size,
-        @RequestParam(required = false, defaultValue="-id") String sort
-    ) {
-        List<BlogResponse> blogs = this.blogService.listWithPage(keyword, sort, page, size);
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(required = false, defaultValue = "+createdAt") String sort) {
+        Page<BlogResponse> blogs = this.blogService.listWithPage(keyword, sort, page, limit);
 
         ApiResponse<List<BlogResponse>> response = ApiResponse.<List<BlogResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Get all blog successful")
-                .data(blogs)
+                .data(blogs.getContent())
+                .meta(PageResponse.of(blogs))
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -61,6 +63,20 @@ public class BlogController {
     @SecurityRequirements()
     public ResponseEntity<ApiResponse<BlogResponse>> getOne(@PathVariable Long id) {
         BlogResponse blog = this.blogService.getOne(id);
+
+        ApiResponse<BlogResponse> response = ApiResponse.<BlogResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Get detail blog successful")
+                .data(blog)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/slug/{slug}")
+    @Operation(summary = "Lấy chi tiết bài viết qua slug")
+    @SecurityRequirements()
+    public ResponseEntity<ApiResponse<BlogResponse>> getOneBySlug(@PathVariable String slug) {
+        BlogResponse blog = this.blogService.getOneBySlug(slug);
 
         ApiResponse<BlogResponse> response = ApiResponse.<BlogResponse>builder()
                 .status(HttpStatus.OK.value())

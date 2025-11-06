@@ -1,17 +1,17 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
 import java.io.IOException;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+
 import com.ptit.thesis.smartrecruit.dto.request.BlogRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateBlogRequest;
 import com.ptit.thesis.smartrecruit.dto.response.BlogResponse;
@@ -80,6 +80,16 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
+    public BlogResponse getOneBySlug(String slug) {
+        Blog blog = this.blogRepository.findBySlug(slug).orElse(null);
+        if (blog == null) {
+            throw new IllegalStateException("blog with slug " + slug + " not found");
+        }
+
+        return blogMapper.toBlogResponse(blog);
+    }
+
+    @Override
     public BlogResponse update(Long id, UpdateBlogRequest updateBlogRequest) {
         Blog blog = this.blogRepository.findById(id).orElse(null);
         if (blog == null)
@@ -117,7 +127,7 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
-    public List<BlogResponse> listWithPage(String keyword, String sort, Integer page, Integer size) {
+    public Page<BlogResponse> listWithPage(String keyword, String sort, Integer page, Integer limit) {
         Specification<Blog> spec = Specification.unrestricted();
         if (keyword != null && !keyword.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.or(
@@ -130,10 +140,10 @@ public class BlogServiceImpl implements BlogService {
                 sort != null && !sort.isBlank() && sort.charAt(0) == '-' ? Sort.Direction.DESC : Sort.Direction.ASC,
                 sort != null ? sort.substring(1) : "id");
 
-        Pageable pageable = PageRequest.of(page, size, _sort);
+        Pageable pageable = PageRequest.of(page, limit, _sort);
         Page<Blog> blogs = blogRepository.findAll(spec, pageable);
-
-        return blogs.map(blogMapper::toBlogResponse).toList();
+        Page<BlogResponse> pagination = blogs.map(blog -> blogMapper.toBlogResponse(blog));
+        return pagination;
     }
 
 }

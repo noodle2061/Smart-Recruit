@@ -1,6 +1,6 @@
 package com.ptit.thesis.smartrecruit.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 import com.ptit.thesis.smartrecruit.dto.request.BlogRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateBlogRequest;
@@ -13,7 +13,9 @@ public interface BlogService {
 
     public BlogResponse getOne(Long id);
 
-    public List<BlogResponse> listWithPage(String keyword, String sort, Integer page, Integer size);
+    public BlogResponse getOneBySlug(String slug);
+
+    public Page<BlogResponse> listWithPage(String keyword, String sort, Integer page, Integer limit);
 
     public void delete(Long id);
 }
