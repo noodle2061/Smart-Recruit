@@ -1,9 +1,9 @@
 package com.ptit.thesis.smartrecruit.dto.response;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
-import com.ptit.thesis.smartrecruit.dto.common.CompanyBasicInfoDTO;
-import com.ptit.thesis.smartrecruit.dto.common.LocationDTO;
+import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
 import com.ptit.thesis.smartrecruit.enums.JobType;
 import com.ptit.thesis.smartrecruit.enums.SalaryType;
 
@@ -28,4 +28,6 @@ public class JobPageResponse {
     BigDecimal minSalary;
     BigDecimal maxSalary;
     SalaryType salaryType;
+    LocalDate expirationDate;
+    ExperienceLevel experienceLevel;
 }
