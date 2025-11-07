@@ -14,7 +14,8 @@
 	<artifactId>smartrecruit</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>smartrecruit</name>
-	<description>An intelligent recruitment system using AI and automation to streamline hiring processes.</description>
+	<description>An intelligent recruitment system using AI and automation to streamline hiring
+		processes.</description>
 	<url />
 	<licenses>
 		<license />
@@ -102,6 +103,8 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<version>3.5.3</version>
+			<scope>runtime</scope>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
@@ -159,9 +162,9 @@
 		</dependency>
 
 		<dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-jpamodelgen</artifactId>
-        </dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-jpamodelgen</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -172,10 +175,10 @@
 				<configuration>
 					<annotationProcessorPaths>
 						<path>
-                            <groupId>org.hibernate.orm</groupId>
-                            <artifactId>hibernate-jpamodelgen</artifactId>
-                            <version>${hibernate.version}</version>
-                        </path>
+							<groupId>org.hibernate.orm</groupId>
+							<artifactId>hibernate-jpamodelgen</artifactId>
+							<version>${hibernate.version}</version>
+						</path>
 						<path>
 							<groupId>jakarta.persistence</groupId>
 							<artifactId>jakarta.persistence-api</artifactId>

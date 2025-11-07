@@ -47,15 +47,15 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
     JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Slice<JobPageResponse> searchJobsWithFilter(String keyword, 
-                                                        String provinceCity, 
-                                                        String category, 
-                                                        Long minSalary, 
-                                                        Long maxSalary, 
-                                                        ExperienceLevel experienceLevel,
-                                                        List<EducationLevel> educationLevels, 
-                                                        List<JobType> jobTypes,
-                                                        Pageable pageable) {
+    public Slice<JobPageResponse> searchJobsWithFilter(String keyword,
+            String provinceCity,
+            String category,
+            Long minSalary,
+            Long maxSalary,
+            ExperienceLevel experienceLevel,
+            List<EducationLevel> educationLevels,
+            List<JobType> jobTypes,
+            Pageable pageable) {
         // Q object
         QJob job = QJob.job;
         QCompany company = QCompany.company;
@@ -69,8 +69,7 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
 
         if (StringUtil.hasText(keyword)) {
             predicate.and(
-                job.title.containsIgnoreCase(keyword).or(company.name.containsIgnoreCase(keyword))
-                );
+                    job.title.containsIgnoreCase(keyword).or(company.name.containsIgnoreCase(keyword)));
         }
 
         if (StringUtil.hasText(provinceCity)) {
@@ -102,26 +101,27 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
         }
 
         var query = jpaQueryFactory
-            .select(Projections.constructor(JobPageResponse.class,
-                job.id,
-                job.slug,
-                job.title,
-                company.name,
-                company.logoUrl,
-                location.provinceCity,
-                job.type,
-                job.minSalary,
-                job.maxSalary,
-                job.salaryType
-            ))
-            .from(job)
-            .leftJoin(job.company, company)
-            .leftJoin(job.location, location)
-            .leftJoin(job.jobCategories, jobCategory)
-            .where(predicate)
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize() + 1)
-            .distinct();
+                .select(Projections.constructor(JobPageResponse.class,
+                        job.id,
+                        job.slug,
+                        job.title,
+                        company.name,
+                        company.logoUrl,
+                        location.provinceCity,
+                        job.type,
+                        job.minSalary,
+                        job.maxSalary,
+                        job.salaryType,
+                        job.expirationDate,
+                        job.experienceLevel))
+                .from(job)
+                .leftJoin(job.company, company)
+                .leftJoin(job.location, location)
+                .leftJoin(job.jobCategories, jobCategory)
+                .where(predicate)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize() + 1)
+                .distinct();
 
         List<JobPageResponse> results = query.fetch();
 
@@ -136,9 +136,9 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
 
     @Override
     public Page<AppliedJobResponse> getCandidateAppliedJobs(
-                                    Pageable pageable, 
-                                    String keyword,
-                                    JobStatus status) {
+            Pageable pageable,
+            String keyword,
+            JobStatus status) {
         QCompany company = QCompany.company;
         QJob job = QJob.job;
         QLocation location = QLocation.location;
@@ -149,55 +149,53 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
         if (status != null) {
             predicate.and(job.status.eq(status));
         }
-        
+
         if (StringUtil.hasText(keyword)) {
             predicate.and(job.title.containsIgnoreCase(keyword)
-                            .or(company.name.containsIgnoreCase(keyword))
-                            .or(location.provinceCity.containsIgnoreCase(keyword))
-            );
+                    .or(company.name.containsIgnoreCase(keyword))
+                    .or(location.provinceCity.containsIgnoreCase(keyword)));
         }
 
         var query = jpaQueryFactory
-            .select(Projections.constructor(AppliedJobResponse.class,
-                job.id,
-                job.slug,
-                job.title,
-                location.provinceCity,
-                company.name,
-                company.logoUrl,
-                job.minSalary,
-                job.maxSalary,
-                job.salaryType,
-                job.type,
-                job.status,
-                application.createdAt
-            ))
-            .from(job)
-            .leftJoin(job.company, company)
-            .leftJoin(job.location, location)
-            .leftJoin(job.jobApplications, application)
-            .where(predicate)
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .distinct();
+                .select(Projections.constructor(AppliedJobResponse.class,
+                        job.id,
+                        job.slug,
+                        job.title,
+                        location.provinceCity,
+                        company.name,
+                        company.logoUrl,
+                        job.minSalary,
+                        job.maxSalary,
+                        job.salaryType,
+                        job.type,
+                        job.status,
+                        application.createdAt))
+                .from(job)
+                .leftJoin(job.company, company)
+                .leftJoin(job.location, location)
+                .leftJoin(job.jobApplications, application)
+                .where(predicate)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .distinct();
 
         List<AppliedJobResponse> results = query.fetch();
 
         Long total = jpaQueryFactory
-            .select(job.id.count())
-            .from(job)
-            .leftJoin(job.company, company)
-            .leftJoin(job.location, location)
-            .leftJoin(job.jobApplications, application)
-            .where(predicate)
-            .fetchOne();
+                .select(job.id.count())
+                .from(job)
+                .leftJoin(job.company, company)
+                .leftJoin(job.location, location)
+                .leftJoin(job.jobApplications, application)
+                .where(predicate)
+                .fetchOne();
         return new PageImpl<>(results, pageable, total);
     }
 
     @Override
     public Page<CompanyJobPageResponse> findJobsByCompanyId(Long companyId, Long candidateId, Pageable pageable) {
         QJob job = QJob.job;
-        
+
         BooleanBuilder predicate = new BooleanBuilder();
         predicate.and(job.company.id.eq(companyId));
         predicate.and(job.status.eq(JobStatus.ACTIVE));
@@ -209,54 +207,52 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
             QApplication application = QApplication.application;
             QSavedJob savedJob = QSavedJob.savedJob;
             isFollowed = new JPAQuery<>()
-                .select(savedJob.id)
-                .from(savedJob)
-                .where(savedJob.candidate.id.eq(candidateId))
-                .where(savedJob.job.id.eq(job.id))
-                .exists();
+                    .select(savedJob.id)
+                    .from(savedJob)
+                    .where(savedJob.candidate.id.eq(candidateId))
+                    .where(savedJob.job.id.eq(job.id))
+                    .exists();
 
             isApplied = new JPAQuery<>()
-                .select(application.id)
-                .from(application)
-                .where(application.job.id.eq(job.id))
-                .where(application.candidate.id.eq(candidateId))
-                .exists();
+                    .select(application.id)
+                    .from(application)
+                    .where(application.job.id.eq(job.id))
+                    .where(application.candidate.id.eq(candidateId))
+                    .exists();
         }
 
         var query = jpaQueryFactory
-            .select(Projections.constructor(CompanyJobPageResponse.class,
-                job.id,
-                job.slug,
-                job.title,
-                job.type,
-                job.minSalary,
-                job.maxSalary,
-                job.salaryType,
-                isFollowed,
-                isApplied
-            ))
-            .from(job)
-            .where(predicate)
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .distinct();
+                .select(Projections.constructor(CompanyJobPageResponse.class,
+                        job.id,
+                        job.slug,
+                        job.title,
+                        job.type,
+                        job.minSalary,
+                        job.maxSalary,
+                        job.salaryType,
+                        isFollowed,
+                        isApplied))
+                .from(job)
+                .where(predicate)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .distinct();
 
         List<CompanyJobPageResponse> results = query.fetch();
 
         Long total = jpaQueryFactory
-            .select(job.id.count())
-            .from(job)
-            .where(predicate)
-            .fetchOne();
+                .select(job.id.count())
+                .from(job)
+                .where(predicate)
+                .fetchOne();
         return new PageImpl<>(results, pageable, total);
     }
-    
+
     @Override
     public Page<CandidateFavoriteJobResponse> getCandidateFavoriteJobs(
-            Pageable pageable, 
+            Pageable pageable,
             String keyword,
-            JobStatus status) 
-    {
+            JobStatus status) {
         QCompany company = QCompany.company;
         QJob job = QJob.job;
         QLocation location = QLocation.location;
@@ -264,55 +260,53 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
         BooleanBuilder predicate = new BooleanBuilder();
 
         NumberExpression<Long> daysRemaining = Expressions.numberTemplate(
-            Long.class, 
-            "DATEDIFF({0}, {1})", 
-            job.expirationDate,
-            Expressions.currentDate())
-            .as("daysRemaining");
+                Long.class,
+                "DATEDIFF({0}, {1})",
+                job.expirationDate,
+                Expressions.currentDate())
+                .as("daysRemaining");
 
         if (status != null) {
             predicate.and(job.status.eq(status));
         }
-        
+
         if (StringUtil.hasText(keyword)) {
             predicate.and(job.title.containsIgnoreCase(keyword)
-                            .or(company.name.containsIgnoreCase(keyword))
-                            .or(location.provinceCity.containsIgnoreCase(keyword))
-            );
+                    .or(company.name.containsIgnoreCase(keyword))
+                    .or(location.provinceCity.containsIgnoreCase(keyword)));
         }
 
         var query = jpaQueryFactory
-            .select(Projections.constructor(CandidateFavoriteJobResponse.class,
-                job.id,
-                job.slug,
-                job.title,
-                location.provinceCity,
-                company.name,
-                company.logoUrl,
-                job.minSalary,
-                job.maxSalary,
-                job.salaryType,
-                job.type,
-                job.status,
-                daysRemaining
-            ))
-            .from(job)
-            .leftJoin(job.company, company)
-            .leftJoin(job.location, location)
-            .where(predicate)
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .distinct();
+                .select(Projections.constructor(CandidateFavoriteJobResponse.class,
+                        job.id,
+                        job.slug,
+                        job.title,
+                        location.provinceCity,
+                        company.name,
+                        company.logoUrl,
+                        job.minSalary,
+                        job.maxSalary,
+                        job.salaryType,
+                        job.type,
+                        job.status,
+                        daysRemaining))
+                .from(job)
+                .leftJoin(job.company, company)
+                .leftJoin(job.location, location)
+                .where(predicate)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .distinct();
 
         List<CandidateFavoriteJobResponse> results = query.fetch();
 
         Long total = jpaQueryFactory
-            .select(job.id.count())
-            .from(job)
-            .leftJoin(job.company, company)
-            .leftJoin(job.location, location)
-            .where(predicate)
-            .fetchOne();
+                .select(job.id.count())
+                .from(job)
+                .leftJoin(job.company, company)
+                .leftJoin(job.location, location)
+                .where(predicate)
+                .fetchOne();
         return new PageImpl<>(results, pageable, total);
     }
 
