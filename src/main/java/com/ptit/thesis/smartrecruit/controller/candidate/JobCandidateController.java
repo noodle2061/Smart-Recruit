@@ -1,5 +1,7 @@
 package com.ptit.thesis.smartrecruit.controller.candidate;
 
+import java.util.List;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,6 +75,21 @@ public class JobCandidateController {
         Page<CandidateFavoriteJobResponse> entity = jobCandidateService.getFavoriteJobs(pageable, keyword, status);
 
         ApiResponse<Page<CandidateFavoriteJobResponse>> response = ApiResponse.<Page<CandidateFavoriteJobResponse>>builder()
+            .status(HttpStatus.OK.value())
+            .message("Get applied jobs successfully")
+            .data(entity)
+            .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @GetMapping("/favorites")
+    @Operation(summary = "Lấy danh sách id của job đã yêu thích")
+    public ResponseEntity<ApiResponse<List<Long>>> getFavoriteJobs() {
+        List<Long> entity = jobCandidateService.getFavorites();
+
+        ApiResponse<List<Long>> response = ApiResponse.<List<Long>>builder()
             .status(HttpStatus.OK.value())
             .message("Get applied jobs successfully")
             .data(entity)

@@ -83,6 +83,7 @@ public class CompanyRepositoryCustomImpl implements CompanyRepositoryCustom {
                         company.id,
                         company.name,
                         company.logoUrl,
+                        company.industryType,
                         Projections.constructor(LocationDTO.class, 
                                                 location.country, 
                                                 location.provinceCity, 

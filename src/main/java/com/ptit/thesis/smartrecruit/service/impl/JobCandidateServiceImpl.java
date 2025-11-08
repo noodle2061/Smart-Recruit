@@ -1,5 +1,6 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ import com.ptit.thesis.smartrecruit.repository.ResumeRepository;
 import com.ptit.thesis.smartrecruit.repository.SavedJobRepository;
 import com.ptit.thesis.smartrecruit.service.JobCandidateService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -139,5 +141,11 @@ public class JobCandidateServiceImpl implements JobCandidateService {
 
         return favoriteJobs;
     }
+
+    @Override
+    public List<Long> getFavorites() {
+        return jobRepository.getCandidateFavoriteJobIds();
+    }
+    
     
 }

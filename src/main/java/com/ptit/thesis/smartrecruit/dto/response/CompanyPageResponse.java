@@ -1,6 +1,7 @@
 package com.ptit.thesis.smartrecruit.dto.response;
 
 import com.ptit.thesis.smartrecruit.dto.common.LocationDTO;
+import com.ptit.thesis.smartrecruit.enums.IndustryType;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ public class CompanyPageResponse {
     Long id;
     String name;
     String logoUrl;
+    IndustryType industryType;
     LocationDTO location;
     Long numberOfJobs;
 }
