@@ -15,15 +15,18 @@ import com.ptit.thesis.smartrecruit.dto.response.CandidateFavoriteJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
 import com.ptit.thesis.smartrecruit.entity.QApplication;
+import com.ptit.thesis.smartrecruit.entity.QCandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.QCompany;
 import com.ptit.thesis.smartrecruit.entity.QJob;
 import com.ptit.thesis.smartrecruit.entity.QJobCategory;
 import com.ptit.thesis.smartrecruit.entity.QLocation;
 import com.ptit.thesis.smartrecruit.entity.QSavedJob;
+import com.ptit.thesis.smartrecruit.entity.QUser;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
 import com.ptit.thesis.smartrecruit.enums.JobStatus;
 import com.ptit.thesis.smartrecruit.enums.JobType;
+import com.ptit.thesis.smartrecruit.utils.AuthUtil;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Expression;
@@ -308,6 +311,20 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
                 .where(predicate)
                 .fetchOne();
         return new PageImpl<>(results, pageable, total);
+    }
+
+    @Override
+    public List<Long> getCandidateFavoriteJobIds() {
+        QJob job = QJob.job;
+        QUser user = QUser.user;
+        QSavedJob savedJob = QSavedJob.savedJob;
+        
+        Long userId = AuthUtil.getCurrentUser().getId();
+        List<Long> lst = jpaQueryFactory.select(job.id).from(savedJob)
+                .leftJoin(savedJob.candidate.user, user).on(user.id.eq(userId))
+                .leftJoin(savedJob.job, job)
+                .fetch();
+        return lst;
     }
 
 }

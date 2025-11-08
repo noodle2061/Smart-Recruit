@@ -16,25 +16,27 @@ import com.ptit.thesis.smartrecruit.enums.JobStatus;
 import com.ptit.thesis.smartrecruit.enums.JobType;
 
 public interface JobRepositoryCustom {
-    public Slice<JobPageResponse> searchJobsWithFilter(String keyword, 
-                                    String location, 
-                                    String category, 
-                                    Long minSalary, 
-                                    Long maxSalary, 
-                                    ExperienceLevel experienceLevel, 
-                                    List<EducationLevel> educationLevels, 
-                                    List<JobType> jobTypes,
-                                    Pageable pageable);
-    
+    public Slice<JobPageResponse> searchJobsWithFilter(String keyword,
+            String location,
+            String category,
+            Long minSalary,
+            Long maxSalary,
+            ExperienceLevel experienceLevel,
+            List<EducationLevel> educationLevels,
+            List<JobType> jobTypes,
+            Pageable pageable);
+
     public Page<AppliedJobResponse> getCandidateAppliedJobs(
-        Pageable pageable, 
-        String keyword,
-        JobStatus status);
+            Pageable pageable,
+            String keyword,
+            JobStatus status);
 
     public Page<CandidateFavoriteJobResponse> getCandidateFavoriteJobs(
-        Pageable pageable, 
-        String keyword,
-        JobStatus status);
-    
+            Pageable pageable,
+            String keyword,
+            JobStatus status);
+
+    public List<Long> getCandidateFavoriteJobIds();
+
     public Page<CompanyJobPageResponse> findJobsByCompanyId(Long companyId, Long candidateId, Pageable pageable);
 }

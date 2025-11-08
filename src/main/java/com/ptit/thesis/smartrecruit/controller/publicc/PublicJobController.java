@@ -67,7 +67,8 @@ public class PublicJobController {
                 category,
                 minSalary, maxSalary, experienceLevel, educationLevels, jobTypes);
         Page<JobPageResponse> jobs = new PageImpl<>(jobPageResponses.getContent(), pageable,
-                jobPageResponses.getNumberOfElements());
+                jobPageResponses.hasNext() ? pageable.getOffset() + jobPageResponses.getSize() + 1
+                        : pageable.getOffset() + jobPageResponses.getNumberOfElements());
 
         ApiResponse<List<JobPageResponse>> response = ApiResponse.<List<JobPageResponse>>builder()
                 .status(HttpStatus.OK.value())
