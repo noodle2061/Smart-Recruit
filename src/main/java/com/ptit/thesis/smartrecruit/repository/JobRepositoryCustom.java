@@ -18,7 +18,7 @@ import com.ptit.thesis.smartrecruit.enums.JobType;
 public interface JobRepositoryCustom {
     public Slice<JobPageResponse> searchJobsWithFilter(String keyword,
             String location,
-            String category,
+            Long categoryId,
             Long minSalary,
             Long maxSalary,
             ExperienceLevel experienceLevel,
