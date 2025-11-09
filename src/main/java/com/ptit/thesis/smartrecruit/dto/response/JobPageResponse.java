@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
+import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.JobType;
 import com.ptit.thesis.smartrecruit.enums.SalaryType;
 
@@ -30,4 +31,5 @@ public class JobPageResponse {
     SalaryType salaryType;
     LocalDate expirationDate;
     ExperienceLevel experienceLevel;
+    EducationLevel ducationLevel;
 }

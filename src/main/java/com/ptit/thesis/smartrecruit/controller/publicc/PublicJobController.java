@@ -25,6 +25,7 @@ import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
 import com.ptit.thesis.smartrecruit.enums.JobType;
 import com.ptit.thesis.smartrecruit.service.JobService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ import lombok.experimental.FieldDefaults;
 @RequestMapping("/api")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@SecurityRequirements
 @Tag(name = "PublicJobController", description = "Api cho phép người dùng get job")
 public class PublicJobController {
 
@@ -56,7 +58,7 @@ public class PublicJobController {
             @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Long minSalary,
             @RequestParam(required = false) Long maxSalary,
             @RequestParam(required = false) ExperienceLevel experienceLevel,
@@ -64,7 +66,7 @@ public class PublicJobController {
             @RequestParam(required = false) List<JobType> jobTypes) {
 
         Slice<JobPageResponse> jobPageResponses = jobService.searchJobsWithFilter(pageable, keyword, location,
-                category,
+                categoryId,
                 minSalary, maxSalary, experienceLevel, educationLevels, jobTypes);
         Page<JobPageResponse> jobs = new PageImpl<>(jobPageResponses.getContent(), pageable,
                 jobPageResponses.hasNext() ? pageable.getOffset() + jobPageResponses.getSize() + 1

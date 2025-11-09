@@ -15,7 +15,6 @@ import com.ptit.thesis.smartrecruit.dto.response.CandidateFavoriteJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
 import com.ptit.thesis.smartrecruit.entity.QApplication;
-import com.ptit.thesis.smartrecruit.entity.QCandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.QCompany;
 import com.ptit.thesis.smartrecruit.entity.QJob;
 import com.ptit.thesis.smartrecruit.entity.QJobCategory;
@@ -31,10 +30,8 @@ import com.ptit.thesis.smartrecruit.utils.StringUtil;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -52,7 +49,7 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
     @Override
     public Slice<JobPageResponse> searchJobsWithFilter(String keyword,
             String provinceCity,
-            String category,
+            Long categoryId,
             Long minSalary,
             Long maxSalary,
             ExperienceLevel experienceLevel,
@@ -79,8 +76,8 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
             predicate.and(location.provinceCity.containsIgnoreCase(provinceCity));
         }
 
-        if (StringUtil.hasText(category)) {
-            predicate.and(jobCategory.name.containsIgnoreCase(category));
+        if (categoryId != null) {
+            predicate.and(jobCategory.id.eq(categoryId));
         }
 
         if (minSalary != null) {
@@ -116,7 +113,8 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
                         job.maxSalary,
                         job.salaryType,
                         job.expirationDate,
-                        job.experienceLevel))
+                        job.experienceLevel,
+                        job.educationLevel))
                 .from(job)
                 .leftJoin(job.company, company)
                 .leftJoin(job.location, location)
@@ -318,11 +316,12 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
         QJob job = QJob.job;
         QUser user = QUser.user;
         QSavedJob savedJob = QSavedJob.savedJob;
-        
+
         Long userId = AuthUtil.getCurrentUser().getId();
         List<Long> lst = jpaQueryFactory.select(job.id).from(savedJob)
                 .leftJoin(savedJob.candidate.user, user).on(user.id.eq(userId))
                 .leftJoin(savedJob.job, job)
+                .where(user.id.eq(userId))
                 .fetch();
         return lst;
     }

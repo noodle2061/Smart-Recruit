@@ -25,7 +25,7 @@ public interface JobService {
     Slice<JobPageResponse> searchJobsWithFilter(Pageable pageable, 
                                                 String keyword, 
                                                 String location, 
-                                                String category, 
+                                                Long categoryId, 
                                                 Long minSalary, 
                                                 Long maxSalary, 
                                                 ExperienceLevel experienceLevel, 

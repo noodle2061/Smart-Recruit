@@ -36,6 +36,7 @@ import lombok.experimental.FieldDefaults;
 @RequestMapping("api")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@SecurityRequirements
 @Tag(name = "Public Company Controller", description = "Thông tin public công ty cho user")
 public class PublicCompanyController {
 
@@ -44,7 +45,6 @@ public class PublicCompanyController {
 
     @GetMapping("/company/{companyId}")
     @Operation(summary = "Lấy thông tin chi tiết của công ty cho Candidate và khách vãng lai.")
-    @SecurityRequirements()
     public ResponseEntity<ApiResponse<CompanyProfileResponse>> getCompanyInfo(@PathVariable Long companyId) {
 
         CompanyProfileResponse company = companyService.getCompanyDetails(companyId);
@@ -60,7 +60,6 @@ public class PublicCompanyController {
 
     @GetMapping("/companies")
     @Operation(summary = "Lấy dữ liệu phân trang có filter các công ty cho Candidate và khách vãng lai. Giao diện chính sử dụng.")
-    @SecurityRequirements()
     public ResponseEntity<ApiResponse<List<CompanyPageResponse>>> searchCompanies(
             @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
             @RequestParam(required = false) String keyword,
@@ -83,7 +82,6 @@ public class PublicCompanyController {
 
     @GetMapping("/company/{companyId}/jobs")
     @Operation(summary = "Lấy dữ liệu phân trang các job của một công ty cho Candidate và khách vãng lai.")
-    @SecurityRequirements()
     public ResponseEntity<ApiResponse<Page<CompanyJobPageResponse>>> getJobsForCompany(
             @PathVariable Long companyId,
             @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable) {

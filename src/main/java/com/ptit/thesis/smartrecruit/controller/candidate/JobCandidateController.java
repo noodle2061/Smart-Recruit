@@ -91,7 +91,7 @@ public class JobCandidateController {
 
         ApiResponse<List<Long>> response = ApiResponse.<List<Long>>builder()
             .status(HttpStatus.OK.value())
-            .message("Get applied jobs successfully")
+            .message("Get favorite job ids successfully")
             .data(entity)
             .build();
 

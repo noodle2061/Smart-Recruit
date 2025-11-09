@@ -146,7 +146,7 @@ public class JobServiceImpl implements JobService {
     public Slice<JobPageResponse> searchJobsWithFilter(Pageable pageable, 
                                                 String keyword, 
                                                 String location, 
-                                                String category, 
+                                                Long categoryId, 
                                                 Long minSalary, 
                                                 Long maxSalary, 
                                                 ExperienceLevel experienceLevel, 
@@ -154,7 +154,7 @@ public class JobServiceImpl implements JobService {
                                                 List<JobType> jobTypes) {
         
         Slice<JobPageResponse> jobSlice = jobRepository.searchJobsWithFilter(
-                keyword, location, category, minSalary, maxSalary, 
+                keyword, location, categoryId, minSalary, maxSalary, 
                 experienceLevel, educationLevels, jobTypes, pageable
                 ).map(job -> {
                         job.setCompanyLogoUrl(s3Service.generatePresignedUrl(job.getCompanyLogoUrl()));
