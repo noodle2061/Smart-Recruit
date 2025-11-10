@@ -10,7 +10,9 @@ import java.util.Set;
 @Table(name = "blog_categories")
 @Setter
 @Getter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BlogCategory extends BaseEntity {
 
