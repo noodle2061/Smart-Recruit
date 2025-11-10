@@ -2,8 +2,10 @@
 
 APP_PID=""
 
+WATCH_DIRS=("src/main/java")
+
 function start_app {
-    mvn spring-boot:run -Dspring-boot.run.fork=false &
+    mvn spring-boot:run -Dspring-boot.run.fork=true &
     APP_PID=$!
 }
 
@@ -14,11 +16,19 @@ function stop_app {
     fi
 }
 
+function watch_changes {
+    inotifywait -q -e modify,create,delete -r "${WATCH_DIRS[@]}"
+}
+
 start_app
 
 while true; do
-    inotifywait -e modify,create,delete -r /app/src /app/src/main/resources
-    mvn compile
+    watch_changes
+
+    echo "Detected changes. Compiling..."
+    mvn compile -DskipTests
+
+    sleep 1
 
     stop_app
     start_app

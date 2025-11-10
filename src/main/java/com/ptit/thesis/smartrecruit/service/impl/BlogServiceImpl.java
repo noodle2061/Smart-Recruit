@@ -1,6 +1,7 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,18 +13,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ptit.thesis.smartrecruit.dto.common.BlogCategoryDTO;
 import com.ptit.thesis.smartrecruit.dto.request.BlogRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateBlogRequest;
 import com.ptit.thesis.smartrecruit.dto.response.BlogResponse;
 import com.ptit.thesis.smartrecruit.entity.Blog;
+import com.ptit.thesis.smartrecruit.entity.BlogCategory;
+import com.ptit.thesis.smartrecruit.entity.Tag;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
 import com.ptit.thesis.smartrecruit.mapper.BlogMapper;
+import com.ptit.thesis.smartrecruit.repository.BlogCategoryRepository;
 import com.ptit.thesis.smartrecruit.repository.BlogRepository;
 import com.ptit.thesis.smartrecruit.service.BlogService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
 import com.ptit.thesis.smartrecruit.utils.AuthUtil;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -37,6 +45,7 @@ public class BlogServiceImpl implements BlogService {
 
     BlogMapper blogMapper;
     BlogRepository blogRepository;
+    BlogCategoryRepository blogCategoryRepository;
     S3Service s3Service;
 
     @Override
@@ -127,13 +136,41 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
-    public Page<BlogResponse> listWithPage(String keyword, String sort, Integer page, Integer limit) {
+    public Page<BlogResponse> listWithPage(
+            String keyword,
+            String sort,
+            Integer page,
+            Integer limit,
+            List<Long> categoryIds,
+            Long tagId) {
         Specification<Blog> spec = Specification.unrestricted();
         if (keyword != null && !keyword.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.or(
                     cb.like(cb.lower(root.get("title")), "%" + keyword.toLowerCase() + "%"),
                     cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%"),
                     cb.like(root.get("content"), "%" + keyword.toLowerCase() + "%")));
+        }
+
+        if (categoryIds != null && categoryIds.size() > 0) {
+            spec = spec.and((root, query, cb) -> {
+                Join<Blog, BlogCategory> categoryJoin = root.join("tags", JoinType.LEFT);
+
+                CriteriaBuilder.In<Long> inClause = cb.in(categoryJoin.get("id"));
+                for (Long id : categoryIds) {
+                    inClause.value(id);
+                }
+
+                return inClause;
+            });
+        }
+
+        if (tagId != null) {
+            spec = spec.and((root, query, cb) -> {
+                Join<Blog, Tag> tagJoin = root.join("tags", JoinType.LEFT);
+
+                return cb.equal(tagJoin.get("id"), tagId);
+
+            });
         }
 
         Sort _sort = Sort.by(
@@ -144,6 +181,15 @@ public class BlogServiceImpl implements BlogService {
         Page<Blog> blogs = blogRepository.findAll(spec, pageable);
         Page<BlogResponse> pagination = blogs.map(blog -> blogMapper.toBlogResponse(blog));
         return pagination;
+    }
+
+    @Override
+    public List<BlogCategoryDTO> getCategories() {
+        List<BlogCategory> categories = this.blogCategoryRepository.findAll();
+        return categories
+                .stream()
+                .map(cate -> new BlogCategoryDTO(cate.getId(), cate.getName()))
+                .toList();
     }
 
 }
