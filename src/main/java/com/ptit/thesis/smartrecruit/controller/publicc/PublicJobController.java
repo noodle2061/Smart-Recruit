@@ -25,6 +25,7 @@ import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
 import com.ptit.thesis.smartrecruit.enums.JobType;
 import com.ptit.thesis.smartrecruit.service.JobService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -39,46 +40,48 @@ import lombok.experimental.FieldDefaults;
 @Tag(name = "PublicJobController", description = "Api cho phép người dùng get job")
 public class PublicJobController {
 
-    JobService jobService;
+	JobService jobService;
 
-    @GetMapping("/job/{slug}")
-    public ResponseEntity<ApiResponse<JobDetailResponse>> getJobDetailBySlug(@PathVariable String slug) {
-        JobDetailResponse jobDetailResponse = jobService.getJobDetail(slug);
+	@GetMapping("/job/{slug}")
+	@Operation(summary = "Lấy thông tin chi tiết job qua slug")
+	public ResponseEntity<ApiResponse<JobDetailResponse>> getJobDetailBySlug(@PathVariable String slug) {
+		JobDetailResponse jobDetailResponse = jobService.getJobDetail(slug);
 
-        ApiResponse<JobDetailResponse> response = ApiResponse.<JobDetailResponse>builder()
-                .status(HttpStatus.OK.value())
-                .message("Get job detail successfully")
-                .data(jobDetailResponse)
-                .build();
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+		ApiResponse<JobDetailResponse> response = ApiResponse.<JobDetailResponse>builder()
+		.status(HttpStatus.OK.value())
+		.message("Get job detail successfully")
+		.data(jobDetailResponse)
+		.build();
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
 
-    @GetMapping("/jobs")
-    public ResponseEntity<ApiResponse<List<JobPageResponse>>> searchJobsWithFilter(
-            @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) Long minSalary,
-            @RequestParam(required = false) Long maxSalary,
-            @RequestParam(required = false) ExperienceLevel experienceLevel,
-            @RequestParam(required = false) List<EducationLevel> educationLevels,
-            @RequestParam(required = false) List<JobType> jobTypes) {
+	@GetMapping("/jobs")
+	@Operation(summary = "Lấy danh sách các job public")
+	public ResponseEntity<ApiResponse<List<JobPageResponse>>> searchJobsWithFilter(
+			@ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
+			@RequestParam(required = false) String keyword,
+			@RequestParam(required = false) String location,
+			@RequestParam(required = false) Long categoryId,
+			@RequestParam(required = false) Long minSalary,
+			@RequestParam(required = false) Long maxSalary,
+			@RequestParam(required = false) ExperienceLevel experienceLevel,
+			@RequestParam(required = false) List<EducationLevel> educationLevels,
+			@RequestParam(required = false) List<JobType> jobTypes) {
 
-        Slice<JobPageResponse> jobPageResponses = jobService.searchJobsWithFilter(pageable, keyword, location,
-                categoryId,
-                minSalary, maxSalary, experienceLevel, educationLevels, jobTypes);
-        Page<JobPageResponse> jobs = new PageImpl<>(jobPageResponses.getContent(), pageable,
-                jobPageResponses.hasNext() ? pageable.getOffset() + jobPageResponses.getSize() + 1
-                        : pageable.getOffset() + jobPageResponses.getNumberOfElements());
+		Slice<JobPageResponse> jobPageResponses = jobService.searchJobsWithFilter(pageable, keyword, location,
+				categoryId,
+				minSalary, maxSalary, experienceLevel, educationLevels, jobTypes);
+		Page<JobPageResponse> jobs = new PageImpl<>(jobPageResponses.getContent(), pageable,
+				jobPageResponses.hasNext() ? pageable.getOffset() + jobPageResponses.getSize() + 1
+						: pageable.getOffset() + jobPageResponses.getNumberOfElements());
 
-        ApiResponse<List<JobPageResponse>> response = ApiResponse.<List<JobPageResponse>>builder()
-                .status(HttpStatus.OK.value())
-                .message("Get jobs successfully")
-                .data(jobs.getContent())
-                .meta(PageResponse.of(jobs))
-                .build();
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+		ApiResponse<List<JobPageResponse>> response = ApiResponse.<List<JobPageResponse>>builder()
+				.status(HttpStatus.OK.value())
+				.message("Get jobs successfully")
+				.data(jobs.getContent())
+				.meta(PageResponse.of(jobs))
+				.build();
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
 
 }

@@ -4,6 +4,10 @@ WORKDIR /app
 
 COPY pom.xml .
 
-RUN mvn dependency:go-offline
+RUN mvn dependency:go-offline \
+    && apt-get update && apt-get install -y inotify-tools
 
-CMD ["mvn", "spring-boot:run"]
+COPY /scripts/watch-and-run.sh /usr/local/bin/watch-and-run.sh
+RUN chmod +x /usr/local/bin/watch-and-run.sh
+
+ENTRYPOINT ["/usr/local/bin/watch-and-run.sh"]
