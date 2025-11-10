@@ -10,7 +10,8 @@ import java.util.Set;
 @Table(name = "job_categories")
 @Getter
 @Setter
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class JobCategory extends BaseEntity {
 
