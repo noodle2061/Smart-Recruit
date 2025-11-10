@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ptit.thesis.smartrecruit.dto.common.BlogCategoryDTO;
 import com.ptit.thesis.smartrecruit.dto.request.BlogRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateBlogRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
@@ -46,8 +47,10 @@ public class BlogController {
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer limit,
-            @RequestParam(required = false, defaultValue = "+createdAt") String sort) {
-        Page<BlogResponse> blogs = this.blogService.listWithPage(keyword, sort, page, limit);
+            @RequestParam(required = false, defaultValue = "+createdAt") String sort,
+            @RequestParam(required = false) List<Long> categoryIds,
+            @RequestParam(required = false) Long tagId) {
+        Page<BlogResponse> blogs = this.blogService.listWithPage(keyword, sort, page, limit, categoryIds, tagId);
 
         ApiResponse<List<BlogResponse>> response = ApiResponse.<List<BlogResponse>>builder()
                 .status(HttpStatus.OK.value())
@@ -124,6 +127,22 @@ public class BlogController {
                 .message("Delete blog successful")
                 .data(null)
                 .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/categories")
+    @Operation(summary = "Lấy danh sách blog category")
+    @SecurityRequirements()
+    public ResponseEntity<ApiResponse<List<BlogCategoryDTO>>> getCategories() {
+
+        List<BlogCategoryDTO> data = this.blogService.getCategories();
+
+        ApiResponse<List<BlogCategoryDTO>> response = ApiResponse.<List<BlogCategoryDTO>>builder()
+                .status(HttpStatus.OK.value())
+                .message("get categories of blog successfully.")
+                .data(data)
+                .build();
+
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
