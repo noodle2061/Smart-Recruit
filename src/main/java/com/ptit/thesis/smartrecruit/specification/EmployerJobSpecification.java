@@ -3,7 +3,6 @@ package com.ptit.thesis.smartrecruit.specification;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.mapping.Join;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.ptit.thesis.smartrecruit.entity.Company;

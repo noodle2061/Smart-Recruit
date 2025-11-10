@@ -12,6 +12,7 @@ import java.util.Set;
 @Setter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class JobCategory extends BaseEntity {
 
