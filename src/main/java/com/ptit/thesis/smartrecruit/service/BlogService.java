@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 
 import com.ptit.thesis.smartrecruit.dto.common.BlogCategoryDTO;
+import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
 import com.ptit.thesis.smartrecruit.dto.request.BlogRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateBlogRequest;
 import com.ptit.thesis.smartrecruit.dto.response.BlogResponse;
@@ -29,4 +30,6 @@ public interface BlogService {
     public void delete(Long id);
 
     public List<BlogCategoryDTO> getCategories();
+
+    public List<TagDTO> getPopularTags();
 }
