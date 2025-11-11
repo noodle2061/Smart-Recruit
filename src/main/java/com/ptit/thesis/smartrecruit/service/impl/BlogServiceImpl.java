@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.ptit.thesis.smartrecruit.dto.common.BlogCategoryDTO;
+import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
 import com.ptit.thesis.smartrecruit.dto.request.BlogRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateBlogRequest;
 import com.ptit.thesis.smartrecruit.dto.response.BlogResponse;
@@ -153,14 +154,9 @@ public class BlogServiceImpl implements BlogService {
 
         if (categoryIds != null && categoryIds.size() > 0) {
             spec = spec.and((root, query, cb) -> {
-                Join<Blog, BlogCategory> categoryJoin = root.join("tags", JoinType.LEFT);
+                Join<Blog, BlogCategory> categoryJoin = root.join("categories", JoinType.LEFT);
 
-                CriteriaBuilder.In<Long> inClause = cb.in(categoryJoin.get("id"));
-                for (Long id : categoryIds) {
-                    inClause.value(id);
-                }
-
-                return inClause;
+                return categoryJoin.get("id").in(categoryIds);
             });
         }
 
@@ -169,7 +165,6 @@ public class BlogServiceImpl implements BlogService {
                 Join<Blog, Tag> tagJoin = root.join("tags", JoinType.LEFT);
 
                 return cb.equal(tagJoin.get("id"), tagId);
-
             });
         }
 
@@ -190,6 +185,11 @@ public class BlogServiceImpl implements BlogService {
                 .stream()
                 .map(cate -> new BlogCategoryDTO(cate.getId(), cate.getName()))
                 .toList();
+    }
+
+    @Override
+    public List<TagDTO> getPopularTags() {
+        return this.blogCategoryRepository.findPopularTags();
     }
 
 }

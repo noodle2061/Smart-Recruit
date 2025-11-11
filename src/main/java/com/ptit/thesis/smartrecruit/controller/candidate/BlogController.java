@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ptit.thesis.smartrecruit.dto.common.BlogCategoryDTO;
+import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
 import com.ptit.thesis.smartrecruit.dto.request.BlogRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateBlogRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
@@ -142,6 +143,22 @@ public class BlogController {
                 .message("get categories of blog successfully.")
                 .data(data)
                 .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/popular-tags")
+    @Operation(summary = "Lấy danh sách tag phổ biến của blog")
+    @SecurityRequirements()
+    public ResponseEntity<ApiResponse<List<TagDTO>>> getPopularTags() {
+
+        List<TagDTO> data = this.blogService.getPopularTags();
+
+        ApiResponse<List<TagDTO>> response = ApiResponse.<List<TagDTO>>builder()
+            .status(HttpStatus.OK.value())
+            .message("get tags of blog successfully.")
+            .data(data)
+            .build();
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
