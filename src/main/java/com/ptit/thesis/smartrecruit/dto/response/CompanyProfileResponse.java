@@ -16,6 +16,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompanyProfileResponse {
+    Long id;
     String name;
     String description;
     String logoUrl;
