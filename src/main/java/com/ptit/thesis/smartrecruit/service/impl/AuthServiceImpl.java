@@ -236,7 +236,7 @@ public class AuthServiceImpl implements AuthService {
         String roleString = savedUser.getRole().getName();
         if (roleString.equals(Constraint.CANDIDATE_ROLE)) {
             response.setFullName(candidateProfileRepository.findFullNameByUser(savedUser));
-        } else if (roleString.equals(Constraint.EMPLOYEE_ROLE)) {
+        } else if (roleString.equals(Constraint.EMPLOYER_ROLE)) {
             response.setCompanySetup(companyRepository.existsByUser(savedUser));
         }
         return response;
