@@ -52,6 +52,9 @@ public class Application extends BaseEntity {
     @JoinColumn(name = "status_column_id")
     ApplicationStatusColumn statusColumn;
 
+    @Column(name = "score", columnDefinition = "DOUBLE DEFAULT 0.0")
+    Double score;
+
     @PrePersist
     public void prePersist() {
         if (status == null) {

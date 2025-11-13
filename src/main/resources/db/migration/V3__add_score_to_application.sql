@@ -1,0 +1,2 @@
+ALTER TABLE applications
+ADD COLUMN score DOUBLE DEFAULT 0.0;
