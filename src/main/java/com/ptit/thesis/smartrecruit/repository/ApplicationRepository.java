@@ -11,7 +11,7 @@ import com.ptit.thesis.smartrecruit.entity.Job;
 import com.ptit.thesis.smartrecruit.entity.Resume;
 
 @Repository
-public interface ApplicationRepository extends JpaRepository<Application, Long> {
+public interface ApplicationRepository extends JpaRepository<Application, Long>, ApplicationRepositoryCustom {
     boolean existsByJobAndResume(Job job, Resume resume);
     Optional<Application> findByCandidateAndJob(CandidateProfile candidate, Job job);
     boolean existsByCandidateAndJob(CandidateProfile candidate, Job job);
