@@ -53,6 +53,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         CandidateProfile candidateProfile = candidateProfileRepository.findByUser(user)
                 .orElseThrow(
                         () -> new EntityNotFoundException("Candidate profile not found for user: " + user.getId()));
+        
+        if (!checklegalCandidate(candidateProfile)) {
+            throw new IllegalArgumentException("You must setup your candidate profile first.");
+        }
 
         String newResumeKey = null;
         try {
@@ -114,5 +118,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                 dto.setResumeUrl(s3Service.generatePresignedUrl(dto.getResumeUrl()));
                 return dto;
             });
+    }
+
+    private boolean checklegalCandidate(CandidateProfile candidate) {
+        return (candidate.getGender() != null && candidate.getDateOfBirth() != null && candidate.getPhone() != null 
+                && candidate.getEducationLevel() != null && candidate.getExperienceLevel() != null);
     }
 }
