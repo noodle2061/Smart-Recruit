@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +39,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @RequestMapping("/api/employer")
-@Tag(name="JobController", description="EMPLOYER: Quản lý công việc")
+@Tag(name="Employer JobController", description="EMPLOYER: Quản lý công việc")
 public class JobController {
 
     JobService jobService;
@@ -91,7 +92,7 @@ public class JobController {
     @PreAuthorize("hasRole('EMPLOYER')")
     @PatchMapping("/job/{jobId}/expire")
     @Operation(summary = "Làm một job hết hạn")
-    public ResponseEntity<ApiResponse<JobDetailResponse>> expireJob(@RequestParam Long jobId) {
+    public ResponseEntity<ApiResponse<JobDetailResponse>> expireJob(@PathVariable Long jobId) {
         JobDetailResponse updatedJob = jobService.expireJob(jobId);
         ApiResponse<JobDetailResponse> response = ApiResponse.<JobDetailResponse>builder()
             .status(HttpStatus.OK.value())
