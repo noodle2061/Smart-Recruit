@@ -17,6 +17,6 @@ public enum ContactMessageStatus {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }

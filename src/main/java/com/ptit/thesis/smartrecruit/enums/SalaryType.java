@@ -17,6 +17,6 @@ public enum SalaryType {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }

@@ -15,6 +15,6 @@ public enum CompanyTeamSize {
     }
 
     public String getDisplayValue() {
-        return displayValue;
+        return name();
     }
 }

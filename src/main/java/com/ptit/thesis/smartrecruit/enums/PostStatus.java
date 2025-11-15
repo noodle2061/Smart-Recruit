@@ -16,6 +16,6 @@ public enum PostStatus {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }

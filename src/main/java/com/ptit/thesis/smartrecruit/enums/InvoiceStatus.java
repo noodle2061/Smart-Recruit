@@ -17,6 +17,6 @@ public enum InvoiceStatus {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }
