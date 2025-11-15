@@ -17,6 +17,6 @@ public interface BlogCategoryRepository extends JpaRepository<BlogCategory, Long
             LEFT JOIN tags ON blog_tags.tag_id = tags.id
             GROUP BY tags.id
             ORDER BY COUNT(*) DESC
-        """, nativeQuery = true)
+            """, nativeQuery = true)
     List<TagDTO> findPopularTags();
 }

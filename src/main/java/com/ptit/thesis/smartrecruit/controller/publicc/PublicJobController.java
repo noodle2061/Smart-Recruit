@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobDetailResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
@@ -48,10 +49,10 @@ public class PublicJobController {
 		JobDetailResponse jobDetailResponse = jobService.getJobDetail(slug);
 
 		ApiResponse<JobDetailResponse> response = ApiResponse.<JobDetailResponse>builder()
-		.status(HttpStatus.OK.value())
-		.message("Get job detail successfully")
-		.data(jobDetailResponse)
-		.build();
+				.status(HttpStatus.OK.value())
+				.message("Get job detail successfully")
+				.data(jobDetailResponse)
+				.build();
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
@@ -66,11 +67,12 @@ public class PublicJobController {
 			@RequestParam(required = false) Long maxSalary,
 			@RequestParam(required = false) ExperienceLevel experienceLevel,
 			@RequestParam(required = false) List<EducationLevel> educationLevels,
-			@RequestParam(required = false) List<JobType> jobTypes) {
+			@RequestParam(required = false) List<JobType> jobTypes,
+			@RequestParam(required = false) Long tagId) {
 
 		Slice<JobPageResponse> jobPageResponses = jobService.searchJobsWithFilter(pageable, keyword, location,
 				categoryId,
-				minSalary, maxSalary, experienceLevel, educationLevels, jobTypes);
+				minSalary, maxSalary, experienceLevel, educationLevels, jobTypes, tagId);
 		Page<JobPageResponse> jobs = new PageImpl<>(jobPageResponses.getContent(), pageable,
 				jobPageResponses.hasNext() ? pageable.getOffset() + jobPageResponses.getSize() + 1
 						: pageable.getOffset() + jobPageResponses.getNumberOfElements());
@@ -80,6 +82,19 @@ public class PublicJobController {
 				.message("Get jobs successfully")
 				.data(jobs.getContent())
 				.meta(PageResponse.of(jobs))
+				.build();
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
+	@GetMapping("/jobs/popular-tags")
+	@Operation(summary = "Lấy danh sách các tag phổ biến của job")
+	public ResponseEntity<ApiResponse<List<TagDTO>>> getPopularTags() {
+		List<TagDTO> tags = this.jobService.getPopularTags();
+
+		ApiResponse<List<TagDTO>> response = ApiResponse.<List<TagDTO>>builder()
+				.status(HttpStatus.OK.value())
+				.message("Get tags successfully")
+				.data(tags)
 				.build();
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}

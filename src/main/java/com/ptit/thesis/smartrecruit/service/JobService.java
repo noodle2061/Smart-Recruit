@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
+import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
 import com.ptit.thesis.smartrecruit.dto.request.PostJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobDetailResponse;
@@ -30,8 +31,11 @@ public interface JobService {
                                                 Long maxSalary, 
                                                 ExperienceLevel experienceLevel, 
                                                 List<EducationLevel> educationLevels, 
-                                                List<JobType> jobTypes);
+                                                List<JobType> jobTypes, 
+                                                Long tagId);
     Page<MyJobPageResponse> getMyJob(Pageable pageable, JobStatus jobStatus);
 
     Page<CompanyJobPageResponse> getJobsByCompany(Long companyId, Pageable pageable);
+
+    List<TagDTO> getPopularTags();
 }
