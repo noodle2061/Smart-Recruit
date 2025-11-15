@@ -20,6 +20,6 @@ public enum OrganizationType {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }

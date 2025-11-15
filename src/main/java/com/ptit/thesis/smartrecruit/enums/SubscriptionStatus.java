@@ -17,6 +17,6 @@ public enum SubscriptionStatus {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }

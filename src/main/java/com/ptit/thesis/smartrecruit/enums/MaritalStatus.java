@@ -17,6 +17,6 @@ public enum MaritalStatus {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }

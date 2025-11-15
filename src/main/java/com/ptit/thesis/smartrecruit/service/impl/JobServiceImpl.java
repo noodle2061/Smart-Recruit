@@ -2,6 +2,7 @@ package com.ptit.thesis.smartrecruit.service.impl;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -163,19 +164,6 @@ public class JobServiceImpl implements JobService {
         return jobSlice;
     }
 
-    public JobDetailResponse getJobDetailResponseFromEntity(Job job, Company company) {
-        JobDetailResponse jobDetailResponse = jobMapper.toJobDetailResponse(job);
-
-        // company basic info
-        CompanyBasicInfoDTO companyBasicInfoDTO = companyRepository.findBasicInfoById(company.getId());
-
-        String avatarStorageKey = companyBasicInfoDTO.getLogoUrl();
-        companyBasicInfoDTO.setLogoUrl(s3Service.generatePresignedUrl(avatarStorageKey));
-        jobDetailResponse.setCompany(companyBasicInfoDTO);
-
-        return jobDetailResponse;
-    }
-
     @Override
     public Page<MyJobPageResponse> getMyJob(Pageable pageable, JobStatus jobStatus) {
         Company company = companyRepository.findByUser((User)SecurityContextHolder.getContext().getAuthentication().getPrincipal())
@@ -217,6 +205,29 @@ public class JobServiceImpl implements JobService {
 
         // Không cần xử lý S3 URL vì DTO này không chứa hình ảnh
         return jobsPage;
+    }
+
+    @Override
+    public JobDetailResponse expireJob(Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found for id: " + jobId));
+        job.setStatus(JobStatus.EXPIRED);
+        job.setExpirationDate(LocalDate.now().minusDays(1));
+        Job savedJob = jobRepository.save(job);
+        return getJobDetailResponseFromEntity(savedJob, savedJob.getCompany());
+    }
+
+    private JobDetailResponse getJobDetailResponseFromEntity(Job job, Company company) {
+        JobDetailResponse jobDetailResponse = jobMapper.toJobDetailResponse(job);
+
+        // company basic info
+        CompanyBasicInfoDTO companyBasicInfoDTO = companyRepository.findBasicInfoById(company.getId());
+
+        String avatarStorageKey = companyBasicInfoDTO.getLogoUrl();
+        companyBasicInfoDTO.setLogoUrl(s3Service.generatePresignedUrl(avatarStorageKey));
+        jobDetailResponse.setCompany(companyBasicInfoDTO);
+
+        return jobDetailResponse;
     }
 
 }

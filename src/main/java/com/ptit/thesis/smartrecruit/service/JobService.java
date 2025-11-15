@@ -34,4 +34,6 @@ public interface JobService {
     Page<MyJobPageResponse> getMyJob(Pageable pageable, JobStatus jobStatus);
 
     Page<CompanyJobPageResponse> getJobsByCompany(Long companyId, Pageable pageable);
+
+    JobDetailResponse expireJob(Long jobId);
 }
