@@ -20,6 +20,6 @@ public enum JobApplicationStatus {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }

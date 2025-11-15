@@ -22,6 +22,6 @@ public enum PlatformName {
 
     @Override
     public String toString() {
-        return displayName;
+        return name();
     }
 }

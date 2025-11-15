@@ -38,4 +38,6 @@ public interface JobService {
     Page<CompanyJobPageResponse> getJobsByCompany(Long companyId, Pageable pageable);
 
     List<TagDTO> getPopularTags();
+
+    JobDetailResponse expireJob(Long jobId);
 }
