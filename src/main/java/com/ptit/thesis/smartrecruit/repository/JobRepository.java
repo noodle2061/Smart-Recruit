@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
 import com.ptit.thesis.smartrecruit.entity.Job;
 import com.ptit.thesis.smartrecruit.enums.JobStatus;
 
@@ -34,4 +35,13 @@ public interface JobRepository extends JpaRepository<Job, Long>, JobRepositoryCu
     Long countAplication(Job job);
 
     List<Job> findByStatusAndExpirationDateBefore(JobStatus status, LocalDate expirationDate);
+
+    @Query(value = """
+            SELECT tags.id, tags.name
+            FROM job_tags
+            LEFT JOIN tags ON job_tags.tag_id = tags.id
+            GROUP BY tags.id
+            ORDER BY COUNT(*) DESC
+        """, nativeQuery = true)
+    List<TagDTO> findPopularTags();
 }

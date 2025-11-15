@@ -20,6 +20,7 @@ import com.ptit.thesis.smartrecruit.entity.QJob;
 import com.ptit.thesis.smartrecruit.entity.QJobCategory;
 import com.ptit.thesis.smartrecruit.entity.QLocation;
 import com.ptit.thesis.smartrecruit.entity.QSavedJob;
+import com.ptit.thesis.smartrecruit.entity.QTag;
 import com.ptit.thesis.smartrecruit.entity.QUser;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
@@ -55,12 +56,14 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
             ExperienceLevel experienceLevel,
             List<EducationLevel> educationLevels,
             List<JobType> jobTypes,
-            Pageable pageable) {
+            Pageable pageable,
+            Long tagId) {
         // Q object
         QJob job = QJob.job;
         QCompany company = QCompany.company;
         QLocation location = QLocation.location;
         QJobCategory jobCategory = QJobCategory.jobCategory;
+        QTag tag = QTag.tag;
 
         // xây dựng where bằng BooleanBuilder
         BooleanBuilder predicate = new BooleanBuilder();
@@ -78,6 +81,10 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
 
         if (categoryId != null) {
             predicate.and(jobCategory.id.eq(categoryId));
+        }
+
+        if (tagId != null) {
+            predicate.and(tag.id.eq(tagId));
         }
 
         if (minSalary != null) {
@@ -119,6 +126,7 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
                 .leftJoin(job.company, company)
                 .leftJoin(job.location, location)
                 .leftJoin(job.jobCategories, jobCategory)
+                .leftJoin(job.tags, tag)
                 .where(predicate)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)

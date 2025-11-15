@@ -24,7 +24,8 @@ public interface JobRepositoryCustom {
             ExperienceLevel experienceLevel,
             List<EducationLevel> educationLevels,
             List<JobType> jobTypes,
-            Pageable pageable);
+            Pageable pageable,
+            Long tagId);
 
     public Page<AppliedJobResponse> getCandidateAppliedJobs(
             Pageable pageable,

@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.ptit.thesis.smartrecruit.dto.common.CompanyBasicInfoDTO;
+import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
 import com.ptit.thesis.smartrecruit.dto.request.PostJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobDetailResponse;
@@ -151,11 +152,12 @@ public class JobServiceImpl implements JobService {
                                                 Long maxSalary, 
                                                 ExperienceLevel experienceLevel, 
                                                 List<EducationLevel> educationLevels, 
-                                                List<JobType> jobTypes) {
+                                                List<JobType> jobTypes,
+                                                Long tagId) {
         
         Slice<JobPageResponse> jobSlice = jobRepository.searchJobsWithFilter(
                 keyword, location, categoryId, minSalary, maxSalary, 
-                experienceLevel, educationLevels, jobTypes, pageable
+                experienceLevel, educationLevels, jobTypes, pageable, tagId
                 ).map(job -> {
                         job.setCompanyLogoUrl(s3Service.generatePresignedUrl(job.getCompanyLogoUrl()));
                         return job;
@@ -217,6 +219,11 @@ public class JobServiceImpl implements JobService {
 
         // Không cần xử lý S3 URL vì DTO này không chứa hình ảnh
         return jobsPage;
+    }
+
+    @Override
+    public List<TagDTO> getPopularTags() {
+        return this.jobRepository.findPopularTags();
     }
 
 }
