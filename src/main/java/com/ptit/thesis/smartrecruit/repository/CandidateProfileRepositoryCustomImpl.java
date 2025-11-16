@@ -90,6 +90,7 @@ public class CandidateProfileRepositoryCustomImpl implements CandidateProfileRep
                     candidate.fullName,
                     candidate.avatarUrl,
                     candidate.headline,
+                    user.email,
                     candidate.experienceLevel,
                     candidate.educationLevel,
                     Projections.constructor(com.ptit.thesis.smartrecruit.dto.common.LocationDTO.class,
@@ -131,15 +132,7 @@ public class CandidateProfileRepositoryCustomImpl implements CandidateProfileRep
         QCandidateProfile candidate = QCandidateProfile.candidateProfile;
         QLocation location = QLocation.location;
         QCandidateCompany candidateCompany = QCandidateCompany.candidateCompany;
-
-        BooleanExpression isFollowed = JPAExpressions
-                .selectOne()
-                .from(candidateCompany)
-                .where(
-                    candidateCompany.company.id.eq(companyId)
-                    .and(candidateCompany.candidate.id.eq(candidate.id))
-                    .and(candidateCompany.type.eq(FollowType.COMPANY_FOLLOW_CANDIDATE)))
-                .exists();
+        QUser user = QUser.user;
 
         BooleanBuilder predicate = new BooleanBuilder();
         predicate.and(candidateCompany.company.id.eq(companyId));
@@ -151,6 +144,7 @@ public class CandidateProfileRepositoryCustomImpl implements CandidateProfileRep
                     candidate.fullName,
                     candidate.avatarUrl,
                     candidate.headline,
+                    user.email,
                     candidate.experienceLevel,
                     candidate.educationLevel,
                     Projections.constructor(com.ptit.thesis.smartrecruit.dto.common.LocationDTO.class,
@@ -162,6 +156,7 @@ public class CandidateProfileRepositoryCustomImpl implements CandidateProfileRep
                     Expressions.constant(true)
                 ))
                 .from(candidate)
+                .join(candidate.user, user)
                 .leftJoin(candidate.location, location)
                 .innerJoin(candidateCompany).on(candidate.id.eq(candidateCompany.candidate.id))
                 .where(predicate)
