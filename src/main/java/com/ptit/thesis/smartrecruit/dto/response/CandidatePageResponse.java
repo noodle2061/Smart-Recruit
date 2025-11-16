@@ -19,6 +19,7 @@ public class CandidatePageResponse {
     String fullName;
     String avatarUrl;
     String headline;
+    String email;
     ExperienceLevel experienceLevel;
     EducationLevel educationLevel;
     LocationDTO location;
