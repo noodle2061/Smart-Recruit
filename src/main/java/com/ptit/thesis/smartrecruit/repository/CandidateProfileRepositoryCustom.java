@@ -24,6 +24,7 @@ public interface CandidateProfileRepositoryCustom {
     );
 
     Page<CandidatePageResponse> findSavedCandidatesForEmployer(
+        Long companyId,
         Pageable pageable
     );
 }

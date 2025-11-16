@@ -27,4 +27,5 @@ public interface CandidateProfileService {
     Page<CandidatePageResponse> getAllCandidates(Pageable pageable, String keyword, String location, String category, ExperienceLevel experienceLevel, List<EducationLevel> educationLevels, Gender gender);
     CandidateProfileResponse getCandidateDetail(Long candidateId);
     CandidateProfileResponse getOwnerCandidateProfile();
+    Page<CandidatePageResponse> getAllSavedCandidates(Pageable pageable);
 }

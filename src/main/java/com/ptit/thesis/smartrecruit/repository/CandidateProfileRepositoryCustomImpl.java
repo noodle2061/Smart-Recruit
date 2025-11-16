@@ -23,6 +23,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -126,9 +127,59 @@ public class CandidateProfileRepositoryCustomImpl implements CandidateProfileRep
     }
 
     @Override
-    public Page<CandidatePageResponse> findSavedCandidatesForEmployer(Pageable pageable) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findSavedCandidatesForEmployer'");
+    public Page<CandidatePageResponse> findSavedCandidatesForEmployer(Long companyId, Pageable pageable) {
+        QCandidateProfile candidate = QCandidateProfile.candidateProfile;
+        QLocation location = QLocation.location;
+        QCandidateCompany candidateCompany = QCandidateCompany.candidateCompany;
+
+        BooleanExpression isFollowed = JPAExpressions
+                .selectOne()
+                .from(candidateCompany)
+                .where(
+                    candidateCompany.company.id.eq(companyId)
+                    .and(candidateCompany.candidate.id.eq(candidate.id))
+                    .and(candidateCompany.type.eq(FollowType.COMPANY_FOLLOW_CANDIDATE)))
+                .exists();
+
+        BooleanBuilder predicate = new BooleanBuilder();
+        predicate.and(candidateCompany.company.id.eq(companyId));
+        predicate.and(candidateCompany.type.eq(FollowType.COMPANY_FOLLOW_CANDIDATE));
+        
+        var query = jpaQueryFactory
+                .select(Projections.constructor(CandidatePageResponse.class,
+                    candidate.id,
+                    candidate.fullName,
+                    candidate.avatarUrl,
+                    candidate.headline,
+                    candidate.experienceLevel,
+                    candidate.educationLevel,
+                    Projections.constructor(com.ptit.thesis.smartrecruit.dto.common.LocationDTO.class,
+                            location.country,
+                            location.provinceCity,
+                            location.commune,
+                            location.latitude,
+                            location.longitude),
+                    Expressions.constant(true)
+                ))
+                .from(candidate)
+                .leftJoin(candidate.location, location)
+                .innerJoin(candidateCompany).on(candidate.id.eq(candidateCompany.candidate.id))
+                .where(predicate)
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset());
+    
+
+        List<CandidatePageResponse> results = query.fetch();
+
+        Long total = jpaQueryFactory
+                .select(candidate.count())
+                .from(candidate)
+                .leftJoin(candidate.location, location)
+                .innerJoin(candidateCompany).on(candidate.id.eq(candidateCompany.candidate.id))
+                .where(predicate)
+                .fetchOne();
+
+        return new PageImpl<>(results, pageable, total);
     }
     
 }
