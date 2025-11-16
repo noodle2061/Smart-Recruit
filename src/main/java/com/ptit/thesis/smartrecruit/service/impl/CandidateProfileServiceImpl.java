@@ -13,7 +13,6 @@ import com.ptit.thesis.smartrecruit.dto.common.SocialLinkDTO;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateBasicInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateContactInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateProfileDetailRequest;
-import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidatePageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
@@ -166,22 +165,13 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         Company company = companyRepository.findByUser(user)
                             .orElseThrow(() -> new EntityNotFoundException("Company not found for user: " + user.getId()));
 
-        Page<CandidatePageResponse> candidatePageResponses = candidateProfileRepository.searchCandidates(
+        Page<CandidatePageResponse> candidatePageResponses = candidateProfileRepository.findCandidatesWithFilter(
                                 keyword, location, category, experienceLevel, educationLevels, gender, company.getId(), pageable);
         return  candidatePageResponses.map(candidatePageResponse -> {
             candidatePageResponse.setAvatarUrl(s3Service.generatePresignedUrl(candidatePageResponse.getAvatarUrl()));// đổi từ key sang url
             return candidatePageResponse;
         });
     }
-
-    /**
-     * Cập nhật trường email, avatar url sau khi mapper
-     * 
-     * @param dto
-     * @param user
-     * @return dto
-     */
-    
 
     @Override
     @Transactional
@@ -219,5 +209,20 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         } else {
             throw new EntityNotFoundException("User not found");
         }
+    }
+
+    @Override
+    @Transactional
+    public Page<CandidatePageResponse> getAllSavedCandidates(Pageable pageable) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        Company company = companyRepository.findByUser(user)
+                            .orElseThrow(() -> new EntityNotFoundException("Company not found for user: " + user.getId()));
+
+        Page<CandidatePageResponse> candidatePageResponses = candidateProfileRepository.findSavedCandidatesForEmployer(company.getId(), pageable);
+        return candidatePageResponses.map(candidatePageResponse -> {
+            candidatePageResponse.setAvatarUrl(s3Service.generatePresignedUrl(candidatePageResponse.getAvatarUrl()));
+            return candidatePageResponse;
+        });
     }    
 }
