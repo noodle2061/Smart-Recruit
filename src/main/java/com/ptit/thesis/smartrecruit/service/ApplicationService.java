@@ -15,4 +15,5 @@ public interface ApplicationService {
     ResumeResponse uploadResume(MultipartFile file, String title, User user);
     List<ResumeResponse> getAllCandidateResumes(User user);
     Page<ApplicationBriefResponse> getApplicationsForJob(Pageable pageable, ApplicationFilterRequest filter, Long jobId);
+    void deleteResume(Long resumeId, User user);
 }

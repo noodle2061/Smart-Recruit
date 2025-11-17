@@ -17,6 +17,7 @@ import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.Job;
 import com.ptit.thesis.smartrecruit.entity.Resume;
 import com.ptit.thesis.smartrecruit.entity.User;
+import com.ptit.thesis.smartrecruit.exception.ResourceNotFoundException;
 import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
 import com.ptit.thesis.smartrecruit.repository.ApplicationRepository;
 import com.ptit.thesis.smartrecruit.repository.CandidateProfileRepository;
@@ -32,6 +33,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -123,5 +125,23 @@ public class ApplicationServiceImpl implements ApplicationService {
     private boolean checklegalCandidate(CandidateProfile candidate) {
         return (candidate.getGender() != null && candidate.getDateOfBirth() != null && candidate.getPhone() != null 
                 && candidate.getEducationLevel() != null && candidate.getExperienceLevel() != null);
+    }
+
+    @Override
+    @Transactional
+    public void deleteResume(Long resumeId, User user) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resume not found for id: " + resumeId));
+
+        if (resume.getCandidate().getUser().getId() != user.getId()) {
+            throw new IllegalArgumentException("Resume with id " + resumeId + " does not belong to user " + user.getUsername());
+        }
+
+        try {
+            s3Service.deleteFileByKey(resume.getStorageKey());
+        } catch (S3Exception e) {
+            throw new S3ErrorException("Error deleting resume from S3: " + e.getMessage());
+        }
+        resumeRepository.delete(resume);
     }
 }
