@@ -120,8 +120,6 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
                         () -> new EntityNotFoundException("Candidate profile not found for user: " + user.getId()));
         candidateProfileMapper.updateEntity(request, candidateProfile);
 
-        User savedUser = userRepository.save(user);
-
         // location
         Location location = locationMapper.toLocationEntity(request.getLocation());
         Location savedLocation = locationRepository
@@ -134,7 +132,7 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
 
         CandidateProfile savedCandidateProfile = candidateProfileRepository.save(candidateProfile);
 
-        return toResponseDTO(savedCandidateProfile, savedUser);
+        return toResponseDTO(savedCandidateProfile, user);
     }
 
     @Override
