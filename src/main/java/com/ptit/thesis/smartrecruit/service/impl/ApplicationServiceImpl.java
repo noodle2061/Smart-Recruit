@@ -3,6 +3,7 @@ package com.ptit.thesis.smartrecruit.service.impl;
 import java.io.IOException;
 import java.util.List;
 
+import org.checkerframework.checker.units.qual.s;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +27,7 @@ import com.ptit.thesis.smartrecruit.repository.JobRepository;
 import com.ptit.thesis.smartrecruit.repository.ResumeRepository;
 import com.ptit.thesis.smartrecruit.service.ApplicationService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
+import com.ptit.thesis.smartrecruit.utils.StringUtil;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -55,7 +57,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         CandidateProfile candidateProfile = candidateProfileRepository.findByUser(user)
                 .orElseThrow(
                         () -> new EntityNotFoundException("Candidate profile not found for user: " + user.getId()));
-        
+
         if (!checklegalCandidate(candidateProfile)) {
             throw new IllegalArgumentException("You must setup your candidate profile first.");
         }
@@ -93,13 +95,33 @@ public class ApplicationServiceImpl implements ApplicationService {
         return resumeRepository.findAllByCandidate(candidateProfile).stream().map(resume -> toDTO(resume)).toList();
     }
 
-    public ResumeResponse toDTO(Resume resume) {
-        return ResumeResponse.builder()
-                .id(resume.getId())
-                .title(resume.getTitle())
-                .size(resume.getSize())
-                .url(s3Service.generatePresignedUrl(resume.getStorageKey()))
-                .build();
+    @Override
+    @Transactional
+    public ResumeResponse updateResume(Long id, MultipartFile resumeFile, String title, User user) {
+        Resume resume = resumeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Resume not found for id: " + id));
+
+        if (resume.getCandidate().getUser().getId() != user.getId()) {
+            throw new IllegalArgumentException(
+                    "Resume with id " + id + " does not belong to user " + user.getUsername());
+        }
+
+        resume.setTitle(StringUtil.hasText(title) ? title : resume.getTitle());
+
+        if (resumeFile != null && !resumeFile.isEmpty()) {
+            String newResumeKey = null;
+            try {
+                newResumeKey = s3Service.uploadFile(resumeFile, "candidate/resume/");
+                s3Service.deleteFileByKey(resume.getStorageKey());
+                resume.setStorageKey(newResumeKey);
+                resume.setSize((resumeFile.getSize() / (1024.0f * 1024.0f)));
+            } catch (IOException e) {
+                throw new S3ErrorException("Error uploading resume to the S3: " + e.getMessage());
+            }
+        }
+
+        Resume savedResume = resumeRepository.save(resume);
+        return toDTO(savedResume);
     }
 
     @Override
@@ -112,18 +134,19 @@ public class ApplicationServiceImpl implements ApplicationService {
         Job existJob = jobRepository.findById(jobId)
                 .orElseThrow(() -> new EntityNotFoundException("Job not found for id: " + jobId));
         if (company.getId() != existJob.getCompany().getId()) {
-            throw new IllegalArgumentException("Job with id " + jobId + " does not belong to company " + company.getName());
+            throw new IllegalArgumentException(
+                    "Job with id " + jobId + " does not belong to company " + company.getName());
         }
         return applicationRepository.findApplicationsByJobId(jobId, filter, pageable)
-            .map(dto -> {
-                dto.setCandidateAvatarUrl(s3Service.generatePresignedUrl(dto.getCandidateAvatarUrl()));
-                dto.setResumeUrl(s3Service.generatePresignedUrl(dto.getResumeUrl()));
-                return dto;
-            });
+                .map(dto -> {
+                    dto.setCandidateAvatarUrl(s3Service.generatePresignedUrl(dto.getCandidateAvatarUrl()));
+                    dto.setResumeUrl(s3Service.generatePresignedUrl(dto.getResumeUrl()));
+                    return dto;
+                });
     }
 
     private boolean checklegalCandidate(CandidateProfile candidate) {
-        return (candidate.getGender() != null && candidate.getDateOfBirth() != null && candidate.getPhone() != null 
+        return (candidate.getGender() != null && candidate.getDateOfBirth() != null && candidate.getPhone() != null
                 && candidate.getEducationLevel() != null && candidate.getExperienceLevel() != null);
     }
 
@@ -134,7 +157,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Resume not found for id: " + resumeId));
 
         if (resume.getCandidate().getUser().getId() != user.getId()) {
-            throw new IllegalArgumentException("Resume with id " + resumeId + " does not belong to user " + user.getUsername());
+            throw new IllegalArgumentException(
+                    "Resume with id " + resumeId + " does not belong to user " + user.getUsername());
         }
 
         try {
@@ -143,5 +167,14 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new S3ErrorException("Error deleting resume from S3: " + e.getMessage());
         }
         resumeRepository.delete(resume);
+    }
+
+    public ResumeResponse toDTO(Resume resume) {
+        return ResumeResponse.builder()
+                .id(resume.getId())
+                .title(resume.getTitle())
+                .size(resume.getSize())
+                .url(s3Service.generatePresignedUrl(resume.getStorageKey()))
+                .build();
     }
 }

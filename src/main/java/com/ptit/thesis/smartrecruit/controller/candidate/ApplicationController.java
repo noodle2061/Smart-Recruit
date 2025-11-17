@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,6 +62,22 @@ public class ApplicationController {
                 .status(HttpStatus.OK.value())
                 .message("Get resumes successfully")
                 .data(resumes)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @PatchMapping(value = "/resume/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Cập nhật một resume")
+    public ResponseEntity<ApiResponse<ResumeResponse>> updateResume(@PathVariable Long id,
+                                                          @RequestPart(name = "resume", required = false) MultipartFile resumeFile,
+                                                          @RequestPart(name = "title", required = false) String title,
+                                                          @AuthenticationPrincipal User user) {
+        ResumeResponse resume = applicationService.updateResume(id, resumeFile, title, user);
+        ApiResponse<ResumeResponse> response = ApiResponse.<ResumeResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Update resume successfully")
+                .data(resume)
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
