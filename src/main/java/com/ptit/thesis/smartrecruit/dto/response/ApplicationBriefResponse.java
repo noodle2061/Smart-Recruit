@@ -11,6 +11,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+/**
+ * DTO các đơn ứng tuyển cho một job của employer, sử dụng cho phân trang.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,6 +24,7 @@ public class ApplicationBriefResponse {
     String candidateName;
     String candidateAvatarUrl;
     String candidateHeadline;
+    String candidateEmail;
     ExperienceLevel experienceLevel;
     EducationLevel educationLevel;
     LocalDateTime appliedAt;

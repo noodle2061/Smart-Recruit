@@ -15,6 +15,7 @@ import com.ptit.thesis.smartrecruit.entity.Application;
 import com.ptit.thesis.smartrecruit.entity.QApplication;
 import com.ptit.thesis.smartrecruit.entity.QCandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.QResume;
+import com.ptit.thesis.smartrecruit.entity.QUser;
 import com.ptit.thesis.smartrecruit.service.S3Service;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 import com.querydsl.core.BooleanBuilder;
@@ -34,7 +35,6 @@ import lombok.experimental.FieldDefaults;
 public class ApplicationRepositoryCustomImpl implements ApplicationRepositoryCustom {
 
     JPAQueryFactory jpaQueryFactory;
-    S3Service s3Service;
 
     @Override
     public Page<ApplicationBriefResponse> findApplicationsByJobId(Long jobId, ApplicationFilterRequest filter,
@@ -43,6 +43,7 @@ public class ApplicationRepositoryCustomImpl implements ApplicationRepositoryCus
         QApplication application = QApplication.application;
         QCandidateProfile candidate = QCandidateProfile.candidateProfile;
         QResume resume = QResume.resume;
+        QUser user = QUser.user;
 
         BooleanBuilder predicate = new BooleanBuilder();
         predicate.and(application.job.id.eq(jobId));
@@ -77,6 +78,7 @@ public class ApplicationRepositoryCustomImpl implements ApplicationRepositoryCus
                         candidate.fullName,
                         candidate.avatarUrl,
                         candidate.headline,
+                        user.email,
                         candidate.experienceLevel,
                         candidate.educationLevel,
                         application.createdAt,
@@ -86,6 +88,7 @@ public class ApplicationRepositoryCustomImpl implements ApplicationRepositoryCus
                 .from(application)
                 .join(application.candidate, candidate)
                 .join(application.resume, resume)
+                .join(application.candidate.user, user)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .where(predicate);
