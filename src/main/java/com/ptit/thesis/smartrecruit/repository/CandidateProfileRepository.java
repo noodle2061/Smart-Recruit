@@ -76,4 +76,7 @@ public interface CandidateProfileRepository extends JpaRepository<CandidateProfi
 
     @Query("SELECT c.fullName FROM CandidateProfile c WHERE c.user = :user")
     String findFullNameByUser(User user);
+
+    @Query("SELECT c.avatarUrl FROM CandidateProfile c WHERE c.user = :user")
+    String findAvatarByUser(User user);
 }

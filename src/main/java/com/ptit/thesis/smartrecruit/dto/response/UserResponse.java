@@ -14,4 +14,5 @@ public class UserResponse {
     String role;
     String firebaseCustomToken;
     boolean isCompanySetup; // copmpany
+    String avatar;
 }

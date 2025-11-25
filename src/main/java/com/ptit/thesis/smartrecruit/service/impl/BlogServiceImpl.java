@@ -22,6 +22,7 @@ import com.ptit.thesis.smartrecruit.entity.Blog;
 import com.ptit.thesis.smartrecruit.entity.BlogCategory;
 import com.ptit.thesis.smartrecruit.entity.Tag;
 import com.ptit.thesis.smartrecruit.entity.User;
+import com.ptit.thesis.smartrecruit.enums.BlogStatus;
 import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
 import com.ptit.thesis.smartrecruit.mapper.BlogMapper;
 import com.ptit.thesis.smartrecruit.repository.BlogCategoryRepository;
@@ -30,7 +31,6 @@ import com.ptit.thesis.smartrecruit.service.BlogService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
 import com.ptit.thesis.smartrecruit.utils.AuthUtil;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import lombok.AccessLevel;
@@ -146,10 +146,12 @@ public class BlogServiceImpl implements BlogService {
             Long tagId) {
         Specification<Blog> spec = Specification.unrestricted();
         if (keyword != null && !keyword.isBlank()) {
-            spec = spec.and((root, query, cb) -> cb.or(
-                    cb.like(cb.lower(root.get("title")), "%" + keyword.toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%"),
-                    cb.like(root.get("content"), "%" + keyword.toLowerCase() + "%")));
+            spec = spec.and((root, query, cb) -> cb.and(
+                    cb.equal(root.get("status"), BlogStatus.PUBLISHED),
+                    cb.or(
+                            cb.like(cb.lower(root.get("title")), "%" + keyword.toLowerCase() + "%"),
+                            cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%"),
+                            cb.like(cb.lower(root.get("content")), "%" + keyword.toLowerCase() + "%"))));
         }
 
         if (categoryIds != null && categoryIds.size() > 0) {

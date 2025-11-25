@@ -2,7 +2,6 @@ package com.ptit.thesis.smartrecruit.service;
 
 import com.ptit.thesis.smartrecruit.dto.request.OAuthRegisterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.RegisterRequest;
-import com.ptit.thesis.smartrecruit.dto.request.RegisterWithAuthRequest;
 import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
 
 public interface AuthService {

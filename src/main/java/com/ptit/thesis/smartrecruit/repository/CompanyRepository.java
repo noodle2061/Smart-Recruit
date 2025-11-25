@@ -30,5 +30,8 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpec
     "FROM Company c WHERE c.id = :id")
     CompanyBasicInfoDTO findBasicInfoById(Long id);
 
+    @Query("SELECT c.logoUrl FROM Company c WHERE c.user = :user")
+    String findAvatarByUser(User user);
+
     boolean existsByUser(User user);
 }

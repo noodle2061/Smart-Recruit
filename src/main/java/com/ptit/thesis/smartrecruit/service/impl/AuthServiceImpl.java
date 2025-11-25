@@ -26,6 +26,7 @@ import com.ptit.thesis.smartrecruit.repository.RoleRepository;
 import com.ptit.thesis.smartrecruit.repository.UserRepository;
 import com.ptit.thesis.smartrecruit.security.FirebaseUtil;
 import com.ptit.thesis.smartrecruit.service.AuthService;
+import com.ptit.thesis.smartrecruit.service.S3Service;
 import com.ptit.thesis.smartrecruit.utils.Constraint;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 
@@ -47,6 +48,7 @@ public class AuthServiceImpl implements AuthService {
     RoleRepository roleRepository;
     CandidateProfileRepository candidateProfileRepository;
     CompanyRepository companyRepository;
+    S3Service s3Service;
 
     @Transactional
     @Override
@@ -236,8 +238,10 @@ public class AuthServiceImpl implements AuthService {
         String roleString = savedUser.getRole().getName();
         if (roleString.equals(Constraint.CANDIDATE_ROLE)) {
             response.setFullName(candidateProfileRepository.findFullNameByUser(savedUser));
+            response.setAvatar(s3Service.generatePresignedUrl(candidateProfileRepository.findAvatarByUser(savedUser)));
         } else if (roleString.equals(Constraint.EMPLOYER_ROLE)) {
             response.setCompanySetup(companyRepository.existsByUser(savedUser));
+            response.setAvatar(companyRepository.findAvatarByUser(savedUser));
         }
         return response;
     }
