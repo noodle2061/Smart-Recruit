@@ -27,6 +27,15 @@ public interface BlogService {
             List<Long> categoryIds,
             Long tagId);
 
+    public Page<BlogResponse> listWithPageOfUser(
+            Long id,
+            String keyword,
+            String sort,
+            Integer page,
+            Integer limit,
+            List<Long> categoryIds,
+            Long tagId);
+
     public void delete(Long id);
 
     public List<BlogCategoryDTO> getCategories();

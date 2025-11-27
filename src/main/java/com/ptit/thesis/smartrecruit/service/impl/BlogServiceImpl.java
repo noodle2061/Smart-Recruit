@@ -145,6 +145,7 @@ public class BlogServiceImpl implements BlogService {
             List<Long> categoryIds,
             Long tagId) {
         Specification<Blog> spec = Specification.unrestricted();
+
         if (keyword != null && !keyword.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.and(
                     cb.equal(root.get("status"), BlogStatus.PUBLISHED),
@@ -174,6 +175,8 @@ public class BlogServiceImpl implements BlogService {
                 sort != null && !sort.isBlank() && sort.charAt(0) == '-' ? Sort.Direction.DESC : Sort.Direction.ASC,
                 sort != null ? sort.substring(1) : "id");
 
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), BlogStatus.PUBLISHED));
+
         Pageable pageable = PageRequest.of(page, limit, _sort);
         Page<Blog> blogs = blogRepository.findAll(spec, pageable);
         Page<BlogResponse> pagination = blogs.map(blog -> blogMapper.toBlogResponse(blog));
@@ -192,6 +195,47 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public List<TagDTO> getPopularTags() {
         return this.blogCategoryRepository.findPopularTags();
+    }
+
+    @Override
+    public Page<BlogResponse> listWithPageOfUser(Long id, String keyword, String sort, Integer page, Integer limit,
+            List<Long> categoryIds, Long tagId) {
+        Specification<Blog> spec = Specification.unrestricted();
+
+        if (keyword != null && !keyword.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("title")), "%" + keyword.toLowerCase() + "%"),
+                    cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%"),
+                    cb.like(cb.lower(root.get("content")), "%" + keyword.toLowerCase() + "%")));
+        }
+
+        if (categoryIds != null && categoryIds.size() > 0) {
+            spec = spec.and((root, query, cb) -> {
+                Join<Blog, BlogCategory> categoryJoin = root.join("categories", JoinType.LEFT);
+
+                return categoryJoin.get("id").in(categoryIds);
+            });
+        }
+
+        if (tagId != null) {
+            spec = spec.and((root, query, cb) -> {
+                Join<Blog, Tag> tagJoin = root.join("tags", JoinType.LEFT);
+
+                return cb.equal(tagJoin.get("id"), tagId);
+            });
+        }
+
+        Sort _sort = Sort.by(
+                sort != null && !sort.isBlank() && sort.charAt(0) == '-' ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sort != null ? sort.substring(1) : "id");
+
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("author").get("id"), id));
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), BlogStatus.PUBLISHED));
+
+        Pageable pageable = PageRequest.of(page, limit, _sort);
+        Page<Blog> blogs = blogRepository.findAll(spec, pageable);
+        Page<BlogResponse> pagination = blogs.map(blog -> blogMapper.toBlogResponse(blog));
+        return pagination;
     }
 
 }

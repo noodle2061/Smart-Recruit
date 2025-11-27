@@ -155,11 +155,34 @@ public class BlogController {
         List<TagDTO> data = this.blogService.getPopularTags();
 
         ApiResponse<List<TagDTO>> response = ApiResponse.<List<TagDTO>>builder()
-            .status(HttpStatus.OK.value())
-            .message("get tags of blog successfully.")
-            .data(data)
-            .build();
+                .status(HttpStatus.OK.value())
+                .message("get tags of blog successfully.")
+                .data(data)
+                .build();
 
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/user/{id}")
+    @Operation(summary = "Lấy danh sách bài viết của 1 user")
+    @SecurityRequirements()
+    public ResponseEntity<ApiResponse<List<BlogResponse>>> getBlogOfUser(
+            @PathVariable Long id,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(required = false, defaultValue = "+createdAt") String sort,
+            @RequestParam(required = false) List<Long> categoryIds,
+            @RequestParam(required = false) Long tagId) {
+        Page<BlogResponse> blogs = this.blogService.listWithPageOfUser(id, keyword, sort, page, limit, categoryIds,
+                tagId);
+
+        ApiResponse<List<BlogResponse>> response = ApiResponse.<List<BlogResponse>>builder()
+                .status(HttpStatus.OK.value())
+                .message("Get all blog of user_id " + id)
+                .data(blogs.getContent())
+                .meta(PageResponse.of(blogs))
+                .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
