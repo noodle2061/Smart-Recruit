@@ -1,4 +1,4 @@
-package com.ptit.thesis.smartrecruit.notification;
+package com.ptit.thesis.smartrecruit.service;
 
 public interface MailService {
     public void sendSimpleMessage(String to, String subject, String body);

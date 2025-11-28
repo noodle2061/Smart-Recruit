@@ -3,7 +3,7 @@ package com.ptit.thesis.smartrecruit.validation.company.profile;
 import java.time.Year;
 
 import com.ptit.thesis.smartrecruit.dto.request.CompanyProfileRequest;
-import com.ptit.thesis.smartrecruit.utils.Constraint;
+import com.ptit.thesis.smartrecruit.utils.Constant;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -41,7 +41,7 @@ public class CompanyProfileValidator implements ConstraintValidator<ValidCompany
         // Regex cho số điện thoại Việt Nam:
         // - Bắt đầu bằng 0, theo sau là 9 chữ số (tổng 10)
         // - Hoặc bắt đầu bằng +84, theo sau là 9 chữ số (tổng 12)
-        final String phoneRegex = Constraint.INTERNATIONAL_PHONE_REGEX;
+        final String phoneRegex = Constant.INTERNATIONAL_PHONE_REGEX;
 
         return phone.matches(phoneRegex);
     }
