@@ -45,7 +45,7 @@ import com.ptit.thesis.smartrecruit.repository.SavedJobRepository;
 import com.ptit.thesis.smartrecruit.service.JobService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
 import com.ptit.thesis.smartrecruit.specification.EmployerJobSpecification;
-import com.ptit.thesis.smartrecruit.utils.Constraint;
+import com.ptit.thesis.smartrecruit.utils.Constant;
 
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -134,7 +134,7 @@ public class JobServiceImpl implements JobService {
         if (principal instanceof User) { // không phải khách vãng lai
             User user = (User) principal;
             String roleUpper = user.getRole().getName();
-            if (roleUpper.equals(Constraint.CANDIDATE_ROLE)) { // role candidate thì set thêm trường isFavorite và isApplied
+            if (roleUpper.equals(Constant.CANDIDATE_ROLE)) { // role candidate thì set thêm trường isFavorite và isApplied
                 CandidateProfile candidate = candidateProfileRepository.findByUser(user)
                         .orElseThrow(() -> new ResourceNotFoundException("Candidate not found for user: " + user.getId()));
                 response.setIsFavorite(savedJobRepository.existsByCandidateAndJob(candidate, job));
@@ -192,7 +192,7 @@ public class JobServiceImpl implements JobService {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof User) {
             User user = (User) principal;
-            if (user.getRole().getName().equals(Constraint.CANDIDATE_ROLE)) {
+            if (user.getRole().getName().equals(Constant.CANDIDATE_ROLE)) {
                 // Lấy candidateProfileId
                 CandidateProfile candidate = candidateProfileRepository.findByUser(user).orElse(null);
                 if (candidate != null) {

@@ -19,15 +19,15 @@ import com.ptit.thesis.smartrecruit.exception.InvalidFieldException;
 import com.ptit.thesis.smartrecruit.exception.RegistrationException;
 import com.ptit.thesis.smartrecruit.exception.ResourceNotFoundException;
 import com.ptit.thesis.smartrecruit.mapper.UserMapper;
-import com.ptit.thesis.smartrecruit.notification.NotificationService;
 import com.ptit.thesis.smartrecruit.repository.CandidateProfileRepository;
 import com.ptit.thesis.smartrecruit.repository.CompanyRepository;
 import com.ptit.thesis.smartrecruit.repository.RoleRepository;
 import com.ptit.thesis.smartrecruit.repository.UserRepository;
 import com.ptit.thesis.smartrecruit.security.FirebaseUtil;
 import com.ptit.thesis.smartrecruit.service.AuthService;
+import com.ptit.thesis.smartrecruit.service.NotificationService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
-import com.ptit.thesis.smartrecruit.utils.Constraint;
+import com.ptit.thesis.smartrecruit.utils.Constant;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 
 import lombok.AccessLevel;
@@ -113,7 +113,7 @@ public class AuthServiceImpl implements AuthService {
 
         newEntityUser.setRole(roleOfUser);
 
-        if (roleOfUser.getName().equals(Constraint.CANDIDATE_ROLE)) {
+        if (roleOfUser.getName().equals(Constant.CANDIDATE_ROLE)) {
             CandidateProfile newCandidateProfile = new CandidateProfile();
             newCandidateProfile.setUser(newEntityUser);
             newEntityUser.setCandidateProfile(newCandidateProfile);
@@ -188,7 +188,7 @@ public class AuthServiceImpl implements AuthService {
             newEntityUser.setUserName(userName);
             newEntityUser.setRole(roleOfUser);
 
-            if (roleOfUser.getName().equals(Constraint.CANDIDATE_ROLE)) {
+            if (roleOfUser.getName().equals(Constant.CANDIDATE_ROLE)) {
                 CandidateProfile newCandidateProfile = new CandidateProfile();
                 newCandidateProfile.setUser(newEntityUser);
                 newEntityUser.setCandidateProfile(newCandidateProfile);
@@ -234,15 +234,18 @@ public class AuthServiceImpl implements AuthService {
 
 
     public UserResponse toUserResponse(User savedUser) {
-        UserResponse response = userMapper.toUserResponse(savedUser);
-        String roleString = savedUser.getRole().getName();
-        if (roleString.equals(Constraint.CANDIDATE_ROLE)) {
-            response.setFullName(candidateProfileRepository.findFullNameByUser(savedUser));
-            response.setAvatar(s3Service.generatePresignedUrl(candidateProfileRepository.findAvatarByUser(savedUser)));
-        } else if (roleString.equals(Constraint.EMPLOYER_ROLE)) {
-            response.setCompanySetup(companyRepository.existsByUser(savedUser));
-            response.setAvatar(companyRepository.findAvatarByUser(savedUser));
-        }
-        return response;
+    UserResponse response = userMapper.toUserResponse(savedUser);
+    String role = savedUser.getRole().getName();
+
+    if (Constant.CANDIDATE_ROLE.equals(role)) {
+        response.setFullName(candidateProfileRepository.findFullNameByUser(savedUser));
+        String avatarKey = candidateProfileRepository.findAvatarByUser(savedUser);
+        response.setAvatar(s3Service.generatePresignedUrl(avatarKey));
+    } else if (Constant.EMPLOYER_ROLE.equals(role)) {
+        response.setCompanySetup(companyRepository.existsByUser(savedUser));
+        response.setAvatar(companyRepository.findAvatarByUser(savedUser));
     }
+
+    return response;
+}
 }
