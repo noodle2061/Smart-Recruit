@@ -234,16 +234,18 @@ public class AuthServiceImpl implements AuthService {
 
 
     public UserResponse toUserResponse(User savedUser) {
-        UserResponse response = userMapper.toUserResponse(savedUser);
-        String roleString = savedUser.getRole().getName();
-        if (roleString.equals(Constant.CANDIDATE_ROLE)) {
-            response.setFullName(candidateProfileRepository.findFullNameByUser(savedUser));
-        } else if (roleString.equals(Constant.EMPLOYER_ROLE)) {
-            response.setAvatar(s3Service.generatePresignedUrl(candidateProfileRepository.findAvatarByUser(savedUser)));
-        } else if (roleString.equals(Constant.EMPLOYER_ROLE)) {
-            response.setCompanySetup(companyRepository.existsByUser(savedUser));
-            response.setAvatar(companyRepository.findAvatarByUser(savedUser));
-        }
-        return response;
+    UserResponse response = userMapper.toUserResponse(savedUser);
+    String role = savedUser.getRole().getName();
+
+    if (Constant.CANDIDATE_ROLE.equals(role)) {
+        response.setFullName(candidateProfileRepository.findFullNameByUser(savedUser));
+        String avatarKey = candidateProfileRepository.findAvatarByUser(savedUser);
+        response.setAvatar(s3Service.generatePresignedUrl(avatarKey));
+    } else if (Constant.EMPLOYER_ROLE.equals(role)) {
+        response.setCompanySetup(companyRepository.existsByUser(savedUser));
+        response.setAvatar(companyRepository.findAvatarByUser(savedUser));
     }
+
+    return response;
+}
 }
