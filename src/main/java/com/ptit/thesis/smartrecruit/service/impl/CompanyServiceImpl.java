@@ -34,7 +34,7 @@ import com.ptit.thesis.smartrecruit.repository.CompanyRepositoryCustom;
 import com.ptit.thesis.smartrecruit.repository.SocialLinkRepository;
 import com.ptit.thesis.smartrecruit.service.CompanyService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
-import com.ptit.thesis.smartrecruit.utils.Constraint;
+import com.ptit.thesis.smartrecruit.utils.Constant;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -174,7 +174,7 @@ public class CompanyServiceImpl implements CompanyService {
             log.info("User already login.");
             User user = (User) principle;
             String roleUpper = user.getRole().getName();
-            if (roleUpper.equals(Constraint.CANDIDATE_ROLE)) {
+            if (roleUpper.equals(Constant.CANDIDATE_ROLE)) {
                 response.setIsFavorite(candidateCompanyRepository.existsByCandidateAndCompany(user.getCandidateProfile(), company));
             }
         } else {

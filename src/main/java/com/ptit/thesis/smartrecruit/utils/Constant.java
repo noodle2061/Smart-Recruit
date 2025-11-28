@@ -1,6 +1,6 @@
 package com.ptit.thesis.smartrecruit.utils;
 
-public class Constraint {
+public class Constant {
     public static final String CANDIDATE_ROLE = "CANDIDATE";
     public static final String EMPLOYER_ROLE = "EMPLOYER";
 
