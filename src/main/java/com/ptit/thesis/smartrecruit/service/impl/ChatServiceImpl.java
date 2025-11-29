@@ -128,13 +128,13 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
-    public Slice<ConversationResponse> getUserConversations(User user, Pageable pageable) {
+    public Slice<ConversationResponse> getUserConversations(User user, Pageable pageable, Boolean isRead) {
         boolean isCandidateSender = user.getRole().getName().equals(Constant.CANDIDATE_ROLE);
 
         if (isCandidateSender) {
             CandidateProfile candidate = candidateProfileRepository.findByUser(user)
                     .orElseThrow(() -> new ResourceNotFoundException("Candidate not found for user: " + user.getId()));
-            return conversationRepository.findCandidateConversations(candidate, pageable).map(
+            return conversationRepository.findCandidateConversations(candidate, pageable, isRead).map(
                     conversation -> {
                         conversation.setPartnerAvatarUrl(
                                 s3Service.generatePresignedUrl(conversation.getPartnerAvatarUrl()));
@@ -149,7 +149,7 @@ public class ChatServiceImpl implements ChatService {
         } else {
             Company company = companyRepository.findByUser(user)
                     .orElseThrow(() -> new ResourceNotFoundException("Company not found for user: " + user.getId()));
-            return conversationRepository.findCompanyConversations(company, pageable).map(
+            return conversationRepository.findCompanyConversations(company, pageable, isRead).map(
                     conversation -> {
                         conversation.setPartnerAvatarUrl(
                                 s3Service.generatePresignedUrl(conversation.getPartnerAvatarUrl()));

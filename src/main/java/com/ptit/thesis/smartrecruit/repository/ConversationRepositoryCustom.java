@@ -8,7 +8,7 @@ import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Company;
 
 public interface ConversationRepositoryCustom {
-    Slice<ConversationResponse> findCandidateConversations(CandidateProfile candidate, Pageable pageable);
+    Slice<ConversationResponse> findCandidateConversations(CandidateProfile candidate, Pageable pageable, Boolean isRead);
 
-    Slice<ConversationResponse> findCompanyConversations(Company company, Pageable pageable);
+    Slice<ConversationResponse> findCompanyConversations(Company company, Pageable pageable, Boolean isRead);
 }

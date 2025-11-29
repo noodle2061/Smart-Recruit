@@ -18,6 +18,7 @@ import com.ptit.thesis.smartrecruit.enums.MessageDirection;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -33,7 +34,7 @@ public class ConversationRepositoryCustomImpl implements ConversationRepositoryC
     JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Slice<ConversationResponse> findCandidateConversations(CandidateProfile candidate, Pageable pageable) {
+    public Slice<ConversationResponse> findCandidateConversations(CandidateProfile candidate, Pageable pageable, Boolean isRead) {
         QConversation conversation = QConversation.conversation;
         QCandidateProfile qcandidate = QCandidateProfile.candidateProfile;
         QCompany company = QCompany.company;
@@ -51,6 +52,24 @@ public class ConversationRepositoryCustomImpl implements ConversationRepositoryC
         BooleanBuilder predicate = new BooleanBuilder();
         
         predicate.and(qcandidate.id.eq(candidate.getId()));
+
+        if (isRead != null) {
+            BooleanExpression isReadExpression = JPAExpressions
+                        .selectOne()
+                        .from(chatMessage)
+                        .where(
+                            chatMessage.conversation.eq(conversation)
+                            .and(chatMessage.direction.eq(MessageDirection.FROM_EMPLOYER))
+                            .and(chatMessage.isRead.eq(false))
+                        )
+                        .exists();
+
+            if (!isRead) {
+                predicate.and(isReadExpression);
+            } else {
+                predicate.and(isReadExpression.not());
+            }
+        }
 
         var query = jpaQueryFactory
                 .select(Projections.constructor(ConversationResponse.class,
@@ -81,7 +100,7 @@ public class ConversationRepositoryCustomImpl implements ConversationRepositoryC
     }
 
     @Override
-    public Slice<ConversationResponse> findCompanyConversations(Company company, Pageable pageable) {
+    public Slice<ConversationResponse> findCompanyConversations(Company company, Pageable pageable, Boolean isRead) {
         QConversation conversation = QConversation.conversation;
         QCandidateProfile candidate = QCandidateProfile.candidateProfile;
         QCompany qcompany = QCompany.company;
@@ -100,13 +119,23 @@ public class ConversationRepositoryCustomImpl implements ConversationRepositoryC
         
         predicate.and(qcompany.id.eq(company.getId()));
 
-         // Long conservationId;
-    // Long partnerId;
-    // String partnerName;
-    // String partnerAvatarUrl;
-    // String lastMessage;
-    // LocalDateTime lastMessageAt;
-    // long unreadCount;
+        if (isRead != null) {
+            BooleanExpression isReadExpression = JPAExpressions
+                    .selectOne()
+                    .from(chatMessage)
+                    .where(
+                        chatMessage.conversation.eq(conversation)
+                        .and(chatMessage.isRead.eq(false))
+                        .and(chatMessage.direction.eq(MessageDirection.FROM_CANDIDATE))
+                    )
+                    .exists();
+            if (!isRead) {
+                predicate.and(isReadExpression);
+            } else {
+                predicate.and(isReadExpression.not());
+            }
+        }
+
         var query = jpaQueryFactory
                 .select(Projections.constructor(ConversationResponse.class, 
                     conversation.id,

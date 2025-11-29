@@ -12,7 +12,7 @@ import com.ptit.thesis.smartrecruit.entity.User;
 public interface ChatService {
     ChatMessagesInitialResponse sendMessage(ChatMessageRequest request, User sender, boolean isInitialized);
 
-    Slice<ConversationResponse> getUserConversations(User user, Pageable pageable);
+    Slice<ConversationResponse> getUserConversations(User user, Pageable pageable, Boolean isRead);
 
     Slice<ChatMessageResponse> getConversationMessages(Long conversationId, User user, Pageable pageable);
 
