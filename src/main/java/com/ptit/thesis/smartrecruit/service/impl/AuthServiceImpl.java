@@ -168,7 +168,9 @@ public class AuthServiceImpl implements AuthService {
         } else { // User chưa tồn tại, là luồng đăng ký, trong luồng này cần xem đã gửi request
                  // chưa, nếu chưa thì cần gửi lên request để xác nhận
 
-            if (request == null || request.getRole() == null) { // phần này nhằm kiểm tra người dùng đã chọn role chưa, chưa có thì trả về exception để giao diện sẽ hiện role để chọn, mặc định ban đầu là không hiện role ra
+            if (request == null || request.getRole() == null) { // phần này nhằm kiểm tra người dùng đã chọn role chưa,
+                                                                // chưa có thì trả về exception để giao diện sẽ hiện
+                                                                // role để chọn, mặc định ban đầu là không hiện role ra
                 throw new InvalidFieldException("Role is required.");
             }
 
@@ -232,20 +234,20 @@ public class AuthServiceImpl implements AuthService {
         return userName;
     }
 
-
     public UserResponse toUserResponse(User savedUser) {
-    UserResponse response = userMapper.toUserResponse(savedUser);
-    String role = savedUser.getRole().getName();
+        UserResponse response = userMapper.toUserResponse(savedUser);
+        String role = savedUser.getRole().getName();
 
-    if (Constant.CANDIDATE_ROLE.equals(role)) {
-        response.setFullName(candidateProfileRepository.findFullNameByUser(savedUser));
-        String avatarKey = candidateProfileRepository.findAvatarByUser(savedUser);
-        response.setAvatar(s3Service.generatePresignedUrl(avatarKey));
-    } else if (Constant.EMPLOYER_ROLE.equals(role)) {
-        response.setCompanySetup(companyRepository.existsByUser(savedUser));
-        response.setAvatar(companyRepository.findAvatarByUser(savedUser));
+        if (Constant.CANDIDATE_ROLE.equals(role)) {
+            response.setFullName(candidateProfileRepository.findFullNameByUser(savedUser));
+            String avatarKey = candidateProfileRepository.findAvatarByUser(savedUser);
+            response.setAvatar(s3Service.generatePresignedUrl(avatarKey));
+        } else if (Constant.EMPLOYER_ROLE.equals(role)) {
+            response.setCompanySetup(companyRepository.existsByUser(savedUser));
+            String avatarKey = companyRepository.findAvatarByUser(savedUser);
+            response.setAvatar(s3Service.generatePresignedUrl(avatarKey));
+        }
+
+        return response;
     }
-
-    return response;
-}
 }
