@@ -10,5 +10,6 @@ import com.ptit.thesis.smartrecruit.entity.ChatMessage;
 public interface ChatMapper {
 
     @Mapping(target = "timestampt", source = "createdAt")
+    @Mapping(target = "conversationId", source = "conversation.id")
     ChatMessageResponse toChatMessageResponse(ChatMessage message);
 }

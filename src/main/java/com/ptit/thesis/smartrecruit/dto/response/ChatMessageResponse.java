@@ -21,5 +21,6 @@ public class ChatMessageResponse {
     String content;
     LocalDateTime timestampt;
     MessageDirection direction;
+    Long conversationId;
     boolean isRead; 
 }
