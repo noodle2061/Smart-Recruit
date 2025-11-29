@@ -3,6 +3,7 @@ package com.ptit.thesis.smartrecruit.service.impl;
 import java.util.List;
 
 import org.hibernate.Hibernate;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.ptit.thesis.smartrecruit.dto.request.ChatMessageRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ChatMessageResponse;
+import com.ptit.thesis.smartrecruit.dto.response.ChatMessagesInitialResponse;
 import com.ptit.thesis.smartrecruit.dto.response.ConversationResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.ChatMessage;
@@ -57,7 +59,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
-    public void sendMessage(ChatMessageRequest request, User sender) {
+    public ChatMessagesInitialResponse sendMessage(ChatMessageRequest request, User sender, boolean isInitialized) {
         boolean isCandidateSender = sender.getRole().getName().equals(Constant.CANDIDATE_ROLE);
 
         CandidateProfile candidate;
@@ -110,6 +112,18 @@ public class ChatServiceImpl implements ChatService {
                 "Bạn có một tin nhắn mới từ " + (isCandidateSender ? candidate.getFullName() : company.getName()),
                 NotificationType.NEW_MESSAGE,
                 conversation.getId());
+        
+        if (isInitialized) {
+            Pageable pageable = PageRequest.of(0, 10);
+            Slice<ChatMessageResponse> conversations = getConversationMessages(conversation.getId(), sender, pageable);
+            ChatMessagesInitialResponse initlizatedresponse = new ChatMessagesInitialResponse();
+            initlizatedresponse.setConversationId(conversation.getId());
+            initlizatedresponse.setMessages(conversations.getContent());
+            initlizatedresponse.setHasNext(conversations.hasNext());
+            return initlizatedresponse;
+        }
+        
+        return null;
     }
 
     @Override

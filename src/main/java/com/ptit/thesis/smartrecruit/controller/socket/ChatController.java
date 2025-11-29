@@ -3,7 +3,6 @@ package com.ptit.thesis.smartrecruit.controller.socket;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ptit.thesis.smartrecruit.dto.request.ChatMessageRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.ChatMessageResponse;
+import com.ptit.thesis.smartrecruit.dto.response.ChatMessagesInitialResponse;
 import com.ptit.thesis.smartrecruit.dto.response.ConversationResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.service.ChatService;
@@ -36,6 +37,18 @@ import lombok.experimental.FieldDefaults;
 public class ChatController {
 
     ChatService chatService;
+
+    @PostMapping("/send")
+    public ResponseEntity<ApiResponse<ChatMessagesInitialResponse>> sendMessage(@AuthenticationPrincipal User user, ChatMessageRequest request) {
+        ChatMessagesInitialResponse chatMessagesInitialResponse = chatService.sendMessage(request, user, true);
+        ApiResponse<ChatMessagesInitialResponse> response = ApiResponse.<ChatMessagesInitialResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Send message successfully")
+                .data(chatMessagesInitialResponse)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
 
     @GetMapping("/conversations")
     @Operation(summary = "Lấy danh sách hội thoại")
