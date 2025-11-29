@@ -32,7 +32,7 @@ public class ChatSocketController {
         }
 
         if (sender != null) {
-            chatService.sendMessage(request, sender);
+            chatService.sendMessage(request, sender, false);
         } else {
             throw new IllegalArgumentException("User not authenticated");
         }
