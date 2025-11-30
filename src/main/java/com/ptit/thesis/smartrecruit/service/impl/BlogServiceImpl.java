@@ -131,9 +131,20 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     public void delete(Long id) {
-        Blog blog = this.blogRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "blog not found"));
-        this.blogRepository.delete(blog);
+        User currentUser = AuthUtil.getCurrentUser();
+
+        boolean isAdmin = "ADMIN".equals(currentUser.getRole().getName());
+
+        Blog blog = blogRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found"));
+
+        boolean isMyBlog = blog.getAuthor().getId().equals(currentUser.getId());
+
+        if (!isAdmin && !isMyBlog) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "you are not permission delete this blog");
+        }
+
+        blogRepository.delete(blog);
     }
 
     @Override
@@ -230,9 +241,8 @@ public class BlogServiceImpl implements BlogService {
                 sort != null ? sort.substring(1) : "id");
 
         spec = spec.and((root, query, cb) -> cb.equal(root.get("author").get("id"), id));
-        spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), BlogStatus.PUBLISHED));
 
-        Pageable pageable = PageRequest.of(page, limit, _sort);
+        Pageable pageable = PageRequest.of(page - 1, limit, _sort);
         Page<Blog> blogs = blogRepository.findAll(spec, pageable);
         Page<BlogResponse> pagination = blogs.map(blog -> blogMapper.toBlogResponse(blog));
         return pagination;

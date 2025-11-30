@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
+    Long id;
     String firebaseUid;
     String fullName; // candidate
     String userName;

@@ -169,7 +169,7 @@ public class BlogController {
     public ResponseEntity<ApiResponse<List<BlogResponse>>> getBlogOfUser(
             @PathVariable Long id,
             @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer limit,
             @RequestParam(required = false, defaultValue = "+createdAt") String sort,
             @RequestParam(required = false) List<Long> categoryIds,

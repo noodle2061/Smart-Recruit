@@ -48,7 +48,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<UserResponse>> handleLogin(@RequestHeader("Authorization") String authToken) {
         String cleanToken = authToken.substring(7);
 
-        UserResponse userResponse = authService.login(cleanToken);
+        UserResponse userResponse = authService.login(cleanToken); 
         ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder()
             .status(HttpStatus.OK.value())
             .message("User login successfully")

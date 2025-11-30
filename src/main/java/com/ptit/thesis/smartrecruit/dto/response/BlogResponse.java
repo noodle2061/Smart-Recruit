@@ -6,8 +6,6 @@ import java.util.Set;
 
 import com.ptit.thesis.smartrecruit.dto.common.BlogCategoryDTO;
 import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
-import com.ptit.thesis.smartrecruit.entity.BlogCategory;
-import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.BlogStatus;
 
 import lombok.AccessLevel;
@@ -24,6 +22,7 @@ public class BlogResponse {
     String description;
     BlogStatus status;
     LocalDate publishedAt;
+    LocalDate createdAt;
     String thumbnail;
     List<TagDTO> tags;
     Set<BlogCategoryDTO> categories;
