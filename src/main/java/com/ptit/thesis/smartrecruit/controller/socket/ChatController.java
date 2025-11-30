@@ -56,8 +56,9 @@ public class ChatController {
     public ResponseEntity<ApiResponse<Slice<ConversationResponse>>> getConversations(
             @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
             @RequestParam(required = false) Boolean isRead,
+            @RequestParam(required = false) String keyword,
             @AuthenticationPrincipal User user) {
-        Slice<ConversationResponse> conversations = chatService.getUserConversations(user, pageable, isRead);
+        Slice<ConversationResponse> conversations = chatService.getUserConversations(user, pageable, isRead, keyword);
         ApiResponse<Slice<ConversationResponse>> response = ApiResponse.<Slice<ConversationResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Get conversations successfully")

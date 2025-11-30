@@ -70,8 +70,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public Slice<NotificationResponse> getNotifications(User user, Pageable pageable) {
-        return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(user.getId(), pageable).map(
+    public Slice<NotificationResponse> getNotifications(User user, Pageable pageable, Boolean isRead) {
+        return notificationRepository.findByRecipientIdAndIsReadOrderByCreatedAtDesc(user.getId(), isRead, pageable).map(
             notification -> getNotificationResponseFromEntity(notification)
         );
     }

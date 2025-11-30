@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
@@ -38,8 +40,9 @@ public class NotificationController {
     @Operation(summary = "Lấy danh sách thông báo của tài khoản")
     public ResponseEntity<ApiResponse<Slice<NotificationResponse>>> getMyNotifications(
         @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
+        @RequestParam(required = false) Boolean isRead,
         @AuthenticationPrincipal User user) {
-        Slice<NotificationResponse> notifications = notificationService.getNotifications(user, pageable);
+        Slice<NotificationResponse> notifications = notificationService.getNotifications(user, pageable, isRead);
         ApiResponse<Slice<NotificationResponse>> response = ApiResponse.<Slice<NotificationResponse>>builder()
             .status(HttpStatus.OK.value())
             .message("Get notifications successfully")
@@ -62,7 +65,8 @@ public class NotificationController {
 
     @PatchMapping("/{notificationId}/read")
     @Operation(summary = "Đánh dấu một thông báo là đã đọc, sử dụng khi user click vào riêng một thông báo.")
-    public ResponseEntity<ApiResponse<Void>> markAsRead(@AuthenticationPrincipal User user, Long notificationId) {
+    public ResponseEntity<ApiResponse<Void>> markAsRead(@AuthenticationPrincipal User user, 
+                                                        @PathVariable Long notificationId) {
         notificationService.markAsRead(notificationId, user);
         ApiResponse<Void> response = ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
