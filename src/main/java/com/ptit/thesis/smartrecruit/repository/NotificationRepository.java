@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.ptit.thesis.smartrecruit.entity.Notification;
@@ -14,7 +15,13 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     List<Notification> findByRecipientIdAndIsReadFalse(Long recipientId);
 
-    Slice<Notification> findByRecipientIdOrderByCreatedAtDesc(Long recipientId, Pageable pageable);
+
+    @Query("SELECT n FROM Notification n " +
+        "WHERE (n.recipient.id = :recipientId " + 
+        "AND (:isRead IS NULL OR n.isRead = :isRead)) " +
+        "ORDER BY n.createdAt DESC"
+    )
+    Slice<Notification> findByRecipientIdAndIsReadOrderByCreatedAtDesc(Long recipientId, Boolean isRead, Pageable pageable);
 
     long countByRecipientIdAndIsReadFalse(Long recipientId);
 

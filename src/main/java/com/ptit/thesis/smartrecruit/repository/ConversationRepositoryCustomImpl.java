@@ -15,6 +15,7 @@ import com.ptit.thesis.smartrecruit.entity.QChatMessage;
 import com.ptit.thesis.smartrecruit.entity.QCompany;
 import com.ptit.thesis.smartrecruit.entity.QConversation;
 import com.ptit.thesis.smartrecruit.enums.MessageDirection;
+import com.ptit.thesis.smartrecruit.utils.StringUtil;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
@@ -34,7 +35,7 @@ public class ConversationRepositoryCustomImpl implements ConversationRepositoryC
     JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Slice<ConversationResponse> findCandidateConversations(CandidateProfile candidate, Pageable pageable, Boolean isRead) {
+    public Slice<ConversationResponse> findCandidateConversations(CandidateProfile candidate, Pageable pageable, Boolean isRead, String keyword) {
         QConversation conversation = QConversation.conversation;
         QCandidateProfile qcandidate = QCandidateProfile.candidateProfile;
         QCompany company = QCompany.company;
@@ -71,6 +72,10 @@ public class ConversationRepositoryCustomImpl implements ConversationRepositoryC
             }
         }
 
+        if (StringUtil.hasText(keyword)) {
+            predicate.and(conversation.company.name.containsIgnoreCase(keyword));
+        }
+
         var query = jpaQueryFactory
                 .select(Projections.constructor(ConversationResponse.class,
                     conversation.id,
@@ -100,7 +105,7 @@ public class ConversationRepositoryCustomImpl implements ConversationRepositoryC
     }
 
     @Override
-    public Slice<ConversationResponse> findCompanyConversations(Company company, Pageable pageable, Boolean isRead) {
+    public Slice<ConversationResponse> findCompanyConversations(Company company, Pageable pageable, Boolean isRead, String keyword) {
         QConversation conversation = QConversation.conversation;
         QCandidateProfile candidate = QCandidateProfile.candidateProfile;
         QCompany qcompany = QCompany.company;
@@ -134,6 +139,10 @@ public class ConversationRepositoryCustomImpl implements ConversationRepositoryC
             } else {
                 predicate.and(isReadExpression.not());
             }
+        }
+
+        if (StringUtil.hasText(keyword)) {
+            predicate.and(conversation.candidate.fullName.containsIgnoreCase(keyword));
         }
 
         var query = jpaQueryFactory
