@@ -120,41 +120,33 @@ public abstract class BlogMapper {
 
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "categories", ignore = true)
-    // @Mapping(target = "id", ignore = true)
-    // @Mapping(target = "title", ignore = true)
-    // @Mapping(target = "slug", ignore = true)
-    // @Mapping(target = "author", ignore = true)
     @Mapping(target = "thumbnail", ignore = true)
-    // @Mapping(target = "createdAt", ignore = true)
-    // @Mapping(target = "updatedAt", ignore = true)
-    // @Mapping(target = "publishedAt", ignore = true)
     abstract public void toUpdateEntity(UpdateBlogRequest updateBlogRequest, @MappingTarget Blog blog);
 
     @AfterMapping
     protected void handleUpdateBlogToResponse(UpdateBlogRequest updateBlogRequest, @MappingTarget Blog blog) {
-        if (updateBlogRequest.getTags() != null && !updateBlogRequest.getTags().isEmpty()) {
-            List<String> updatedTagsName = updateBlogRequest.getTags().stream().collect(Collectors.toList());
-            List<Tag> existedTags = this.tagRepository.findAllByNameIn(updatedTagsName);
-            List<String> existedTagNames = existedTags.stream().map(Tag::getName).collect(Collectors.toList());
-            List<Tag> newTags = updatedTagsName.stream().filter(tagName -> !existedTagNames.contains(tagName))
-                    .map(tagName -> {
-                        Tag tag = new Tag();
-                        tag.setName(tagName);
-                        return this.tagRepository.save(tag);
-                    }).collect(Collectors.toList());
+        List<String> updatedTagsName = Optional.ofNullable(updateBlogRequest.getTags()).orElse(Collections.emptySet())
+                .stream().collect(Collectors.toList());
+        List<Tag> existedTags = this.tagRepository.findAllByNameIn(updatedTagsName);
+        List<String> existedTagNames = existedTags.stream().map(Tag::getName).collect(Collectors.toList());
+        List<Tag> newTags = updatedTagsName.stream().filter(tagName -> !existedTagNames.contains(tagName))
+                .map(tagName -> {
+                    Tag tag = new Tag();
+                    tag.setName(tagName);
+                    return this.tagRepository.save(tag);
+                }).collect(Collectors.toList());
 
-            Set<Tag> allTag = new HashSet<>();
-            allTag.addAll(existedTags);
-            allTag.addAll(newTags);
+        Set<Tag> allTag = new HashSet<>();
+        allTag.addAll(existedTags);
+        allTag.addAll(newTags);
 
-            blog.setTags(allTag);
-        }
+        blog.setTags(allTag);
 
-        if (updateBlogRequest.getBlogCategoryIds() != null && !updateBlogRequest.getBlogCategoryIds().isEmpty()) {
-            Set<BlogCategory> categories = this.blogCategoryRepository
-                    .findAllById(updateBlogRequest.getBlogCategoryIds()).stream().collect(Collectors.toSet());
-            blog.setCategories(categories);
-        }
+        Set<BlogCategory> categories = this.blogCategoryRepository
+                .findAllById(
+                        Optional.ofNullable(updateBlogRequest.getBlogCategoryIds()).orElse(Collections.emptyList()))
+                .stream().collect(Collectors.toSet());
+        blog.setCategories(categories);
 
         try {
             MultipartFile thumbnailFile = updateBlogRequest.getThumbnail();

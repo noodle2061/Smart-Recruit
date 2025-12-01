@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ptit.thesis.smartrecruit.enums.BlogStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
