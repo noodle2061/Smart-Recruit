@@ -19,6 +19,8 @@ public interface BlogService {
 
     public BlogResponse getOneBySlug(String slug);
 
+    public BlogResponse getMyBlogBySlug(String slug);
+
     public Page<BlogResponse> listWithPage(
             String keyword,
             String sort,

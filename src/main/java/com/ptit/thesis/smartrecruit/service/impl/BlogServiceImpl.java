@@ -101,31 +101,26 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     public BlogResponse update(Long id, UpdateBlogRequest updateBlogRequest) {
+        User currentUser = AuthUtil.getCurrentUser();
+
         Blog blog = this.blogRepository.findById(id).orElse(null);
         if (blog == null)
             throw new IllegalStateException("not found blog with id " + id + " to update");
 
+        boolean isMyBlog = blog.getAuthor().getId().equals(currentUser.getId());
+        boolean isAdmin = "ADMIN".equals(currentUser.getRole().getName());
+
+        if (!isAdmin && !isMyBlog) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "you are not permission update this blog");
+        }
+
+        if (!isAdmin && updateBlogRequest.getStatus().getDisplayValue().equals(
+                BlogStatus.PUBLISHED.getDisplayValue())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "only admin can set status to PUBLISHED");
+        }
+
         blogMapper.toUpdateEntity(updateBlogRequest, blog);
-
-        // upload thumbnail
-        // try {
-        // MultipartFile thumbnailFile = updateBlogRequest.getThumbnail();
-        // if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
-        // String oldKey = blog.getThumbnail();
-        // if(oldKey != null && !oldKey.isEmpty()) {
-        // this.s3Service.deleteFileByKey(oldKey);
-        // }
-        // String newThumbnailKey = this.s3Service.uploadFile(thumbnailFile,
-        // "blogs/thumbnails");
-        // blog.setThumbnail(newThumbnailKey);
-        // }
-        // } catch (IOException e) {
-        // log.error("Error uploading file to S3: {}", e.getMessage());
-        // throw new S3ErrorException("Error uploading file to S3: " + e.getMessage());
-        // }
-
         Blog updatedBlog = this.blogRepository.save(blog);
-
         return blogMapper.toBlogResponse(updatedBlog);
     }
 
@@ -246,6 +241,20 @@ public class BlogServiceImpl implements BlogService {
         Page<Blog> blogs = blogRepository.findAll(spec, pageable);
         Page<BlogResponse> pagination = blogs.map(blog -> blogMapper.toBlogResponse(blog));
         return pagination;
+    }
+
+    @Override
+    public BlogResponse getMyBlogBySlug(String slug) {
+        User currenUser = AuthUtil.getCurrentUser();
+        Long userId = currenUser.getId();
+
+        Blog blog = this.blogRepository.findBlogBySlugAndUserId(slug, userId).orElse(null);
+
+        if (blog == null) {
+            throw new IllegalStateException("blog of user_id " + userId + " with slug " + slug + " not found");
+        }
+
+        return blogMapper.toBlogResponse(blog);
     }
 
 }
