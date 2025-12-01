@@ -25,7 +25,7 @@ public class BlogRequest {
 
     @Schema(example = "tieu-de-blog-example")
     @NotBlank(message = "slug is required")
-    @Size(min = 5, max = 255, message = "title must be between 5 and 255 characters")
+    @Size(min = 5, max = 255, message = "slug must be between 5 and 255 characters")
     String slug;
 
     @Schema(example = "Nội dung blog...")

@@ -1,7 +1,10 @@
 package com.ptit.thesis.smartrecruit.mapper;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -11,6 +14,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ptit.thesis.smartrecruit.dto.common.BlogCategoryDTO;
 import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
@@ -20,12 +24,15 @@ import com.ptit.thesis.smartrecruit.dto.response.BlogResponse;
 import com.ptit.thesis.smartrecruit.entity.Blog;
 import com.ptit.thesis.smartrecruit.entity.BlogCategory;
 import com.ptit.thesis.smartrecruit.entity.Tag;
+import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
 import com.ptit.thesis.smartrecruit.repository.BlogCategoryRepository;
 import com.ptit.thesis.smartrecruit.repository.TagRepository;
 import com.ptit.thesis.smartrecruit.service.S3Service;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public abstract class BlogMapper {
     @Autowired
@@ -91,41 +98,36 @@ public abstract class BlogMapper {
 
     @AfterMapping
     protected void handleBlogToResponse(Blog blog, @MappingTarget BlogResponse blogResponse) {
-        if (blog.getTags() != null && !blog.getTags().isEmpty()) {
-            List<TagDTO> tags = blog.getTags()
-                    .stream()
-                    .map(tag -> new TagDTO(tag.getId(), tag.getName()))
-                    .toList();
-            blogResponse.setTags(tags);
-        }
+        List<TagDTO> tags = Optional.ofNullable(blog.getTags())
+                .orElse(Collections.emptySet())
+                .stream()
+                .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                .toList();
 
-        if (blog.getCategories() != null && !blog.getCategories().isEmpty()) {
-            Set<BlogCategoryDTO> categories = blog.getCategories()
-                    .stream()
-                    .map(category -> new BlogCategoryDTO(category.getId(), category.getName()))
-                    .collect(Collectors.toSet());
+        Set<BlogCategoryDTO> categories = Optional.ofNullable(blog
+                .getCategories()).orElse(Collections.emptySet())
+                .stream()
+                .map(category -> new BlogCategoryDTO(category.getId(), category.getName()))
+                .collect(Collectors.toSet());
 
-            blogResponse.setCategories(categories);
-        }
-
-        // set thumbnail
         String thumbnailUrl = this.s3Service.generatePresignedUrl(blog.getThumbnail());
-        blogResponse.setThumbnail(thumbnailUrl);
 
-        // set author
+        blogResponse.setTags(tags);
+        blogResponse.setCategories(categories);
+        blogResponse.setThumbnail(thumbnailUrl);
         blogResponse.setAuthor(this.userMapper.toUserResponse(blog.getAuthor()));
     }
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "title", ignore = true)
-    @Mapping(target = "slug", ignore = true)
-    @Mapping(target = "categories", ignore = true)
-    @Mapping(target = "author", ignore = true)
     @Mapping(target = "tags", ignore = true)
+    @Mapping(target = "categories", ignore = true)
+    // @Mapping(target = "id", ignore = true)
+    // @Mapping(target = "title", ignore = true)
+    // @Mapping(target = "slug", ignore = true)
+    // @Mapping(target = "author", ignore = true)
     @Mapping(target = "thumbnail", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "publishedAt", ignore = true)
+    // @Mapping(target = "createdAt", ignore = true)
+    // @Mapping(target = "updatedAt", ignore = true)
+    // @Mapping(target = "publishedAt", ignore = true)
     abstract public void toUpdateEntity(UpdateBlogRequest updateBlogRequest, @MappingTarget Blog blog);
 
     @AfterMapping
@@ -153,5 +155,22 @@ public abstract class BlogMapper {
                     .findAllById(updateBlogRequest.getBlogCategoryIds()).stream().collect(Collectors.toSet());
             blog.setCategories(categories);
         }
+
+        try {
+            MultipartFile thumbnailFile = updateBlogRequest.getThumbnail();
+            if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+                String oldKey = blog.getThumbnail();
+                if (oldKey != null && !oldKey.isEmpty()) {
+                    this.s3Service.deleteFileByKey(oldKey);
+                }
+                String newThumbnailKey = this.s3Service.uploadFile(thumbnailFile,
+                        "blogs/thumbnails");
+                blog.setThumbnail(newThumbnailKey);
+            }
+        } catch (IOException e) {
+            log.error("Error uploading file to S3: {}", e.getMessage());
+            throw new S3ErrorException("Error uploading file to S3: " + e.getMessage());
+        }
+
     }
 }
