@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,10 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ptit.thesis.smartrecruit.dto.common.BlogCategoryDTO;
 import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
 import com.ptit.thesis.smartrecruit.dto.request.BlogRequest;
+import com.ptit.thesis.smartrecruit.dto.request.CommentRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateBlogRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.BlogResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CommentResponse;
 import com.ptit.thesis.smartrecruit.dto.response.PageResponse;
+import com.ptit.thesis.smartrecruit.entity.Blog;
 import com.ptit.thesis.smartrecruit.service.BlogService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,8 +36,10 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
+@Slf4j
 @RequestMapping("api/blogs")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -198,6 +204,22 @@ public class BlogController {
                                 .status(HttpStatus.OK.value())
                                 .message("Get detail blog successful")
                                 .data(blog)
+                                .build();
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+        }
+
+        @PostMapping("/{id}/comments")
+        @Operation(summary = "Tạo comment cho blog")
+        public ResponseEntity<ApiResponse<BlogResponse>> createComment(
+                        @PathVariable Long id,
+                        @Valid @RequestBody CommentRequest comment) {
+                // BlogResponse blog = this.blogService.getMyBlogBySlug(slug);
+                // CommentResponse comment = this.blogService.createComment
+
+                ApiResponse<BlogResponse> response = ApiResponse.<BlogResponse>builder()
+                                .status(HttpStatus.OK.value())
+                                .message("create comment blog successful")
+                                .data(null)
                                 .build();
                 return ResponseEntity.status(HttpStatus.OK).body(response);
         }
