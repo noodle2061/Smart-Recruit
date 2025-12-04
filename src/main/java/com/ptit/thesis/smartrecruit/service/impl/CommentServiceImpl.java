@@ -21,6 +21,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentResponse createCommentBlog(CommentRequest commentRequest) {
         //
+        throw new UnsupportedOperationException("Unimplemented method 'updateComment'");
     }
 
     @Override

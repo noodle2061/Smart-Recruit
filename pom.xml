@@ -179,6 +179,24 @@
 				<configuration>
 					<annotationProcessorPaths>
 						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.32</version>
+						</path>
+
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>0.2.0</version>
+						</path>
+
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${org.mapstruct.version}</version>
+						</path>
+
+						<path>
 							<groupId>org.hibernate.orm</groupId>
 							<artifactId>hibernate-jpamodelgen</artifactId>
 							<version>${hibernate.version}</version>
@@ -186,7 +204,7 @@
 						<path>
 							<groupId>jakarta.persistence</groupId>
 							<artifactId>jakarta.persistence-api</artifactId>
-							<version>${jakarta.persistence-api.version}</version>
+							<version>3.2.0</version>
 						</path>
 						<path>
 							<groupId>com.querydsl</groupId>
@@ -194,20 +212,20 @@
 							<version>${querydsl.version}</version>
 							<classifier>jakarta</classifier>
 						</path>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</path>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok-mapstruct-binding</artifactId>
-							<version>0.2.0</version>
-						</path>
-						<path>
-							<groupId>org.mapstruct</groupId>
-							<artifactId>mapstruct-processor</artifactId>
-							<version>${org.mapstruct.version}</version>
-						</path>
+<!--						<path>-->
+<!--							<groupId>org.projectlombok</groupId>-->
+<!--							<artifactId>lombok</artifactId>-->
+<!--						</path>-->
+<!--						<path>-->
+<!--							<groupId>org.projectlombok</groupId>-->
+<!--							<artifactId>lombok-mapstruct-binding</artifactId>-->
+<!--							<version>0.2.0</version>-->
+<!--						</path>-->
+<!--						<path>-->
+<!--							<groupId>org.mapstruct</groupId>-->
+<!--							<artifactId>mapstruct-processor</artifactId>-->
+<!--							<version>${org.mapstruct.version}</version>-->
+<!--						</path>-->
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
