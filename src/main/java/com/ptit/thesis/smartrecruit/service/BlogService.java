@@ -43,4 +43,5 @@ public interface BlogService {
     public List<BlogCategoryDTO> getCategories();
 
     public List<TagDTO> getPopularTags();
+
 }

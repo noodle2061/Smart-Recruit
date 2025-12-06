@@ -13,7 +13,7 @@ public interface UserMapper {
      * chuyển doi tu User -> UserResponse
      * <p>
      * Các thuộc tính fullName, firebaseCustomToken cần tự cập nhật sau khi gọi hàm
-     * 
+     *
      * @param user
      * @return
      */
@@ -26,4 +26,4 @@ public interface UserMapper {
 
     @Mapping(target = "role", ignore = true)
     User toUserEntity(UserResponse userResponse);
-}   
+}

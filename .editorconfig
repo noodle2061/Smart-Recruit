@@ -1,0 +1,44 @@
+# EditorConfig giúp đồng bộ style coding trong toàn bộ project
+root = true
+
+[*.{java,kt}]
+charset = utf-8
+indent_style = space
+indent_size = 4
+tab_width = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+max_line_length = 120
+
+ij_java_right_margin = 120
+ij_java_wrap_long_lines = true
+
+ij_java_chained_method_calls_wrap = chop_down_if_long
+
+ij_java_method_parameters_wrap = wrap_if_long
+
+ij_java_call_parameters_wrap = wrap_if_long
+
+ij_java_binary_operation_wrap = wrap_if_long
+
+ij_java_extends_list_wrap = wrap_if_long
+ij_java_implements_list_wrap = wrap_if_long
+
+ij_java_throws_list_wrap = wrap_if_long
+
+ij_java_assignment_wrap = wrap_if_long
+
+ij_java_class_brace_style = end_of_line
+ij_java_method_brace_style = end_of_line
+ij_java_other_brace_style = end_of_line
+
+ij_java_imports_layout = *,javax.**,java.**
+
+ij_java_optimize_imports_on_the_fly = true
+
+ij_java_names_count_to_use_import_on_demand = 9999
+
+ij_java_keep_line_breaks = true
+
+ij_continuation_indent_size = 8

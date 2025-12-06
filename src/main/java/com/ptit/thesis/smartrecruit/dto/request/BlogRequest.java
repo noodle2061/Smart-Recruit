@@ -35,7 +35,7 @@ public class BlogRequest {
     @Schema(example = "Mô tả blog...")
     String description;
 
-    @Schema(example = "PUBLISHED", allowableValues = { "DRAFT", "PUBLISHED", "REQUESTED" })
+    @Schema(example = "PUBLISHED")
     BlogStatus status;
 
     @Schema(example = "2025-12-01T06:43:29.804")

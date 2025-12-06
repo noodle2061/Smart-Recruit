@@ -2,19 +2,11 @@ package com.ptit.thesis.smartrecruit.entity;
 
 import com.ptit.thesis.smartrecruit.enums.CommentableType;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "comments")
@@ -22,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString(callSuper = true)
 public class Comment extends BaseEntity {
 
     @Column(nullable = false)
@@ -31,6 +24,10 @@ public class Comment extends BaseEntity {
     @Column(nullable = false)
     CommentableType commentableType;
 
+    @Lob
+    @Column(columnDefinition = "TEXT", nullable = false)
+    String content;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     User user;
@@ -39,7 +36,7 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "parent_id")
     Comment parent;
 
-    @Lob
-    @Column(columnDefinition = "TEXT", nullable = false)
-    String content;
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Comment> children = new ArrayList<>();
+
 }
