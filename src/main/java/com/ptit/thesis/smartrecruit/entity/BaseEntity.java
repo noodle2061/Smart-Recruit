@@ -2,6 +2,7 @@ package com.ptit.thesis.smartrecruit.entity;
 
 import java.time.LocalDateTime;
 
+import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -22,6 +23,7 @@ import lombok.experimental.FieldDefaults;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString
 public class BaseEntity {
 
     @Id
