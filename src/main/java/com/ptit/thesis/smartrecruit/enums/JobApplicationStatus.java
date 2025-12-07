@@ -1,12 +1,10 @@
 package com.ptit.thesis.smartrecruit.enums;
 
 public enum JobApplicationStatus {
-    SUBMITTED("Submitted"),
-    VIEWED("Viewed"),
-    SHORTLISTED("Shortlisted"),
-    INTERVIEWING("Interviewing"),
-    HIRED("Hired"),
-    REJECTED("Rejected");
+    SUBMITTED("Đã nộp"),
+    PROCESSING("Đang xử lý"),
+    SENT_EMAIL("Đã gửi mail"),
+    REJECTED("Đã từ chối");
 
     private final String displayValue;
 

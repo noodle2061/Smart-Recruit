@@ -1,12 +1,17 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import com.ptit.thesis.smartrecruit.dto.message.CvProcessingMessage;
 import com.ptit.thesis.smartrecruit.dto.request.ApplyJobRequest;
 import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateFavoriteJobResponse;
@@ -24,14 +29,15 @@ import com.ptit.thesis.smartrecruit.repository.JobRepository;
 import com.ptit.thesis.smartrecruit.repository.ResumeRepository;
 import com.ptit.thesis.smartrecruit.repository.SavedJobRepository;
 import com.ptit.thesis.smartrecruit.service.JobCandidateService;
+import com.ptit.thesis.smartrecruit.service.RedisService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -47,6 +53,17 @@ public class JobCandidateServiceImpl implements JobCandidateService {
     SavedJobRepository savedJobRepository;
 
     S3Service s3Service;
+    RedisService redisService;
+
+    RabbitTemplate rabbitTemplate;
+
+    @NonFinal
+    @Value("${rabbitmq.exchange.internal}")
+    String internalExchange;
+
+    @NonFinal
+    @Value("${rabbitmq.routing-key.cv-upload}")
+    String cvUploadRoutingKey;
 
     @Override
     @Transactional
@@ -58,26 +75,61 @@ public class JobCandidateServiceImpl implements JobCandidateService {
 
         Resume resume = resumeRepository.findByIdAndCandidate(request.getResumeId(), candidate)
                                 .orElseThrow(() -> new EntityNotFoundException("Can not found resume with ID: " + request.getResumeId() + " that belong to this candidate"));
+
+        if (resume.getCandidate().getId() != candidate.getId()) {
+            throw new AccessDeniedException("Can not found resume with ID: " + request.getResumeId() + " that belong to this candidate");
+        }
         
         Job job = jobRepository.findAvailableJobById(request.getJobId())
                                 .orElseThrow(() -> new EntityNotFoundException("Can not found job with ID: " + request.getJobId()));
 
-        // xử lý trường hợp nộp 2 lần -> tìm theo candidate + job => đổi resume
+        // xử lý trường hợp nộp 2 lần
+        //  -> check time to live ở redis xem trong 10p trước đã nộp lần nào chưa, nếu nộp rồi thì không cho nộp 2 lần trong 10 phút
+        //  -> nếu nộp rồi thi tăng data version trong application
+        //  -> 
         Application application = applicationRepository.findByCandidateAndJob(candidate, job)
                     .orElseGet(() -> {
                         return new Application();
                     });
-        if (application.getId() == null) {
+        
+        if (application.getId() == null) { // đơn mới
             application.setCandidate(candidate);
             application.setJob(job);
-            application.setResume(resume);
-            application.setStatus(JobApplicationStatus.SUBMITTED);
-            applicationRepository.save(application);
-        } else {
-            application.setResume(resume);
-            application.setStatus(JobApplicationStatus.SUBMITTED);
-            applicationRepository.save(application);
+            application.setDataVersion(1);
+        } else { // đã từng nộp
+            if (redisService.isApplyRateLimit(application.getId())) {
+                throw new RuntimeException("You have already applied to this job within the last 10 minutes.");
+            }
+            application.setDataVersion(application.getDataVersion() + 1);
         }
+        
+        redisService.setApplyRateLimit(application.getId());
+
+        application.setResume(resume);
+        application.setStatus(JobApplicationStatus.PROCESSING);
+        
+        Application savedApplication = applicationRepository.save(application);
+        
+        try {
+            String fileUrl = s3Service.generatePresignedUrl(resume.getStorageKey(), Duration.ofDays(7));
+            
+            CvProcessingMessage message = CvProcessingMessage.builder()
+                    .applicationId(savedApplication.getId())
+                    .fileUrl(fileUrl)
+                    .version(savedApplication.getDataVersion())
+                    .jobTitle(job.getTitle())
+                    .jobDescription(job.getDescription())
+                    .jobResponsibilities(job.getResponsibilities())
+                    .educationLevel(job.getEducationLevel() != null ? job.getEducationLevel().name() : null)
+                    .experienceLevel(job.getExperienceLevel() != null ? job.getExperienceLevel().name() : null)
+                    .build();
+            
+            rabbitTemplate.convertAndSend(internalExchange, cvUploadRoutingKey, message);
+            log.info("Sent CV scoring request to RabbitMQ for Application ID: {}", savedApplication.getId());
+        } catch (Exception e) {
+            log.error("Failed to send RabbitMQ message for Application ID: {}. Error: {}", savedApplication.getId(), e.getMessage());
+        }
+
         log.info("Apply job successfully.");
     }
 
@@ -101,8 +153,6 @@ public class JobCandidateServiceImpl implements JobCandidateService {
         } else {
             log.warn("Candidate with ID: " + user.getId() + " is already following Job with ID: " + jobId);
         }
-        
-        
     }
 
     @Override
@@ -146,6 +196,4 @@ public class JobCandidateServiceImpl implements JobCandidateService {
     public List<Long> getFavorites() {
         return jobRepository.getCandidateFavoriteJobIds();
     }
-    
-    
 }

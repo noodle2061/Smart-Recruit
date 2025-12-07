@@ -55,10 +55,17 @@ public class Application extends BaseEntity {
     @Column(name = "score", columnDefinition = "DOUBLE DEFAULT 0.0")
     Double score;
 
+    @jakarta.persistence.Version
+    @Column(name = "data_version")
+    Integer dataVersion;
+
     @PrePersist
     public void prePersist() {
         if (status == null) {
-            status = JobApplicationStatus.SUBMITTED;
+            status = JobApplicationStatus.PROCESSING;
+        }
+        if (dataVersion == null) {
+            dataVersion = 1;
         }
     }
 }

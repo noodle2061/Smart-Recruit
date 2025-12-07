@@ -1,9 +1,6 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
-import java.time.temporal.TemporalAmount;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +9,6 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +40,6 @@ import com.ptit.thesis.smartrecruit.repository.JobRepository;
 import com.ptit.thesis.smartrecruit.repository.SavedJobRepository;
 import com.ptit.thesis.smartrecruit.service.JobService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
-import com.ptit.thesis.smartrecruit.specification.EmployerJobSpecification;
 import com.ptit.thesis.smartrecruit.utils.Constant;
 
 import jakarta.transaction.Transactional;
@@ -110,7 +105,8 @@ public class JobServiceImpl implements JobService {
                 .collect(Collectors.toMap(EducationLevel::name, EducationLevel::getDisplayValue));
 
         List<JobCategory> jobCategoryList = jobCategoryRepository.findAll();
-        Map<Long, String> jobCategories = jobCategoryList.stream().collect(Collectors.toMap(JobCategory::getId, JobCategory::getName));
+        Map<Long, String> jobCategories = jobCategoryList.stream()
+                .collect(Collectors.toMap(JobCategory::getId, JobCategory::getName));
 
         return PostJobMetadataResponse.builder()
                 .salaryTypes(salaryTypes)
@@ -131,12 +127,13 @@ public class JobServiceImpl implements JobService {
         JobDetailResponse response = getJobDetailResponseFromEntity(job, ownerCompany);
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) { // không phải khách vãng lai
+        if (principal instanceof User) {
             User user = (User) principal;
             String roleUpper = user.getRole().getName();
-            if (roleUpper.equals(Constant.CANDIDATE_ROLE)) { // role candidate thì set thêm trường isFavorite và isApplied
+            if (roleUpper.equals(Constant.CANDIDATE_ROLE)) {
                 CandidateProfile candidate = candidateProfileRepository.findByUser(user)
-                        .orElseThrow(() -> new ResourceNotFoundException("Candidate not found for user: " + user.getId()));
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Candidate not found for user: " + user.getId()));
                 response.setIsFavorite(savedJobRepository.existsByCandidateAndJob(candidate, job));
                 response.setIsApplied(applicationRepository.existsByCandidateAndJob(candidate, job));
             }
@@ -146,39 +143,33 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public Slice<JobPageResponse> searchJobsWithFilter(Pageable pageable, 
-                                                String keyword, 
-                                                String location, 
-                                                Long categoryId, 
-                                                Long minSalary, 
-                                                Long maxSalary, 
-                                                ExperienceLevel experienceLevel, 
-                                                List<EducationLevel> educationLevels, 
-                                                List<JobType> jobTypes,
-                                                Long tagId) {
-        
+    public Slice<JobPageResponse> searchJobsWithFilter(Pageable pageable,
+            String keyword,
+            String location,
+            Long categoryId,
+            Long minSalary,
+            Long maxSalary,
+            ExperienceLevel experienceLevel,
+            List<EducationLevel> educationLevels,
+            List<JobType> jobTypes,
+            Long tagId) {
+
         Slice<JobPageResponse> jobSlice = jobRepository.searchJobsWithFilter(
-                keyword, location, categoryId, minSalary, maxSalary, 
-                experienceLevel, educationLevels, jobTypes, pageable, tagId
-                ).map(job -> {
-                        job.setCompanyLogoUrl(s3Service.generatePresignedUrl(job.getCompanyLogoUrl()));
-                        return job;
+                keyword, location, categoryId, minSalary, maxSalary,
+                experienceLevel, educationLevels, jobTypes, pageable, tagId).map(job -> {
+                    job.setCompanyLogoUrl(s3Service.generatePresignedUrl(job.getCompanyLogoUrl()));
+                    return job;
                 });
         return jobSlice;
     }
 
     @Override
     public Page<MyJobPageResponse> getMyJob(Pageable pageable, JobStatus jobStatus) {
-        Company company = companyRepository.findByUser((User)SecurityContextHolder.getContext().getAuthentication().getPrincipal())
-                                                                .orElseThrow(() -> new ResourceNotFoundException("Company not found for user: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal()));
-        Specification<Job> specification = EmployerJobSpecification.getPredicate(jobStatus, company);
-        Page<Job> jobs = jobRepository.findAll(specification, pageable);
-        return jobs.map(job -> {
-            MyJobPageResponse myJobPageResponse = jobMapper.toMyJobPageResponse(job);
-            myJobPageResponse.setDaysRemaining(ChronoUnit.DAYS.between(LocalDate.now(), job.getExpirationDate()));
-            myJobPageResponse.setNumberOfapplications(jobRepository.countAplication(job));
-            return myJobPageResponse;
-        });
+        Company company = companyRepository
+                .findByUser((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Company not found for user: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal()));
+        return jobRepository.findMyJobs(company.getId(), jobStatus, pageable);
     }
 
     @Override
@@ -188,25 +179,21 @@ public class JobServiceImpl implements JobService {
 
         Long candidateId = null;
 
-        // Kiểm tra xem người dùng đã đăng nhập và có phải là CANDIDATE không
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof User) {
             User user = (User) principal;
             if (user.getRole().getName().equals(Constant.CANDIDATE_ROLE)) {
-                // Lấy candidateProfileId
                 CandidateProfile candidate = candidateProfileRepository.findByUser(user).orElse(null);
                 if (candidate != null) {
                     candidateId = candidate.getId();
                 }
             }
         }
-        
-        // Repository custom sẽ xử lý việc candidateId có thể là null
+
         Page<CompanyJobPageResponse> jobsPage = jobRepository.findJobsByCompanyId(companyId, candidateId, pageable);
 
         log.info("Getting successfully job page of company with id " + companyId);
 
-        // Không cần xử lý S3 URL vì DTO này không chứa hình ảnh
         return jobsPage;
     }
 
@@ -228,7 +215,6 @@ public class JobServiceImpl implements JobService {
     private JobDetailResponse getJobDetailResponseFromEntity(Job job, Company company) {
         JobDetailResponse jobDetailResponse = jobMapper.toJobDetailResponse(job);
 
-        // company basic info
         CompanyBasicInfoDTO companyBasicInfoDTO = companyRepository.findBasicInfoById(company.getId());
 
         String avatarStorageKey = companyBasicInfoDTO.getLogoUrl();
