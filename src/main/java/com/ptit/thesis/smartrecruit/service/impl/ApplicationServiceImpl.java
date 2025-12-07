@@ -3,7 +3,6 @@ package com.ptit.thesis.smartrecruit.service.impl;
 import java.io.IOException;
 import java.util.List;
 
-import org.checkerframework.checker.units.qual.s;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,11 +12,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ptit.thesis.smartrecruit.dto.request.ApplicationFilterRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApplicationBriefResponse;
 import com.ptit.thesis.smartrecruit.dto.response.ResumeResponse;
+import com.ptit.thesis.smartrecruit.entity.Application;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.Job;
 import com.ptit.thesis.smartrecruit.entity.Resume;
 import com.ptit.thesis.smartrecruit.entity.User;
+import com.ptit.thesis.smartrecruit.enums.NotificationType;
 import com.ptit.thesis.smartrecruit.exception.ResourceNotFoundException;
 import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
 import com.ptit.thesis.smartrecruit.repository.ApplicationRepository;
@@ -26,6 +27,7 @@ import com.ptit.thesis.smartrecruit.repository.CompanyRepository;
 import com.ptit.thesis.smartrecruit.repository.JobRepository;
 import com.ptit.thesis.smartrecruit.repository.ResumeRepository;
 import com.ptit.thesis.smartrecruit.service.ApplicationService;
+import com.ptit.thesis.smartrecruit.service.NotificationService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 
@@ -44,6 +46,8 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 public class ApplicationServiceImpl implements ApplicationService {
 
     S3Service s3Service;
+    NotificationService notificationService;
+
     CandidateProfileRepository candidateProfileRepository;
     ResumeRepository resumeRepository;
     CompanyRepository companyRepository;
@@ -176,5 +180,23 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .size(resume.getSize())
                 .url(s3Service.generatePresignedUrl(resume.getStorageKey()))
                 .build();
+    }
+
+    @Override
+    public void updateApplicationScore(Long applicationId, Double score) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found for id: " + applicationId));
+        application.setScore(score);
+        applicationRepository.save(application);
+
+        User candidateUser = application.getCandidate().getUser();
+        Company company = application.getJob().getCompany();
+        notificationService.pushNotification(
+            null, 
+            candidateUser, 
+            "Hồ sơ ứng tuyển của bạn đạt " + score + " điểm cho công việc " + application.getJob().getTitle() + " của " + company.getName(),
+            NotificationType.JOB_APPLICATION, 
+            application.getId());
+
     }
 }

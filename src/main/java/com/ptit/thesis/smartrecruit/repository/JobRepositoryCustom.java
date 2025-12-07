@@ -10,6 +10,7 @@ import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateFavoriteJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
+import com.ptit.thesis.smartrecruit.dto.response.MyJobPageResponse;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
 import com.ptit.thesis.smartrecruit.enums.JobStatus;
@@ -40,4 +41,6 @@ public interface JobRepositoryCustom {
     public List<Long> getCandidateFavoriteJobIds();
 
     public Page<CompanyJobPageResponse> findJobsByCompanyId(Long companyId, Long candidateId, Pageable pageable);
+
+    public Page<MyJobPageResponse> findMyJobs(Long companyId, JobStatus status, Pageable pageable);
 }

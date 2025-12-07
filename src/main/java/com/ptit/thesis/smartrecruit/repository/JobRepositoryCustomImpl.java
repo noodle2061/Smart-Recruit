@@ -8,12 +8,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import com.ptit.thesis.smartrecruit.dto.response.AppliedJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateFavoriteJobResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyJobPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.JobPageResponse;
+import com.ptit.thesis.smartrecruit.dto.response.MyJobPageResponse;
 import com.ptit.thesis.smartrecruit.entity.QApplication;
 import com.ptit.thesis.smartrecruit.entity.QCompany;
 import com.ptit.thesis.smartrecruit.entity.QJob;
@@ -30,9 +32,13 @@ import com.ptit.thesis.smartrecruit.utils.AuthUtil;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -58,14 +64,12 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
             List<JobType> jobTypes,
             Pageable pageable,
             Long tagId) {
-        // Q object
         QJob job = QJob.job;
         QCompany company = QCompany.company;
         QLocation location = QLocation.location;
         QJobCategory jobCategory = QJobCategory.jobCategory;
         QTag tag = QTag.tag;
 
-        // xây dựng where bằng BooleanBuilder
         BooleanBuilder predicate = new BooleanBuilder();
 
         predicate.and(job.status.eq(JobStatus.ACTIVE));
@@ -134,7 +138,6 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
 
         List<JobPageResponse> results = query.fetch();
 
-        // hoàn thiện các đối tượng của slice
         boolean hasNext = (results.size() > pageable.getPageSize());
         if (hasNext) {
             results = results.subList(0, pageable.getPageSize());
@@ -332,6 +335,52 @@ public class JobRepositoryCustomImpl implements JobRepositoryCustom {
                 .where(user.id.eq(userId))
                 .fetch();
         return lst;
+    }
+
+    @Override
+    public Page<MyJobPageResponse> findMyJobs(Long companyId, JobStatus status, Pageable pageable) {
+        QJob job = QJob.job;
+        QApplication application = QApplication.application;
+
+        BooleanBuilder predicate = new BooleanBuilder();
+        predicate.and(job.company.id.eq(companyId));
+        if (status != null) {
+            predicate.and(job.status.eq(status));
+        }
+
+        Expression<Long> daysRemaining = Expressions.numberTemplate(Long.class, "DATEDIFF({0}, CURRENT_DATE)",
+                job.expirationDate);
+
+        Expression<Long> numberOfApplications = JPAExpressions.select(application.count())
+                .from(application)
+                .where(application.job.id.eq(job.id));
+
+        var query = jpaQueryFactory.select(Projections.constructor(MyJobPageResponse.class,
+                job.id,
+                job.slug,
+                job.title,
+                daysRemaining,
+                job.status,
+                numberOfApplications))
+                .from(job)
+                .where(predicate)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        for (Sort.Order order : pageable.getSort()) {
+            PathBuilder<Object> pathBuilder = new PathBuilder<>(job.getType(), job.getMetadata());
+            Order direction = order.isAscending() ? Order.ASC : Order.DESC;
+            query.orderBy(new OrderSpecifier(direction, pathBuilder.get(order.getProperty())));
+        }
+
+        List<MyJobPageResponse> results = query.fetch();
+
+        Long total = jpaQueryFactory.select(job.count())
+                .from(job)
+                .where(predicate)
+                .fetchOne();
+
+        return new PageImpl<>(results, pageable, total);
     }
 
 }
