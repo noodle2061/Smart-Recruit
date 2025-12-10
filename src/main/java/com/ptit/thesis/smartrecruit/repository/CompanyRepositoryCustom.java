@@ -3,6 +3,7 @@ package com.ptit.thesis.smartrecruit.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.ptit.thesis.smartrecruit.dto.response.AdminCompanyResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyPageResponse;
 import com.ptit.thesis.smartrecruit.enums.CompanyTeamSize;
 import com.ptit.thesis.smartrecruit.enums.IndustryType;
@@ -17,4 +18,6 @@ public interface CompanyRepositoryCustom {
                         CompanyTeamSize teamSize,
                         Integer foundedIn,
                         Pageable pageable);
+    
+    Page<AdminCompanyResponse> getCompaniesForAdmin(String email, Pageable pageable);
 }

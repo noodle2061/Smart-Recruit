@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ptit.thesis.smartrecruit.dto.request.CompanyProfileRequest;
+import com.ptit.thesis.smartrecruit.dto.response.AdminCompanyResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyProfileResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanySetupMetadata;
@@ -19,4 +20,7 @@ public interface CompanyService {
     public CompanyProfileResponse getCompanyDetails(Long companyId);
     public CompanyProfileResponse getCompanyDetails(User user);
     public Page<CompanyPageResponse> searchCompanies(Pageable pageable, String keyword, String location, OrganizationType organizationType, IndustryType industryType, CompanyTeamSize teamSize, Integer foundedIn);
+    public Page<AdminCompanyResponse> getCompaniesForAdmin(String email, Pageable pageable);
+    public void activateCompany(Long companyId);
+    public void deactivateCompany(Long companyId);
 }

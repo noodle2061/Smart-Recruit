@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import com.ptit.thesis.smartrecruit.dto.response.AdminCandidateResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidatePageResponse;
 import com.ptit.thesis.smartrecruit.entity.QCandidateCompany;
 import com.ptit.thesis.smartrecruit.entity.QCandidateProfile;
@@ -171,6 +172,53 @@ public class CandidateProfileRepositoryCustomImpl implements CandidateProfileRep
                 .from(candidate)
                 .leftJoin(candidate.location, location)
                 .innerJoin(candidateCompany).on(candidate.id.eq(candidateCompany.candidate.id))
+                .where(predicate)
+                .fetchOne();
+
+        return new PageImpl<>(results, pageable, total);
+    }
+
+    @Override
+    public Page<AdminCandidateResponse> findCandidatesForAdmin(String email, Pageable pageable) {
+        QCandidateProfile candidate = QCandidateProfile.candidateProfile;
+        QUser user = QUser.user;
+
+        BooleanExpression isActive = JPAExpressions
+            .selectOne()
+            .from(user)
+            .where(user.deleteAt.isNotNull())
+            .where(user.id.eq(candidate.user.id))
+            .exists();
+
+        BooleanBuilder predicate = new BooleanBuilder();
+        if (StringUtil.hasText(email)) {
+            predicate.and(user.email.containsIgnoreCase(email));
+        }
+        
+        var query = jpaQueryFactory
+                .select(Projections.constructor(AdminCandidateResponse.class,
+                    candidate.id,
+                    isActive,
+                    candidate.fullName,
+                    user.email,
+                    candidate.avatarUrl,
+                    user.createdAt
+                ))
+                .from(candidate)
+                .join(candidate.user, user)
+                .leftJoin(candidate.location)
+                .where(predicate)
+                .orderBy(candidate.fullName.asc())
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset());
+        
+
+        List<AdminCandidateResponse> results = query.fetch();
+
+        Long total = jpaQueryFactory
+                .select(candidate.count())
+                .from(candidate)
+                .leftJoin(candidate.location)
                 .where(predicate)
                 .fetchOne();
 

@@ -8,10 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.ptit.thesis.smartrecruit.dto.common.LocationDTO;
+import com.ptit.thesis.smartrecruit.dto.response.AdminCompanyResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyPageResponse;
 import com.ptit.thesis.smartrecruit.entity.QCompany;
 import com.ptit.thesis.smartrecruit.entity.QJob;
 import com.ptit.thesis.smartrecruit.entity.QLocation;
+import com.ptit.thesis.smartrecruit.entity.QUser;
 import com.ptit.thesis.smartrecruit.enums.CompanyTeamSize;
 import com.ptit.thesis.smartrecruit.enums.IndustryType;
 import com.ptit.thesis.smartrecruit.enums.JobStatus;
@@ -19,6 +21,8 @@ import com.ptit.thesis.smartrecruit.enums.OrganizationType;
 import com.ptit.thesis.smartrecruit.utils.StringUtil;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -109,6 +113,48 @@ public class CompanyRepositoryCustomImpl implements CompanyRepositoryCustom {
                 .select(company.id.count())
                 .from(company)
                 .leftJoin(company.location, location)
+                .where(predicate)
+                .fetchOne();
+        return new PageImpl<>(results, pageable, total);
+    }
+
+    @Override
+    public Page<AdminCompanyResponse> getCompaniesForAdmin(String email, Pageable pageable) {
+        QCompany company = QCompany.company;
+        QUser user = QUser.user;
+
+        BooleanExpression isActive = JPAExpressions
+                .selectOne()
+                .from(user)
+                .where(user.deleteAt.isNull())
+                .where(user.id.eq(company.user.id))
+                .exists();
+
+        BooleanBuilder predicate = new BooleanBuilder();
+        if (StringUtil.hasText(email)) {
+            predicate.and(user.email.containsIgnoreCase(email));
+        }
+
+        var query = jpaQueryFactory
+                .select(Projections.constructor(AdminCompanyResponse.class,
+                        company.id,
+                        isActive,
+                        company.name,
+                        user.email,
+                        company.logoUrl,
+                        user.createdAt))
+                .from(company)
+                .join(company.user, user)
+                .where(predicate)
+                .orderBy(company.name.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        List<AdminCompanyResponse> results = query.fetch();
+        long total = jpaQueryFactory
+                .select(company.id.count())
+                .from(company)
+                .join(company.user, user)
                 .where(predicate)
                 .fetchOne();
         return new PageImpl<>(results, pageable, total);

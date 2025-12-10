@@ -1,6 +1,7 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ import com.ptit.thesis.smartrecruit.dto.common.SocialLinkDTO;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateBasicInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateContactInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateProfileDetailRequest;
+import com.ptit.thesis.smartrecruit.dto.response.AdminCandidateResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidatePageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
@@ -176,6 +178,10 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
     public CandidateProfileResponse getCandidateDetail(Long candidateId) {
         CandidateProfile candidateProfile = candidateProfileRepository.findById(candidateId)
                 .orElseThrow(() -> new EntityNotFoundException("Candidate profile not found for id: " + candidateId));
+        User candidateUser = candidateProfile.getUser();
+        if (candidateUser.getDeleteAt() != null) {
+            throw new EntityNotFoundException("Candidate profile not found for email: " + candidateUser.getEmail());
+        }
         return toResponseDTO(candidateProfile, candidateProfile.getUser());
     }
 
@@ -222,5 +228,34 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
             candidatePageResponse.setAvatarUrl(s3Service.generatePresignedUrl(candidatePageResponse.getAvatarUrl()));
             return candidatePageResponse;
         });
-    }    
+    }
+
+    @Override
+    public Page<AdminCandidateResponse> getCandidatesForAdmin(Pageable pageable, String email) {
+        return candidateProfileRepository.findCandidatesForAdmin(email, pageable).map(
+            candidate -> {
+                candidate.setAvatarUrl(s3Service.generatePresignedUrl(candidate.getAvatarUrl()));
+                return candidate;
+            }
+        );
+    }
+
+    @Override
+    @Transactional
+    public void deactivateCandidate(Long candidateId) {
+        CandidateProfile candidateProfile = candidateProfileRepository.findById(candidateId)
+                .orElseThrow(() -> new EntityNotFoundException("Candidate profile not found for id: " + candidateId));
+        User candidateUser = candidateProfile.getUser();
+        candidateUser.setDeleteAt(LocalDateTime.now());
+        userRepository.save(candidateUser);
+    }
+
+    @Override
+    public void activateCandidate(Long candidateId) {
+        CandidateProfile candidateProfile = candidateProfileRepository.findById(candidateId)
+                .orElseThrow(() -> new EntityNotFoundException("Candidate profile not found for id: " + candidateId));
+        User candidateUser = candidateProfile.getUser();
+        candidateUser.setDeleteAt(null);
+        userRepository.save(candidateUser);
+    }
 }

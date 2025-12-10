@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
+import com.ptit.thesis.smartrecruit.dto.response.AdminCandidateResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidatePageResponse;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
@@ -25,6 +26,11 @@ public interface CandidateProfileRepositoryCustom {
 
     Page<CandidatePageResponse> findSavedCandidatesForEmployer(
         Long companyId,
+        Pageable pageable
+    );
+
+    Page<AdminCandidateResponse> findCandidatesForAdmin(
+        @Param("email") String email,
         Pageable pageable
     );
 }
