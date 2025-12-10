@@ -1,6 +1,7 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ptit.thesis.smartrecruit.dto.request.CompanyProfileRequest;
+import com.ptit.thesis.smartrecruit.dto.response.AdminCompanyResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyProfileResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanySetupMetadata;
@@ -30,8 +32,8 @@ import com.ptit.thesis.smartrecruit.mapper.CompanyMapper;
 import com.ptit.thesis.smartrecruit.mapper.SocialLinkMapper;
 import com.ptit.thesis.smartrecruit.repository.CandidateCompanyRepository;
 import com.ptit.thesis.smartrecruit.repository.CompanyRepository;
-import com.ptit.thesis.smartrecruit.repository.CompanyRepositoryCustom;
 import com.ptit.thesis.smartrecruit.repository.SocialLinkRepository;
+import com.ptit.thesis.smartrecruit.repository.UserRepository;
 import com.ptit.thesis.smartrecruit.service.CompanyService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
 import com.ptit.thesis.smartrecruit.utils.Constant;
@@ -54,7 +56,7 @@ public class CompanyServiceImpl implements CompanyService {
     CompanyMapper companyMapper;
     SocialLinkRepository socialLinkRepository;
     CandidateCompanyRepository candidateCompanyRepository;
-    CompanyRepositoryCustom companyRepositoryCustom;
+    UserRepository userRepository;
 
     SocialLinkMapper socialLinkMapper;
 
@@ -168,6 +170,10 @@ public class CompanyServiceImpl implements CompanyService {
         log.info("Getting company details.");
         Company company = companyRepository.findById(companyId)
                                 .orElseThrow(() -> new EntityNotFoundException("Company not found"));
+        User companyUser = company.getUser();
+        if (companyUser.getDeleteAt() != null) {
+            throw new EntityNotFoundException("Company not found");
+        }
         CompanyProfileResponse response = companyMapper.toCompanyProfileResponse(company);
         Object principle = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principle instanceof User) {
@@ -188,7 +194,7 @@ public class CompanyServiceImpl implements CompanyService {
     public Page<CompanyPageResponse> searchCompanies(Pageable pageable, String keyword, String location,
             OrganizationType organizationType, IndustryType industryType, CompanyTeamSize teamSize, Integer foundedIn) {
         
-        Page<CompanyPageResponse> companyResponses = companyRepositoryCustom.searchCompany(
+        Page<CompanyPageResponse> companyResponses = companyRepository.searchCompany(
                         keyword, 
                         location, 
                         organizationType, 
@@ -208,5 +214,32 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findByUser(user)
                         .orElseThrow(() -> new EntityNotFoundException("Company not found for user: " + user.getId()));
         return getCompanyDetails(company.getId());
+    }
+
+    @Override
+    public Page<AdminCompanyResponse> getCompaniesForAdmin(String email, Pageable pageable) {
+        return companyRepository.getCompaniesForAdmin(email, pageable).map(adminCompanyResponse -> {
+            adminCompanyResponse.setLogoUrl(s3Service.generatePresignedUrl(adminCompanyResponse.getLogoUrl()));
+            return adminCompanyResponse;
+        });
+    }
+
+    @Override
+    @Transactional
+    public void activateCompany(Long companyId) {
+        Company company = companyRepository.findById(companyId)
+                        .orElseThrow(() -> new EntityNotFoundException("Company not found for id: " + companyId));
+        User user = company.getUser();
+        user.setDeleteAt(null);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deactivateCompany(Long companyId) {
+        Company company = companyRepository.findById(companyId)
+                        .orElseThrow(() -> new EntityNotFoundException("Company not found for id: " + companyId));
+        User user = company.getUser();
+        user.setDeleteAt(LocalDateTime.now());
+        userRepository.save(user);
     }
 }
