@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,8 +26,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-
-
 @RestController
 @RequestMapping("/api/admin/companies")
 @RequiredArgsConstructor
@@ -36,6 +35,7 @@ public class AdminCompanyController {
     
     CompanyService companyService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("")
     @Operation(summary = "Lấy danh sách các company")
     public ResponseEntity<ApiResponse<Page<AdminCompanyResponse>>> getCompanies(
@@ -50,6 +50,7 @@ public class AdminCompanyController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{companyId}")
     @Operation(summary = "Lấy chi tiết thông tin của một company")
     public ResponseEntity<ApiResponse<CompanyProfileResponse>> getCompanyDetail(@PathVariable Long companyId) {
@@ -62,6 +63,7 @@ public class AdminCompanyController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{companyId}/deactivate")
     @Operation(summary = "Vô hiệu hóa một tài khoản company")
     public ResponseEntity<ApiResponse<Void>> deactivateCompany(@PathVariable Long companyId) {
@@ -74,6 +76,7 @@ public class AdminCompanyController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{companyId}/activate")
     @Operation(summary = "Kích hoạt lại một tài khoản company")
     public ResponseEntity<ApiResponse<Void>> activateCompany(@PathVariable Long companyId) {

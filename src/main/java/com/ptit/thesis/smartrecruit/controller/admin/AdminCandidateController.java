@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +36,7 @@ public class AdminCandidateController {
 
     CandidateProfileService candidateProfileService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("")
     @Operation(summary = "Lấy danh sách các candidate")
     public ResponseEntity<ApiResponse<Page<AdminCandidateResponse>>> getCandidates(
@@ -49,6 +51,7 @@ public class AdminCandidateController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{candidateId}")
     @Operation(summary = "Lấy chi tiết thông tin của một candidate")
     public ResponseEntity<ApiResponse<CandidateProfileResponse>> getCandidateDetail(@PathVariable Long candidateId) {
@@ -61,6 +64,7 @@ public class AdminCandidateController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{candidateId}/deactivate")
     @Operation(summary = "Vô hiệu hóa một tài khoản candidate")
     public ResponseEntity<ApiResponse<Void>> deactivateCandidate(@PathVariable Long candidateId) {
@@ -73,6 +77,7 @@ public class AdminCandidateController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{candidateId}/activate")
     @Operation(summary = "Kích hoạt lại một tài khoản candidate")
     public ResponseEntity<ApiResponse<Void>> activateCandidate(@PathVariable Long candidateId) {

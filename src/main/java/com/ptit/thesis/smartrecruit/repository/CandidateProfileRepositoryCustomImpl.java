@@ -186,7 +186,7 @@ public class CandidateProfileRepositoryCustomImpl implements CandidateProfileRep
         BooleanExpression isActive = JPAExpressions
             .selectOne()
             .from(user)
-            .where(user.deleteAt.isNotNull())
+            .where(user.deleteAt.isNull())
             .where(user.id.eq(candidate.user.id))
             .exists();
 
