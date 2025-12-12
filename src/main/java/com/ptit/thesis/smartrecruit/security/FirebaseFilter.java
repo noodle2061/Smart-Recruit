@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
 import com.ptit.thesis.smartrecruit.config.CustomUserDetailsService;
+import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.exception.InvalidTokenException;
 
 import jakarta.servlet.FilterChain;
@@ -40,7 +41,8 @@ public class FirebaseFilter extends OncePerRequestFilter {
     CustomUserDetailsService customUserDetailsService;
 
     private final List<String> publicEndpoints = Arrays.asList(
-            "/api/auth/**",
+            "/api/auth/register",
+            "/api/auth/callback",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/api-docs/**");
@@ -70,10 +72,7 @@ public class FirebaseFilter extends OncePerRequestFilter {
 
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(userUid);
 
-            // Kiem tra tai khoan co bi khoa chua
-            UserRecord userRecord = FirebaseAuth.getInstance().getUser(userUid);
-
-            if (userDetails.isAccountNonLocked() || userRecord.isDisabled()) {
+            if (!userDetails.isAccountNonLocked()) {
                 throw new LockedException("This account is locked. Please contact your administrator.");
             }
 
