@@ -93,6 +93,6 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return this.deleteAt != null;
+        return this.deleteAt == null;
     }
 }
