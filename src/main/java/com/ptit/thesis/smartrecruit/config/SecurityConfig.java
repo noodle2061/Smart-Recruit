@@ -49,7 +49,7 @@ public class SecurityConfig {
                     "/api/jobs/**",
                     "/api/company/**",
                     "/api/companies/**",
-                    "ws/**"
+                    "/ws/**"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/blogs/**").permitAll()
 
