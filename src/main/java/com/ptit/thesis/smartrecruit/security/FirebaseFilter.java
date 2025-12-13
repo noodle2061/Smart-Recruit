@@ -45,7 +45,8 @@ public class FirebaseFilter extends OncePerRequestFilter {
             "/api/auth/callback",
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/api-docs/**");
+            "/api-docs/**",
+            "/ws/**");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

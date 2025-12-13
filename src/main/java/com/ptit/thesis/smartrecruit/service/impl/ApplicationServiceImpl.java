@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ptit.thesis.smartrecruit.dto.request.ApplicationFilterRequest;
+import com.ptit.thesis.smartrecruit.dto.request.ApplicationStatusUpdateRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApplicationBriefResponse;
 import com.ptit.thesis.smartrecruit.dto.response.ResumeResponse;
 import com.ptit.thesis.smartrecruit.entity.Application;
@@ -18,6 +19,7 @@ import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.Job;
 import com.ptit.thesis.smartrecruit.entity.Resume;
 import com.ptit.thesis.smartrecruit.entity.User;
+import com.ptit.thesis.smartrecruit.enums.JobApplicationStatus;
 import com.ptit.thesis.smartrecruit.enums.NotificationType;
 import com.ptit.thesis.smartrecruit.exception.ResourceNotFoundException;
 import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
@@ -197,6 +199,36 @@ public class ApplicationServiceImpl implements ApplicationService {
             "Hồ sơ ứng tuyển của bạn đạt " + score + " điểm cho công việc " + application.getJob().getTitle() + " của " + company.getName(),
             NotificationType.JOB_APPLICATION, 
             application.getId());
+
+    }
+
+    @Override
+    public void updateApplicationStatus(Long jobId, Long applicationId, ApplicationStatusUpdateRequest request) {
+        JobApplicationStatus newStatus = request.getStatus();
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found for id: " + applicationId));
+        Job job = application.getJob();
+        if (job.getId() != jobId) {
+            throw new IllegalArgumentException(
+                    "Application with id " + applicationId + " does not belong to job " + jobId);
+        }
+        
+        application.setStatus(newStatus);
+        applicationRepository.save(application);
+
+        String content = "";
+        if (newStatus == JobApplicationStatus.REJECTED) {
+            content = String.format("Rất tiếc, hồ sơ của bạn cho vị trí %s chưa phù hợp tại thời điểm này. ", job.getTitle());
+        } else if (newStatus == JobApplicationStatus.ACCEPTED) {
+            content = String.format("Chúc mừng, hồ sơ của bạn tại vị trí %s đã được chấp nhận.", job.getTitle());
+        }
+        User candidateUser = application.getCandidate().getUser();
+        notificationService.pushNotification(
+            null, 
+            candidateUser, 
+            content,
+            NotificationType.JOB_APPLICATION, 
+            job.getId());
 
     }
 }

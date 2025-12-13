@@ -97,6 +97,9 @@ public class JobCandidateServiceImpl implements JobCandidateService {
             application.setJob(job);
             application.setDataVersion(1);
         } else { // đã từng nộp
+            if (application.getStatus() != JobApplicationStatus.EXPIRED) {
+                throw new RuntimeException("Your application has either been rejected or has expired.");
+            }
             if (redisService.isApplyRateLimit(application.getId())) {
                 throw new RuntimeException("You have already applied to this job within the last 10 minutes.");
             }
