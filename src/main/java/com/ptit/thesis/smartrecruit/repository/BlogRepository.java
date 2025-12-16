@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.ptit.thesis.smartrecruit.entity.Blog;
 
 @Repository
-public interface BlogRepository extends JpaRepository<Blog, Long>, JpaSpecificationExecutor<Blog> {
+public interface BlogRepository extends JpaRepository<Blog, Long>, JpaSpecificationExecutor<Blog>, BlogRepositoryCustom {
     Optional<Blog> findBySlug(String slug);
 
     @Query("SELECT b FROM Blog as b WHERE b.slug = :slug AND b.author.id = :userId")

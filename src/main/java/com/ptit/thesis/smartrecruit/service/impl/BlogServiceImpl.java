@@ -3,6 +3,7 @@ package com.ptit.thesis.smartrecruit.service.impl;
 import java.io.IOException;
 import java.util.List;
 
+import com.ptit.thesis.smartrecruit.dto.response.AdminBlogResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -201,6 +202,11 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public List<TagDTO> getPopularTags() {
         return this.blogCategoryRepository.findPopularTags();
+    }
+
+    @Override
+    public Page<AdminBlogResponse> getBlogsForAdmin(Pageable pageable) {
+        return this.blogRepository.getBlogsForAdmin(pageable);
     }
 
     @Override

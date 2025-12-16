@@ -41,4 +41,4 @@ ij_java_names_count_to_use_import_on_demand = 9999
 
 ij_java_keep_line_breaks = true
 
-ij_continuation_indent_size = 8
+ij_continuation_indent_size = 4

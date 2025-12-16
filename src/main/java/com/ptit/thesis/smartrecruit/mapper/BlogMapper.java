@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.ptit.thesis.smartrecruit.dto.response.AdminBlogResponse;
+import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -163,6 +165,14 @@ public abstract class BlogMapper {
             log.error("Error uploading file to S3: {}", e.getMessage());
             throw new S3ErrorException("Error uploading file to S3: " + e.getMessage());
         }
-
     }
+
+//    @Mapping(target = "author", ignore = true)
+//    abstract public AdminBlogResponse toAdminBlogResponse(Blog blog);
+//
+//    @AfterMapping
+//    protected void handleToAdminBlogResponse(Blog blog, @MappingTarget AdminBlogResponse adminBlogResponse) {
+//        UserResponse author = this.userMapper.toUserResponse(blog.getAuthor());
+//        adminBlogResponse.setAuthor(author);
+//    }
 }
