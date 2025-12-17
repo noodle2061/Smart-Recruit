@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,8 @@ public interface BlogRepository extends JpaRepository<Blog, Long>, JpaSpecificat
 
     @Query("SELECT b FROM Blog as b WHERE b.slug = :slug AND b.author.id = :userId")
     Optional<Blog> findBlogBySlugAndUserId(@Param("slug") String slug, @Param("userId") Long userId);
+
+    @Modifying
+    @Query("UPDATE Blog as b SET b.status = 'PUBLISHED' WHERE b.id = :id")
+    int publishBlog(@Param("id") Long id);
 }

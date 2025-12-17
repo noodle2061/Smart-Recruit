@@ -1,5 +1,6 @@
 package com.ptit.thesis.smartrecruit.controller.admin;
 
+import com.ptit.thesis.smartrecruit.dto.common.BlogFilterDTO;
 import com.ptit.thesis.smartrecruit.dto.response.AdminBlogResponse;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.BlogResponse;
@@ -17,9 +18,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
@@ -27,16 +26,17 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Tag(name = "AdminBlogController", description = "Admin quản lý bài viết")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminBlogController {
     BlogService blogService;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("")
-    @Operation(summary = "admin lấy danh sách blog")
+    @Operation(summary = "Admin lấy danh sách blog")
     public ResponseEntity<ApiResponse<List<AdminBlogResponse>>> getBlogs(
-            @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable
+            @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
+            @ParameterObject BlogFilterDTO filter
     ) {
-        Page<AdminBlogResponse> blogs = this.blogService.getBlogsForAdmin(pageable);
+        Page<AdminBlogResponse> blogs = this.blogService.getBlogsForAdmin(filter, pageable);
         ApiResponse<List<AdminBlogResponse>> response = ApiResponse.<List<AdminBlogResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy danh sách blog thành công")
@@ -45,4 +45,29 @@ public class AdminBlogController {
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @PatchMapping("{id}/publish")
+    @Operation(summary = "Admin duyệt đăng tải blog")
+    public ResponseEntity<ApiResponse<Boolean>> publish(@PathVariable Long id) {
+        this.blogService.publish(id);
+        ApiResponse<Boolean> response = ApiResponse.<Boolean>builder()
+            .status(HttpStatus.OK.value())
+            .message("Publish bài viết thành công")
+            .data(true)
+            .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @DeleteMapping("{id}")
+    @Operation(summary = "Admin xóa 1 blog")
+    public ResponseEntity<ApiResponse<Boolean>> delete(@PathVariable Long id) {
+        this.blogService.adminDelete(id);
+        ApiResponse<Boolean> response = ApiResponse.<Boolean>builder()
+            .status(HttpStatus.OK.value())
+            .message("Xóa bài viết thành công")
+            .data(true)
+            .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
 }

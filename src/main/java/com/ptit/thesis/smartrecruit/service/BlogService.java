@@ -2,6 +2,7 @@ package com.ptit.thesis.smartrecruit.service;
 
 import java.util.List;
 
+import com.ptit.thesis.smartrecruit.dto.common.BlogFilterDTO;
 import com.ptit.thesis.smartrecruit.dto.response.AdminBlogResponse;
 import org.springframework.data.domain.Page;
 
@@ -42,10 +43,14 @@ public interface BlogService {
 
     void delete(Long id);
 
+    void adminDelete(Long id);
+
     List<BlogCategoryDTO> getCategories();
 
     List<TagDTO> getPopularTags();
 
-    Page<AdminBlogResponse> getBlogsForAdmin(Pageable pageable);
+    Page<AdminBlogResponse> getBlogsForAdmin(BlogFilterDTO filter, Pageable pageable);
+
+    void publish(Long id);
 
 }
