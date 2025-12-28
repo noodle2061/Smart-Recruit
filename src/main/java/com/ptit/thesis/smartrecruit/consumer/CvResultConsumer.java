@@ -18,6 +18,6 @@ public class CvResultConsumer {
 
     @RabbitListener(queues = "${rabbitmq.queue.cv-result}")
     public void receiveCvResult(CvResultScoreMessage message) {
-        applicationService.updateApplicationScore(message.getApplicationId(), message.getScore());
+        applicationService.updateApplicationScore(message);
     }
 }
