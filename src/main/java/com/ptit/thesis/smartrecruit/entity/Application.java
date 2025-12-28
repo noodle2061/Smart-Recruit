@@ -59,6 +59,9 @@ public class Application extends BaseEntity {
     @Column(name = "data_version")
     Integer dataVersion;
 
+    @Column(name = "breakdown_score")
+    String breakdownScore;
+
     @PrePersist
     public void prePersist() {
         if (status == null) {

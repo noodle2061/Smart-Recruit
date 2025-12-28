@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ptit.thesis.smartrecruit.dto.message.CvResultScoreMessage;
 import com.ptit.thesis.smartrecruit.dto.request.ApplicationFilterRequest;
 import com.ptit.thesis.smartrecruit.dto.request.ApplicationStatusUpdateRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApplicationBriefResponse;
@@ -18,6 +19,6 @@ public interface ApplicationService {
     Page<ApplicationBriefResponse> getApplicationsForJob(Pageable pageable, ApplicationFilterRequest filter, Long jobId);
     void deleteResume(Long resumeId, User user);
     ResumeResponse updateResume(Long id, MultipartFile resumeFile, String title, User user);
-    void updateApplicationScore(Long applicationId, Double score);
+    void updateApplicationScore(CvResultScoreMessage message);
     void updateApplicationStatus(Long jobId, Long applicationId, ApplicationStatusUpdateRequest request);
 }
