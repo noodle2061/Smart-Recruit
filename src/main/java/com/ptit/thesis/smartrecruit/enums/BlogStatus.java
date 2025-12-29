@@ -1,9 +1,8 @@
 package com.ptit.thesis.smartrecruit.enums;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
 
-import io.swagger.v3.oas.annotations.Hidden;
-
+@Getter
 public enum BlogStatus {
     DRAFT("DRAFT"),
     PUBLISHED("PUBLISHED"),
@@ -14,10 +13,4 @@ public enum BlogStatus {
     BlogStatus(String displayValue) {
         this.displayValue = displayValue;
     }
-
-    @Hidden
-    public String getDisplayValue() {
-        return this.displayValue;
-    }
-
 }

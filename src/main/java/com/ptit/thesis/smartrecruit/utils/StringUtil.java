@@ -11,7 +11,7 @@ public class StringUtil {
 
         String username = email.replaceAll("[^a-zA-Z0-9._-]", "")
                                 .substring(0, email.indexOf("@"));
-        
+
         if (username.length() > MAX_USERNAME_PREFIX_LENGTH) {
             username = username.substring(0, MAX_USERNAME_PREFIX_LENGTH);
         }
@@ -41,6 +41,6 @@ public class StringUtil {
     }
 
     public static boolean hasText(String text) {
-        return text != null && text.trim().length() > 0;
+        return text != null && !text.trim().isEmpty();
     }
 }

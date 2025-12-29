@@ -3,6 +3,10 @@ package com.ptit.thesis.smartrecruit.service.impl;
 import java.io.IOException;
 import java.util.List;
 
+import com.google.api.gax.rpc.NotFoundException;
+import com.ptit.thesis.smartrecruit.dto.common.BlogFilterDTO;
+import com.ptit.thesis.smartrecruit.dto.response.AdminBlogResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -115,7 +120,7 @@ public class BlogServiceImpl implements BlogService {
         }
 
         if (!isAdmin && updateBlogRequest.getStatus().getDisplayValue().equals(
-                BlogStatus.PUBLISHED.getDisplayValue())) {
+            BlogStatus.PUBLISHED.getDisplayValue())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "only admin can set status to PUBLISHED");
         }
 
@@ -131,7 +136,7 @@ public class BlogServiceImpl implements BlogService {
         boolean isAdmin = "ADMIN".equals(currentUser.getRole().getName());
 
         Blog blog = blogRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found"));
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found"));
 
         boolean isMyBlog = blog.getAuthor().getId().equals(currentUser.getId());
 
@@ -143,22 +148,30 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
+    public void adminDelete(Long id) {
+        if (!blogRepository.existsById(id)) {
+            throw new IllegalStateException("Blog not found");
+        }
+        this.blogRepository.deleteById(id);
+    }
+
+    @Override
     public Page<BlogResponse> listWithPage(
-            String keyword,
-            String sort,
-            Integer page,
-            Integer limit,
-            List<Long> categoryIds,
-            Long tagId) {
+        String keyword,
+        String sort,
+        Integer page,
+        Integer limit,
+        List<Long> categoryIds,
+        Long tagId) {
         Specification<Blog> spec = Specification.unrestricted();
 
         if (keyword != null && !keyword.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.and(
-                    cb.equal(root.get("status"), BlogStatus.PUBLISHED),
-                    cb.or(
-                            cb.like(cb.lower(root.get("title")), "%" + keyword.toLowerCase() + "%"),
-                            cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%"),
-                            cb.like(cb.lower(root.get("content")), "%" + keyword.toLowerCase() + "%"))));
+                cb.equal(root.get("status"), BlogStatus.PUBLISHED),
+                cb.or(
+                    cb.like(cb.lower(root.get("title")), "%" + keyword.toLowerCase() + "%"),
+                    cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%"),
+                    cb.like(cb.lower(root.get("content")), "%" + keyword.toLowerCase() + "%"))));
         }
 
         if (categoryIds != null && categoryIds.size() > 0) {
@@ -178,24 +191,23 @@ public class BlogServiceImpl implements BlogService {
         }
 
         Sort _sort = Sort.by(
-                sort != null && !sort.isBlank() && sort.charAt(0) == '-' ? Sort.Direction.DESC : Sort.Direction.ASC,
-                sort != null ? sort.substring(1) : "id");
+            sort != null && !sort.isBlank() && sort.charAt(0) == '-' ? Sort.Direction.DESC : Sort.Direction.ASC,
+            sort != null ? sort.substring(1) : "id");
 
         spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), BlogStatus.PUBLISHED));
 
         Pageable pageable = PageRequest.of(page, limit, _sort);
         Page<Blog> blogs = blogRepository.findAll(spec, pageable);
-        Page<BlogResponse> pagination = blogs.map(blog -> blogMapper.toBlogResponse(blog));
-        return pagination;
+        return blogs.map(blogMapper::toBlogResponse);
     }
 
     @Override
     public List<BlogCategoryDTO> getCategories() {
         List<BlogCategory> categories = this.blogCategoryRepository.findAll();
         return categories
-                .stream()
-                .map(cate -> new BlogCategoryDTO(cate.getId(), cate.getName()))
-                .toList();
+            .stream()
+            .map(cate -> new BlogCategoryDTO(cate.getId(), cate.getName()))
+            .toList();
     }
 
     @Override
@@ -204,15 +216,29 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
+    public Page<AdminBlogResponse> getBlogsForAdmin(BlogFilterDTO filter, Pageable pageable) {
+        return this.blogRepository.getBlogsForAdmin(filter, pageable);
+    }
+
+    @Override
+    @Transactional
+    public void publish(Long id) {
+        int rowEffected = this.blogRepository.publishBlog(id);
+        if (rowEffected == 0) {
+            throw new IllegalStateException("blog not found");
+        }
+    }
+
+    @Override
     public Page<BlogResponse> listWithPageOfUser(Long id, String keyword, String sort, Integer page, Integer limit,
-            List<Long> categoryIds, Long tagId) {
+                                                 List<Long> categoryIds, Long tagId) {
         Specification<Blog> spec = Specification.unrestricted();
 
         if (keyword != null && !keyword.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.or(
-                    cb.like(cb.lower(root.get("title")), "%" + keyword.toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("content")), "%" + keyword.toLowerCase() + "%")));
+                cb.like(cb.lower(root.get("title")), "%" + keyword.toLowerCase() + "%"),
+                cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%"),
+                cb.like(cb.lower(root.get("content")), "%" + keyword.toLowerCase() + "%")));
         }
 
         if (categoryIds != null && categoryIds.size() > 0) {
@@ -232,15 +258,14 @@ public class BlogServiceImpl implements BlogService {
         }
 
         Sort _sort = Sort.by(
-                sort != null && !sort.isBlank() && sort.charAt(0) == '-' ? Sort.Direction.DESC : Sort.Direction.ASC,
-                sort != null ? sort.substring(1) : "id");
+            sort != null && !sort.isBlank() && sort.charAt(0) == '-' ? Sort.Direction.DESC : Sort.Direction.ASC,
+            sort != null ? sort.substring(1) : "id");
 
         spec = spec.and((root, query, cb) -> cb.equal(root.get("author").get("id"), id));
 
         Pageable pageable = PageRequest.of(page - 1, limit, _sort);
         Page<Blog> blogs = blogRepository.findAll(spec, pageable);
-        Page<BlogResponse> pagination = blogs.map(blog -> blogMapper.toBlogResponse(blog));
-        return pagination;
+        return blogs.map(blogMapper::toBlogResponse);
     }
 
     @Override

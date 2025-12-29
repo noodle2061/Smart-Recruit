@@ -8,6 +8,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.ptit.thesis.smartrecruit.dto.response.AdminBlogResponse;
+import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
+import com.ptit.thesis.smartrecruit.service.AuthService;
+import com.ptit.thesis.smartrecruit.service.impl.AuthServiceImpl;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -46,6 +50,9 @@ public abstract class BlogMapper {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private AuthServiceImpl authService;
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -163,6 +170,23 @@ public abstract class BlogMapper {
             log.error("Error uploading file to S3: {}", e.getMessage());
             throw new S3ErrorException("Error uploading file to S3: " + e.getMessage());
         }
+    }
 
+    @Mapping(target = "author", ignore = true)
+    abstract public AdminBlogResponse toAdminBlogResponse(Blog blog);
+
+    @AfterMapping
+    protected void handleToAdminBlogResponse(Blog blog, @MappingTarget AdminBlogResponse adminBlogResponse) {
+        UserResponse author = this.userMapper.toUserResponse(blog.getAuthor());
+        adminBlogResponse.setAuthor(author);
+    }
+
+    public List<AdminBlogResponse> toListAdminBlogRespone(List<Blog> blogs) {
+        return blogs.stream().map(blog -> {
+            AdminBlogResponse adminBlogResponse = this.toAdminBlogResponse(blog);
+            adminBlogResponse.setThumbnail(this.s3Service.generatePresignedUrl(blog.getThumbnail()));
+            adminBlogResponse.setAuthor(this.authService.toUserResponse(blog.getAuthor()));
+            return adminBlogResponse;
+        }).toList();
     }
 }
