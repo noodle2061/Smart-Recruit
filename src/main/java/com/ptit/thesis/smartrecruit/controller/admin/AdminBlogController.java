@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -33,9 +34,11 @@ public class AdminBlogController {
     @GetMapping("")
     @Operation(summary = "Admin lấy danh sách blog")
     public ResponseEntity<ApiResponse<List<AdminBlogResponse>>> getBlogs(
-            @ParameterObject @PageableDefault(page = 1, size = 10) Pageable pageable,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit,
             @ParameterObject BlogFilterDTO filter
     ) {
+        Pageable pageable = PageRequest.of(page - 1, limit);
         Page<AdminBlogResponse> blogs = this.blogService.getBlogsForAdmin(filter, pageable);
         ApiResponse<List<AdminBlogResponse>> response = ApiResponse.<List<AdminBlogResponse>>builder()
                 .status(HttpStatus.OK.value())
