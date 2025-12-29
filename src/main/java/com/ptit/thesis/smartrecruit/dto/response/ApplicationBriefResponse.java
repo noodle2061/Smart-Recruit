@@ -31,4 +31,5 @@ public class ApplicationBriefResponse {
     String resumeUrl;
     String coverLetter;
     Double score;
+    String breakdownScore;
 }
