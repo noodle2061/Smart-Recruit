@@ -45,7 +45,7 @@ public class JobExpiredListener {
         }
 
         applications.forEach(application -> {
-            application.setStatus(JobApplicationStatus.EXPIRED);
+            application.setStatus(JobApplicationStatus.REJECTED);
             CandidateProfile candidate = application.getCandidate();
             User candidateUser = candidate.getUser();
             notificationService.pushNotification(null, candidateUser, String.format("Công việc %s tại %s đã đóng. Đơn ứng tuyển của bạn đã cập nhật trạng thái", job.getTitle(), job.getCompany().getName()), NotificationType.JOB_APPLICATION, job.getId());
