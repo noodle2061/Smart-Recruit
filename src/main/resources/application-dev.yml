@@ -18,10 +18,10 @@ spring:
 
   data:
     redis:
-      host: redis-12266.c295.ap-southeast-1-1.ec2.cloud.redislabs.com
-      port: 12266
+      host: redis-19189.c252.ap-southeast-1-1.ec2.cloud.redislabs.com
+      port: 19189
       username: default
-      password: qGQAwX3u14NtbhqI7jQbMSA13ogL1kSq
+      password: vcICgjUKkNQmB6L8KNgYPhNzozUtDNv8
     web:
       pageable:
         one-indexed-parameters: true
