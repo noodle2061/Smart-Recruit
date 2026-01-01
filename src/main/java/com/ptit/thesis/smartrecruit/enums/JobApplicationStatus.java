@@ -3,8 +3,7 @@ package com.ptit.thesis.smartrecruit.enums;
 public enum JobApplicationStatus {
     PROCESSING("Đang xử lý"),
     ACCEPTED("Đã duyệt"),
-    REJECTED("Đã từ chối"),
-    EXPIRED("Đã hết hạn");
+    REJECTED("Đã từ chối");
 
     private final String displayValue;
 

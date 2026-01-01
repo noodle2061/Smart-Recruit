@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
+import com.ptit.thesis.smartrecruit.enums.JobApplicationStatus;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -32,4 +33,5 @@ public class ApplicationBriefResponse {
     String coverLetter;
     Double score;
     String breakdownScore;
+    JobApplicationStatus status;
 }

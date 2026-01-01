@@ -85,7 +85,8 @@ public class ApplicationRepositoryCustomImpl implements ApplicationRepositoryCus
                         resume.storageKey,
                         application.coverLetter,
                         application.score,
-                        application.breakdownScore))
+                        application.breakdownScore,
+                        application.status))
                 .from(application)
                 .join(application.candidate, candidate)
                 .join(application.resume, resume)
