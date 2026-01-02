@@ -24,7 +24,7 @@ public class CvResultScoreMessage {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public class MatchDataDTO {
+    public static class MatchDataDTO {
         private Long applicationId;
         private Double matchScore;
         private BreakdownDTO breakdown;
@@ -34,7 +34,7 @@ public class CvResultScoreMessage {
     @NoArgsConstructor
     @AllArgsConstructor
     @ToString
-    public class BreakdownDTO {
+    public static class BreakdownDTO {
         private Double hardSkillsScore;
         private Double workExperienceScore;
         private Double responsibilitiesAchievementsScore;

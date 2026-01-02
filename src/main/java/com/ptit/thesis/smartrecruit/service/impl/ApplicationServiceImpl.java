@@ -192,31 +192,38 @@ public class ApplicationServiceImpl implements ApplicationService {
     public void updateApplicationScore(CvResultScoreMessage message) {
 
         Long applicationId = message.getApplicationId();
-        MatchDataDTO matchData = message.getData();
-        Double score = matchData.getMatchScore();
+        
         Application application = null;
         Optional<Application> applicationOpt = applicationRepository.findById(message.getApplicationId());
-        if (applicationOpt.isPresent()) {
-            application = applicationOpt.get();
 
-            if (application.getDataVersion() != message.getVersion()) {
-                return; // không phải version cuối thì không cập nhật gì cả mà bỏ qua
-            }
-
-            if (message.getIsSuccess()) {
-                application.setScore(score);
-                application.setBreakdownScore(matchData.getBreakdown().toString());
-                applicationRepository.save(application);
-            }
-        } else {
+        if (!applicationOpt.isPresent()) { // không tìm thấy application thì bỏ qua
             log.error("Error updating application score: Application not found for id: " + message.getApplicationId());
             return;
         }
 
+        application = applicationOpt.get();
         User candidateUser = application.getCandidate().getUser();
         Company company = application.getJob().getCompany();
 
-        if (message.getIsSuccess() == false) {
+        if (application.getDataVersion() != message.getVersion()) {
+            return; // không phải version cuối thì không cập nhật gì cả mà bỏ qua
+        }
+
+        if (message.getIsSuccess()) {
+            MatchDataDTO matchData = message.getData();
+            Double score = matchData.getMatchScore();
+            application.setScore(score);
+            application.setBreakdownScore(matchData.getBreakdown().toString());
+            applicationRepository.save(application);
+            notificationService.pushNotification(
+                    null,
+                    candidateUser,
+                    "Hồ sơ ứng tuyển của bạn đạt " + score + " điểm cho công việc "
+                            + application.getJob().getTitle()
+                            + " của " + company.getName(),
+                    NotificationType.JOB_APPLICATION,
+                    application.getId());
+        } else {
             notificationService.pushNotification(
                     null,
                     candidateUser,
@@ -224,19 +231,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                             + company.getName() + " không hợp lệ: " + message.getError(),
                     NotificationType.JOB_APPLICATION,
                     applicationId);
-                    
+
             application.setScore(0.0); // đánh dấu là đã chấm và không hợp lệ
             applicationRepository.save(application);
-            return;
         }
-
-        notificationService.pushNotification(
-                null,
-                candidateUser,
-                "Hồ sơ ứng tuyển của bạn đạt " + score + " điểm cho công việc " + application.getJob().getTitle()
-                        + " của " + company.getName(),
-                NotificationType.JOB_APPLICATION,
-                application.getId());
     }
 
     @Override
