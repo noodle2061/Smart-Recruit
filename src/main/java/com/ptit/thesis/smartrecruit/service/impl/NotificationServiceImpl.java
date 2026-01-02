@@ -29,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
@@ -41,7 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
     CompanyRepository companyRepository;
 
     SimpMessagingTemplate messagingTemplate;
-    
+
     NotificationMapper notificationMapper;
 
     S3Service s3Service;
@@ -56,12 +55,12 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setType(type);
         notification.setRelatedId(relatedId);
         notification.setIsRead(false);
-        
+
         Notification savedNotification = notificationRepository.save(notification);
 
         NotificationResponse notificationResponse = getNotificationResponseFromEntity(savedNotification);
 
-        messagingTemplate.convertAndSendToUser(recipient.getUsername(),"/queue/notifications", notificationResponse);
+        messagingTemplate.convertAndSendToUser(recipient.getUsername(), "/queue/notifications", notificationResponse);
     }
 
     @Override
@@ -71,9 +70,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Slice<NotificationResponse> getNotifications(User user, Pageable pageable, Boolean isRead) {
-        return notificationRepository.findByRecipientIdAndIsReadOrderByCreatedAtDesc(user.getId(), isRead, pageable).map(
-            notification -> getNotificationResponseFromEntity(notification)
-        );
+        return notificationRepository.findByRecipientIdAndIsReadOrderByCreatedAtDesc(user.getId(), isRead, pageable)
+                .map(
+                        notification -> getNotificationResponseFromEntity(notification));
     }
 
     @Override
@@ -81,10 +80,10 @@ public class NotificationServiceImpl implements NotificationService {
     public void markAsRead(Long notificationId, User user) {
         log.info("Marking notification with id " + notificationId + " as read.");
         Notification notification = notificationRepository.findById(notificationId)
-            .orElseThrow(() -> new ResourceNotFoundException("Notification not found for id: " + notificationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found for id: " + notificationId));
 
         validateUserNotification(user, notificationId);
-        
+
         notification.setIsRead(true);
         notificationRepository.save(notification);
 
@@ -114,20 +113,22 @@ public class NotificationServiceImpl implements NotificationService {
             boolean isCandidateSend = sender.getRole().getName().equals(Constant.CANDIDATE_ROLE);
             if (isCandidateSend) {
                 CandidateProfile candidate = candidateProfileRepository.findByUser(sender).orElseThrow(
-                    () -> new ResourceNotFoundException("Can not found candidatte profile with user id: " + sender.getId())
-                );
+                        () -> new ResourceNotFoundException(
+                                "Can not found candidatte profile with user id: " + sender.getId()));
                 notificationResponse.setSenderAvatarUrl(candidate.getAvatarUrl());
                 notificationResponse.setSenderName(candidate.getFullName());
             } else {
                 Company company = companyRepository.findByUser(sender).orElseThrow(
-                    () -> new ResourceNotFoundException("Can not found company profile with user id: " + sender.getId())
-                );
+                        () -> new ResourceNotFoundException(
+                                "Can not found company profile with user id: " + sender.getId()));
                 notificationResponse.setSenderAvatarUrl(company.getLogoUrl());
                 notificationResponse.setSenderName(company.getName());
             }
+            notificationResponse.setSenderId(sender.getId());
+            notificationResponse
+                    .setSenderAvatarUrl(s3Service.generatePresignedUrl(notificationResponse.getSenderAvatarUrl()));
         }
-        notificationResponse.setSenderId(sender.getId());
-        notificationResponse.setSenderAvatarUrl(s3Service.generatePresignedUrl(notificationResponse.getSenderAvatarUrl()));
+
         return notificationResponse;
     }
 }
