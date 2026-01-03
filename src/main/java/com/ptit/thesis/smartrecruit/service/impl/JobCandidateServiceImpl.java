@@ -95,6 +95,7 @@ public class JobCandidateServiceImpl implements JobCandidateService {
         if (application.getId() == null) { // đơn mới
             application.setCandidate(candidate);
             application.setJob(job);
+            application.setCoverLetter(request.getCoverLetter());
             application.setDataVersion(1);
         } else { // đã từng nộp
             if (application.getStatus() == JobApplicationStatus.REJECTED) {
@@ -103,6 +104,7 @@ public class JobCandidateServiceImpl implements JobCandidateService {
             if (redisService.isApplyRateLimit(application.getId())) {
                 throw new RuntimeException("You have already applied to this job within the last 10 minutes.");
             }
+            application.setCoverLetter(request.getCoverLetter());
             application.setDataVersion(application.getDataVersion() + 1);
         }
         

@@ -33,7 +33,6 @@ public class CvResultScoreMessage {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    @ToString
     public static class BreakdownDTO {
         private Double hardSkillsScore;
         private Double workExperienceScore;
@@ -41,5 +40,17 @@ public class CvResultScoreMessage {
         private Double softSkillsScore;
         private Double educationTrainingScore;
         private Double additionalFactorsScore;
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "{\"hardSkillsScore\":%s,\"workExperienceTimeScore\":%s,\"responsibilitiesAchievementsScore\":%s,\"softSkillsScore\":%s,\"educationTrainingScore\":%s,\"additionalFactorsScore\":%s}",
+                    hardSkillsScore,
+                    workExperienceScore,
+                    responsibilitiesAchievementsScore,
+                    softSkillsScore,
+                    educationTrainingScore,
+                    additionalFactorsScore);
+        }
     }
 }
