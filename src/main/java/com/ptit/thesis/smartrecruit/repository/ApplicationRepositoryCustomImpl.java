@@ -65,7 +65,7 @@ public class ApplicationRepositoryCustomImpl implements ApplicationRepositoryCus
                 LocalDate minDate = LocalDate.now().minusYears(minAge);
                 LocalDate maxDate = LocalDate.now().minusYears(maxAge);
 
-                predicate.and(candidate.dateOfBirth.between(minDate, maxDate));
+                predicate.and(candidate.dateOfBirth.between(maxDate, minDate));
             } catch (Exception e) {
                 throw new IllegalArgumentException("Invalid age range: " + filter.getAgeRange());
             }
