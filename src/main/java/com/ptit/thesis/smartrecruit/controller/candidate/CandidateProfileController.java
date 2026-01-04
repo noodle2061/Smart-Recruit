@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ import com.ptit.thesis.smartrecruit.dto.request.CandidateContactInfoRequest;
 import com.ptit.thesis.smartrecruit.dto.request.CandidateProfileDetailRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CandidateStatResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.service.CandidateProfileService;
 
@@ -125,4 +127,18 @@ public class CandidateProfileController {
         candidateProfileService.uploadAvatar(avatarFile, user);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
+
+
+    @GetMapping("/{id}/stat")
+    @Operation(summary = "Lấy thống tin thống kê của candidate")
+    public ResponseEntity<ApiResponse<CandidateStatResponse>> getCandidateStat(@PathVariable Long id) {
+        CandidateStatResponse stat = candidateProfileService.getCandidateStat(id);
+        ApiResponse<CandidateStatResponse> response = ApiResponse.<CandidateStatResponse>builder()
+            .status(HttpStatus.OK.value())
+            .message("Get candidate stat successfully")
+            .data(stat)
+            .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
 }
