@@ -100,6 +100,7 @@ public abstract class BlogMapper {
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "categories", ignore = true)
     @Mapping(target = "author", ignore = true)
+    @Mapping(target = "commentCount", ignore = true)
     @Mapping(target = "createdAt", source = "createdAt")
     abstract public BlogResponse toBlogResponse(Blog blog);
 

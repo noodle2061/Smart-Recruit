@@ -14,4 +14,16 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findCommentsByCommentableIdAndCommentableType(Long id, CommentableType type);
 
     Optional<Comment> findByIdAndUserId(Long id, Long userId);
+
+    @Query("""
+            SELECT b.id, COUNT(c.id)
+            FROM Blog b
+            LEFT JOIN Comment c
+                ON c.commentableId = b.id
+                AND c.commentableType = 'BLOG'
+            WHERE b.id IN :blogIds
+            GROUP BY b.id
+        """)
+    List<Object[]> countCommentsByBlogIds(@Param("blogIds") List<Long> blogIds);
+
 }
