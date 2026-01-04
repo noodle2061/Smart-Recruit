@@ -109,7 +109,7 @@ public class BlogController {
 
         ApiResponse<BlogResponse> response = ApiResponse.<BlogResponse>builder()
                 .status(HttpStatus.OK.value())
-                .message("Create blog successful")
+                .message("Update blog successful")
                 .data(blog)
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

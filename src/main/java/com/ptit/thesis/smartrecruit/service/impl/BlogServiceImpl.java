@@ -1,27 +1,11 @@
 package com.ptit.thesis.smartrecruit.service.impl;
 
-import java.io.IOException;
-import java.util.List;
-
-import com.google.api.gax.rpc.NotFoundException;
-import com.ptit.thesis.smartrecruit.dto.common.BlogFilterDTO;
-import com.ptit.thesis.smartrecruit.dto.response.AdminBlogResponse;
-import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.ptit.thesis.smartrecruit.dto.common.BlogCategoryDTO;
+import com.ptit.thesis.smartrecruit.dto.common.BlogFilterDTO;
 import com.ptit.thesis.smartrecruit.dto.common.TagDTO;
 import com.ptit.thesis.smartrecruit.dto.request.BlogRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateBlogRequest;
+import com.ptit.thesis.smartrecruit.dto.response.AdminBlogResponse;
 import com.ptit.thesis.smartrecruit.dto.response.BlogResponse;
 import com.ptit.thesis.smartrecruit.entity.Blog;
 import com.ptit.thesis.smartrecruit.entity.BlogCategory;
@@ -35,13 +19,24 @@ import com.ptit.thesis.smartrecruit.repository.BlogRepository;
 import com.ptit.thesis.smartrecruit.service.BlogService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
 import com.ptit.thesis.smartrecruit.utils.AuthUtil;
-
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import java.io.IOException;
+import java.util.List;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -170,8 +165,8 @@ public class BlogServiceImpl implements BlogService {
                 cb.equal(root.get("status"), BlogStatus.PUBLISHED),
                 cb.or(
                     cb.like(cb.lower(root.get("title")), "%" + keyword.toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("content")), "%" + keyword.toLowerCase() + "%"))));
+                    cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%")
+                )));
         }
 
         if (categoryIds != null && categoryIds.size() > 0) {

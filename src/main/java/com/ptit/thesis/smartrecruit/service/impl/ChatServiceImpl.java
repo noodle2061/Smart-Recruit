@@ -81,7 +81,7 @@ public class ChatServiceImpl implements ChatService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Candidate not found for id: " + request.getRecipientId()));
             recipientUser = (User) Hibernate.unproxy(candidate.getUser());
-        } 
+        }
 
         // tim hoac tao conversation
         Conversation conversation = conversationRepository.findByCandidateAndCompany(candidate, company)
@@ -112,7 +112,7 @@ public class ChatServiceImpl implements ChatService {
                 "Bạn có một tin nhắn mới từ " + (isCandidateSender ? candidate.getFullName() : company.getName()),
                 NotificationType.NEW_MESSAGE,
                 conversation.getId());
-        
+
         if (isInitialized) {
             Pageable pageable = PageRequest.of(0, 10);
             Slice<ChatMessageResponse> conversations = getConversationMessages(conversation.getId(), sender, pageable);
@@ -122,7 +122,7 @@ public class ChatServiceImpl implements ChatService {
             initlizatedresponse.setHasNext(conversations.hasNext());
             return initlizatedresponse;
         }
-        
+
         return null;
     }
 

@@ -219,7 +219,7 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
     @Transactional
     public Page<CandidatePageResponse> getAllSavedCandidates(Pageable pageable) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
+
         Company company = companyRepository.findByUser(user)
                             .orElseThrow(() -> new EntityNotFoundException("Company not found for user: " + user.getId()));
 
