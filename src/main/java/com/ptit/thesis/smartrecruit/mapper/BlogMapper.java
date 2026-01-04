@@ -122,7 +122,7 @@ public abstract class BlogMapper {
         blogResponse.setTags(tags);
         blogResponse.setCategories(categories);
         blogResponse.setThumbnail(thumbnailUrl);
-        blogResponse.setAuthor(this.userMapper.toUserResponse(blog.getAuthor()));
+        blogResponse.setAuthor(this.authService.toUserResponse(blog.getAuthor()));
     }
 
     @Mapping(target = "tags", ignore = true)
