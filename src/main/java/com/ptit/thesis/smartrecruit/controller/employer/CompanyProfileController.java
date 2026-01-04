@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -17,9 +18,11 @@ import com.ptit.thesis.smartrecruit.dto.request.CompanyProfileRequest;
 import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyProfileResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanySetupMetadata;
+import com.ptit.thesis.smartrecruit.dto.response.CompanyStatResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.service.CompanyService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -34,12 +37,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("api/employer/company")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name="CompanyController", description="Quản lý công ty")
+@Tag(name="Employer Profile Controller", description="Quản lý công ty")
 public class CompanyProfileController {
     
     CompanyService companyService;
     
     @GetMapping("/me")
+    @Operation(summary = "Lấy thông tin chi tiết của company")
     public ResponseEntity<ApiResponse<CompanyProfileResponse>> getCompanyInfo(@AuthenticationPrincipal User user) {
         CompanyProfileResponse company = companyService.getCompanyDetails(user);
 
@@ -62,6 +66,7 @@ public class CompanyProfileController {
      */
     @PreAuthorize("hasRole('EMPLOYER')")
     @PostMapping(value = "/setup-info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Thêm mới hoặc sửa đổi thông tin của company profile")
     public ResponseEntity<ApiResponse<CompanyProfileResponse>> handleCompanyProfile(@AuthenticationPrincipal User user,
                                                             @Valid @RequestPart("data") @Schema(implementation = CompanyProfileRequest.class) CompanyProfileRequest request,
                                                             @NotNull @RequestPart("logo") MultipartFile logo,
@@ -77,6 +82,7 @@ public class CompanyProfileController {
     
     @PreAuthorize("hasRole('EMPLOYER')")
     @GetMapping("/metadata")
+    @Operation(summary = "Lấy metadata tạo company")
     public ResponseEntity<ApiResponse<CompanySetupMetadata>> getCompanySetupMetadata() {
         
         CompanySetupMetadata metadata = companyService.getCompanySetupMetadata();
@@ -88,4 +94,18 @@ public class CompanyProfileController {
             .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @PreAuthorize("hasRole('EMPLOYER')")
+    @GetMapping("/{id}/stat")
+    @Operation(summary = "Lấy thống tin thống kê của công ty")
+    public ResponseEntity<ApiResponse<CompanyStatResponse>> getCompanyStat(@PathVariable Long id) {
+        CompanyStatResponse stat = companyService.getCompanyStat(id);
+        ApiResponse<CompanyStatResponse> response = ApiResponse.<CompanyStatResponse>builder()
+            .status(HttpStatus.OK.value())
+            .message("Get company stat successfully")
+            .data(stat)
+            .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
 }

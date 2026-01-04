@@ -9,6 +9,7 @@ import com.ptit.thesis.smartrecruit.dto.response.AdminCompanyResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyProfileResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanySetupMetadata;
+import com.ptit.thesis.smartrecruit.dto.response.CompanyStatResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.CompanyTeamSize;
 import com.ptit.thesis.smartrecruit.enums.IndustryType;
@@ -23,4 +24,6 @@ public interface CompanyService {
     public Page<AdminCompanyResponse> getCompaniesForAdmin(String email, Pageable pageable);
     public void activateCompany(Long companyId);
     public void deactivateCompany(Long companyId);
+    public void updateIsFeatured(Long id, boolean isfeatured);
+    public CompanyStatResponse getCompanyStat(Long id);
 }

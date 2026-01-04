@@ -17,6 +17,7 @@ import com.ptit.thesis.smartrecruit.dto.request.CandidateProfileDetailRequest;
 import com.ptit.thesis.smartrecruit.dto.response.AdminCandidateResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidatePageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CandidateStatResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.Location;
@@ -257,5 +258,10 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         User candidateUser = candidateProfile.getUser();
         candidateUser.setDeleteAt(null);
         userRepository.save(candidateUser);
+    }
+
+    @Override
+    public CandidateStatResponse getCandidateStat(Long id) {
+        return candidateProfileRepository.getCandidateStat(id);
     }
 }

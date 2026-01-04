@@ -13,6 +13,7 @@ import com.ptit.thesis.smartrecruit.dto.request.CandidateProfileDetailRequest;
 import com.ptit.thesis.smartrecruit.dto.response.AdminCandidateResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidatePageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CandidateProfileResponse;
+import com.ptit.thesis.smartrecruit.dto.response.CandidateStatResponse;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.EducationLevel;
 import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
@@ -31,4 +32,5 @@ public interface CandidateProfileService {
     Page<AdminCandidateResponse> getCandidatesForAdmin(Pageable pageable, String email);
     void deactivateCandidate(Long candidateId);
     void activateCandidate(Long candidateId);
+    CandidateStatResponse getCandidateStat(Long id);
 }

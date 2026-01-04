@@ -40,4 +40,6 @@ public interface JobService {
     List<TagDTO> getPopularTags();
 
     JobDetailResponse expireJob(Long jobId);
+
+    void changeFeaturedStatus(long jobId, boolean isFeatured);
 }

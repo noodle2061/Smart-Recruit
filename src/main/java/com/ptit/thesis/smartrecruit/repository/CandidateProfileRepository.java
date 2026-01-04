@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.ptit.thesis.smartrecruit.dto.response.CandidateStatResponse;
 import com.ptit.thesis.smartrecruit.entity.CandidateProfile;
 import com.ptit.thesis.smartrecruit.entity.User;
 
@@ -19,4 +20,13 @@ public interface CandidateProfileRepository extends JpaRepository<CandidateProfi
 
     @Query("SELECT c.avatarUrl FROM CandidateProfile c WHERE c.user = :user")
     String findAvatarByUser(User user);
+
+    @Query("""
+            SELECT new com.ptit.thesis.smartrecruit.dto.response.CandidateStatResponse( 
+            (SELECT COUNT(a) FROM Application a WHERE a.candidate.id = :id), 
+            (SELECT COUNT(s) FROM SavedJob s WHERE s.candidate.id = :id)) 
+            FROM CandidateProfile c 
+            WHERE c.id = :id
+            """)
+    CandidateStatResponse getCandidateStat(long id);
 }

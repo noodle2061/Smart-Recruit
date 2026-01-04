@@ -18,6 +18,7 @@ import com.ptit.thesis.smartrecruit.dto.response.AdminCompanyResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyProfileResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanySetupMetadata;
+import com.ptit.thesis.smartrecruit.dto.response.CompanyStatResponse;
 import com.ptit.thesis.smartrecruit.entity.Company;
 import com.ptit.thesis.smartrecruit.entity.SocialLink;
 import com.ptit.thesis.smartrecruit.entity.User;
@@ -241,5 +242,19 @@ public class CompanyServiceImpl implements CompanyService {
         User user = company.getUser();
         user.setDeleteAt(LocalDateTime.now());
         userRepository.save(user);
+    }
+
+    @Override
+    public void updateIsFeatured(Long id, boolean isfeatured) {
+        Company company = companyRepository.findById(id)
+                        .orElseThrow(() -> new EntityNotFoundException("Company not found for id: " + id));
+        company.setIsFeatured(isfeatured);
+        companyRepository.save(company);
+    }
+
+    @Override
+    public CompanyStatResponse getCompanyStat(Long id) {
+        CompanyStatResponse response = companyRepository.getCompanyStat(id);
+        return response;
     }
 }
