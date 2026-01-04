@@ -25,12 +25,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RestController
 @RequestMapping("/api/admin/companies")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "Admin Company", description = "Admin Company APIs")
+@Tag(name = "Admin Company Controller", description = "Admin Company APIs")
 public class AdminCompanyController {
     
     CompanyService companyService;
@@ -89,4 +92,15 @@ public class AdminCompanyController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
+    @PutMapping("/{companyId}/featured")
+    public ResponseEntity<ApiResponse<Void>> updateIsFeatured(@PathVariable long companyId, @RequestParam boolean isfeatured) {
+        companyService.updateIsFeatured(companyId, isfeatured);
+        
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .status(HttpStatus.OK.value())
+                .message("Change featured status successfully")
+                .data(null)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

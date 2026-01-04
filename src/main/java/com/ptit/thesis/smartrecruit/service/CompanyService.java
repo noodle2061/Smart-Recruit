@@ -23,4 +23,5 @@ public interface CompanyService {
     public Page<AdminCompanyResponse> getCompaniesForAdmin(String email, Pageable pageable);
     public void activateCompany(Long companyId);
     public void deactivateCompany(Long companyId);
+    public void updateIsFeatured(Long id, boolean isfeatured);
 }

@@ -87,6 +87,9 @@ public class Company extends BaseEntity{
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Job> jobs;
 
+    @Column(name = "is_featured", nullable = false, columnDefinition = "boolean default false")
+    Boolean isFeatured;
+
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<ApplicationStatusColumn> applicationStatusColumns;
 }

@@ -242,4 +242,12 @@ public class CompanyServiceImpl implements CompanyService {
         user.setDeleteAt(LocalDateTime.now());
         userRepository.save(user);
     }
+
+    @Override
+    public void updateIsFeatured(Long id, boolean isfeatured) {
+        Company company = companyRepository.findById(id)
+                        .orElseThrow(() -> new EntityNotFoundException("Company not found for id: " + id));
+        company.setIsFeatured(isfeatured);
+        companyRepository.save(company);
+    }
 }

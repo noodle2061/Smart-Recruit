@@ -224,4 +224,12 @@ public class JobServiceImpl implements JobService {
         return jobDetailResponse;
     }
 
+    @Override
+    public void changeFeaturedStatus(long jobId, boolean isFeatured) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found for id: " + jobId));
+        job.setIsFeatured(isFeatured);
+        jobRepository.save(job);
+    }
+
 }
