@@ -16,6 +16,7 @@ import com.ptit.thesis.smartrecruit.exception.S3ErrorException;
 import com.ptit.thesis.smartrecruit.mapper.BlogMapper;
 import com.ptit.thesis.smartrecruit.repository.BlogCategoryRepository;
 import com.ptit.thesis.smartrecruit.repository.BlogRepository;
+import com.ptit.thesis.smartrecruit.repository.CommentRepository;
 import com.ptit.thesis.smartrecruit.service.BlogService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
 import com.ptit.thesis.smartrecruit.utils.AuthUtil;
@@ -37,6 +38,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -47,6 +50,7 @@ public class BlogServiceImpl implements BlogService {
     BlogMapper blogMapper;
     BlogRepository blogRepository;
     BlogCategoryRepository blogCategoryRepository;
+    CommentRepository commentRepository;
     S3Service s3Service;
 
     @Override
@@ -193,7 +197,20 @@ public class BlogServiceImpl implements BlogService {
 
         Pageable pageable = PageRequest.of(page, limit, _sort);
         Page<Blog> blogs = blogRepository.findAll(spec, pageable);
-        return blogs.map(blogMapper::toBlogResponse);
+
+        List<Long> blogIds = blogs.getContent().stream().map(Blog::getId).toList();
+
+        Map<Long, Long> commentCountMap =
+            commentRepository.countCommentsByBlogIds(blogIds).stream().collect(Collectors.toMap(
+                row -> (Long) row[0],
+                row -> (Long) row[1]
+            ));
+
+        return blogs.map(blog -> {
+            BlogResponse res = blogMapper.toBlogResponse(blog);
+            res.setCommentCount(commentCountMap.getOrDefault(blog.getId(), 0L));
+            return res;
+        });
     }
 
     @Override

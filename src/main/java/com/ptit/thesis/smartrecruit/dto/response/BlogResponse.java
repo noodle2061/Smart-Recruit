@@ -27,4 +27,5 @@ public class BlogResponse {
     List<TagDTO> tags;
     Set<BlogCategoryDTO> categories;
     UserResponse author;
+    Long commentCount;
 }
