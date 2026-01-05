@@ -262,6 +262,7 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
 
     @Override
     public CandidateStatResponse getCandidateStat(Long id) {
+        CandidateProfile candidate = candidateProfileRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Candidate profile not found for id: " + id));
         return candidateProfileRepository.getCandidateStat(id);
     }
 }
