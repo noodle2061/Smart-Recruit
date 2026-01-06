@@ -85,6 +85,8 @@ public class CandidateProfileRepositoryCustomImpl implements CandidateProfileRep
 
         predicate.and(candidate.isPublic.eq(true));
 
+        predicate.and(candidate.user.deleteAt.isNull());
+
         var query = jpaQueryFactory
                 .select(Projections.constructor(CandidatePageResponse.class,
                     candidate.id,
@@ -138,6 +140,8 @@ public class CandidateProfileRepositoryCustomImpl implements CandidateProfileRep
         BooleanBuilder predicate = new BooleanBuilder();
         predicate.and(candidateCompany.company.id.eq(companyId));
         predicate.and(candidateCompany.type.eq(FollowType.COMPANY_FOLLOW_CANDIDATE));
+        predicate.and(candidate.isPublic.eq(true));
+        predicate.and(candidate.user.deleteAt.isNull());
         
         var query = jpaQueryFactory
                 .select(Projections.constructor(CandidatePageResponse.class,

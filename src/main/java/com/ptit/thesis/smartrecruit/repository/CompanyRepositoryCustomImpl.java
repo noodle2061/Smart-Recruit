@@ -77,6 +77,8 @@ public class CompanyRepositoryCustomImpl implements CompanyRepositoryCustom {
             predicate.and(company.foundedIn.eq(foundedIn));
         }
 
+        predicate.and(company.user.deleteAt.isNull());
+
         // subquery đếm số lượng job active
         JPQLQuery<Long> jobCountSubQuery = jpaQueryFactory
                 .select(job.company.id.count())
