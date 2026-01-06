@@ -253,8 +253,11 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public CompanyStatResponse getCompanyStat(Long id) {
-        CompanyStatResponse response = companyRepository.getCompanyStat(id);
+    @Transactional
+    public CompanyStatResponse getCompanyStat(User user) {
+        Company company = companyRepository.findByUser(user)
+                        .orElseThrow(() -> new EntityNotFoundException("Company not found for user: " + user.getId()));
+        CompanyStatResponse response = companyRepository.getCompanyStat(company.getId());
         return response;
     }
 }

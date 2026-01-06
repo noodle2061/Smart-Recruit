@@ -129,10 +129,10 @@ public class CandidateProfileController {
     }
 
 
-    @GetMapping("/{id}/stat")
+    @GetMapping("/stat")
     @Operation(summary = "Lấy thống tin thống kê của candidate")
-    public ResponseEntity<ApiResponse<CandidateStatResponse>> getCandidateStat(@PathVariable Long id) {
-        CandidateStatResponse stat = candidateProfileService.getCandidateStat(id);
+    public ResponseEntity<ApiResponse<CandidateStatResponse>> getCandidateStat(@AuthenticationPrincipal User user) {
+        CandidateStatResponse stat = candidateProfileService.getCandidateStat(user);
         ApiResponse<CandidateStatResponse> response = ApiResponse.<CandidateStatResponse>builder()
             .status(HttpStatus.OK.value())
             .message("Get candidate stat successfully")
