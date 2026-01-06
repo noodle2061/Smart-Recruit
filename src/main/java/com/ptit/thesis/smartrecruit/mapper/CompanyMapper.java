@@ -9,6 +9,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.ptit.thesis.smartrecruit.dto.common.LocationDTO;
 import com.ptit.thesis.smartrecruit.dto.request.CompanyProfileRequest;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyPageResponse;
 import com.ptit.thesis.smartrecruit.dto.response.CompanyProfileResponse;
@@ -87,7 +88,12 @@ public abstract class CompanyMapper {
         if (companyLocation == null && companyProfileRequest.getLocation() != null) {
             if (!locationRepository.existsByLatitudeAndLongitude(companyProfileRequest.getLocation().getLatitude(),
                     companyProfileRequest.getLocation().getLongitude())) {
-                companyLocation = locationMapper.toLocationEntity(companyProfileRequest.getLocation());
+                LocationDTO locationDTO = companyProfileRequest.getLocation();
+                companyLocation.setCountry(locationDTO.getCountry());
+                companyLocation.setProvinceCity(locationDTO.getProvinceCity());
+                companyLocation.setCommune(locationDTO.getCommune());
+                companyLocation.setLatitude(locationDTO.getLatitude());
+                companyLocation.setLongitude(locationDTO.getLongitude());
                 companyLocation = locationRepository.save(companyLocation);
             }
             company.setLocation(companyLocation);
