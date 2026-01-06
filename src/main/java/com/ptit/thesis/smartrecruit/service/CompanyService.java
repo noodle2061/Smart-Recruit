@@ -25,5 +25,5 @@ public interface CompanyService {
     public void activateCompany(Long companyId);
     public void deactivateCompany(Long companyId);
     public void updateIsFeatured(Long id, boolean isfeatured);
-    public CompanyStatResponse getCompanyStat(Long id);
+    public CompanyStatResponse getCompanyStat(User user);
 }

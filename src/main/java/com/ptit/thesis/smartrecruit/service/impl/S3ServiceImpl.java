@@ -76,7 +76,7 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public String generatePresignedUrl(String key) {
-        return generatePresignedUrl(key, Duration.ofMinutes(15));
+        return generatePresignedUrl(key, Duration.ofHours(15));
     }
 
     @Override

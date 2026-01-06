@@ -96,10 +96,10 @@ public class CompanyProfileController {
     }
 
     @PreAuthorize("hasRole('EMPLOYER')")
-    @GetMapping("/{id}/stat")
+    @GetMapping("/stat")
     @Operation(summary = "Lấy thống tin thống kê của công ty")
-    public ResponseEntity<ApiResponse<CompanyStatResponse>> getCompanyStat(@PathVariable Long id) {
-        CompanyStatResponse stat = companyService.getCompanyStat(id);
+    public ResponseEntity<ApiResponse<CompanyStatResponse>> getCompanyStat(@AuthenticationPrincipal User user) {
+        CompanyStatResponse stat = companyService.getCompanyStat(user);
         ApiResponse<CompanyStatResponse> response = ApiResponse.<CompanyStatResponse>builder()
             .status(HttpStatus.OK.value())
             .message("Get company stat successfully")

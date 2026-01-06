@@ -39,7 +39,9 @@ import com.ptit.thesis.smartrecruit.repository.ResumeRepository;
 import com.ptit.thesis.smartrecruit.repository.SocialLinkRepository;
 import com.ptit.thesis.smartrecruit.repository.UserRepository;
 import com.ptit.thesis.smartrecruit.service.CandidateProfileService;
+import com.ptit.thesis.smartrecruit.service.MailService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
+import com.ptit.thesis.smartrecruit.utils.ResourceReader;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -53,6 +55,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class CandidateProfileServiceImpl implements CandidateProfileService {
+
+    MailService mailService;
 
     CandidateProfileRepository candidateProfileRepository;
     SocialLinkRepository socialLinkRepository;
@@ -249,6 +253,14 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         User candidateUser = candidateProfile.getUser();
         candidateUser.setDeleteAt(LocalDateTime.now());
         userRepository.save(candidateUser);
+
+        try {
+            String htmlBody = ResourceReader.readEmailTemplate("account-deactivated.html");
+            htmlBody = htmlBody.replace("{{name}}", candidateProfile.getFullName());
+            mailService.sendHtmlMessage(candidateUser.getEmail(), "Thông báo vô hiệu hóa tài khoản ứng viên - SmartRecruit", htmlBody);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     @Override
@@ -258,10 +270,20 @@ public class CandidateProfileServiceImpl implements CandidateProfileService {
         User candidateUser = candidateProfile.getUser();
         candidateUser.setDeleteAt(null);
         userRepository.save(candidateUser);
+
+        try {
+            String htmlBody = ResourceReader.readEmailTemplate("account-activated.html");
+            htmlBody = htmlBody.replace("{{name}}", candidateProfile.getFullName());
+            mailService.sendHtmlMessage(candidateUser.getEmail(), "Thông báo kích hoạt tài khoản ứng viên - SmartRecruit", htmlBody);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     @Override
-    public CandidateStatResponse getCandidateStat(Long id) {
-        return candidateProfileRepository.getCandidateStat(id);
+    @Transactional
+    public CandidateStatResponse getCandidateStat(User user) {
+        CandidateProfile candidate = candidateProfileRepository.findByUser(user).orElseThrow(() -> new EntityNotFoundException("Candidate profile not found for user with id: " + user.getId()));
+        return candidateProfileRepository.getCandidateStat(candidate.getId());
     }
 }

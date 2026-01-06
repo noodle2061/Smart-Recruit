@@ -2,6 +2,7 @@ package com.ptit.thesis.smartrecruit.service;
 
 import java.util.List;
 
+import org.mapstruct.control.MappingControl.Use;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,5 +33,5 @@ public interface CandidateProfileService {
     Page<AdminCandidateResponse> getCandidatesForAdmin(Pageable pageable, String email);
     void deactivateCandidate(Long candidateId);
     void activateCandidate(Long candidateId);
-    CandidateStatResponse getCandidateStat(Long id);
+    CandidateStatResponse getCandidateStat(User user);
 }
