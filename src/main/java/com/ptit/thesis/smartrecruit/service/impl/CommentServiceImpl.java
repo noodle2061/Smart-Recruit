@@ -3,17 +3,22 @@ package com.ptit.thesis.smartrecruit.service.impl;
 import com.ptit.thesis.smartrecruit.dto.request.CommentRequest;
 import com.ptit.thesis.smartrecruit.dto.request.UpdateCommentRequest;
 import com.ptit.thesis.smartrecruit.dto.response.CommentResponse;
+import com.ptit.thesis.smartrecruit.entity.Blog;
 import com.ptit.thesis.smartrecruit.entity.Comment;
 import com.ptit.thesis.smartrecruit.entity.User;
 import com.ptit.thesis.smartrecruit.enums.CommentableType;
+import com.ptit.thesis.smartrecruit.enums.NotificationType;
 import com.ptit.thesis.smartrecruit.mapper.CommentMapper;
+import com.ptit.thesis.smartrecruit.repository.BlogRepository;
 import com.ptit.thesis.smartrecruit.repository.CommentRepository;
 import com.ptit.thesis.smartrecruit.service.CommentService;
+import com.ptit.thesis.smartrecruit.service.NotificationService;
 import com.ptit.thesis.smartrecruit.utils.AuthUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.boot.model.naming.IllegalIdentifierException;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -23,7 +28,9 @@ import java.util.List;
 @Slf4j
 public class CommentServiceImpl implements CommentService {
     CommentRepository commentRepository;
+    BlogRepository blogRepository;
     CommentMapper commentMapper;
+    NotificationService notificationService;
 
     @Override
     public CommentResponse createCommentBlog(Long blogId, CommentRequest commentRequest) {
@@ -40,6 +47,15 @@ public class CommentServiceImpl implements CommentService {
         }
 
         Comment newComment = this.commentRepository.save(comment);
+
+        Blog blog = this.blogRepository.findById(blogId).orElseThrow(() -> new IllegalIdentifierException("Blog not " +
+            "found"));
+        User author = blog.getAuthor();
+        if (currentUser.getId() != author.getId()) {
+            notificationService.pushNotification(currentUser, blog.getAuthor(), "Người dùng " + currentUser.getEmail() +
+                " đã bình luận về bài viết của bạn.", NotificationType.NEW_COMMENT, 0L);
+        }
+
         return commentMapper.toResponse(newComment);
     }
 
@@ -47,8 +63,8 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponse updateComment(Long id, UpdateCommentRequest updateCommentRequest) {
         User user = AuthUtil.getCurrentUser();
         Comment comment = this.commentRepository
-                .findByIdAndUserId(id, user.getId()).
-                orElseThrow(() -> new IllegalArgumentException("Not found comment"));
+            .findByIdAndUserId(id, user.getId()).
+            orElseThrow(() -> new IllegalArgumentException("Not found comment"));
 
         comment.setContent(updateCommentRequest.getContent());
 
@@ -59,8 +75,8 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(Long id) {
         User user = AuthUtil.getCurrentUser();
         Comment comment = this.commentRepository
-                .findByIdAndUserId(id, user.getId()).
-                orElseThrow(() -> new IllegalArgumentException("Not found comment"));
+            .findByIdAndUserId(id, user.getId()).
+            orElseThrow(() -> new IllegalArgumentException("Not found comment"));
 
         this.commentRepository.delete(comment);
     }
@@ -68,8 +84,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentResponse> getCommentsOfBlog(Long blogId) {
         List<Comment> comments =
-                this.commentRepository.findCommentsByCommentableIdAndCommentableType(blogId,
-                        CommentableType.BLOG);
+            this.commentRepository.findCommentsByCommentableIdAndCommentableType(blogId,
+                CommentableType.BLOG);
         return this.commentMapper.toListResponse(comments);
     }
 
