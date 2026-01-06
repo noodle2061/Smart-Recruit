@@ -36,8 +36,10 @@ import com.ptit.thesis.smartrecruit.repository.CompanyRepository;
 import com.ptit.thesis.smartrecruit.repository.SocialLinkRepository;
 import com.ptit.thesis.smartrecruit.repository.UserRepository;
 import com.ptit.thesis.smartrecruit.service.CompanyService;
+import com.ptit.thesis.smartrecruit.service.MailService;
 import com.ptit.thesis.smartrecruit.service.S3Service;
 import com.ptit.thesis.smartrecruit.utils.Constant;
+import com.ptit.thesis.smartrecruit.utils.ResourceReader;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -53,6 +55,8 @@ import lombok.extern.slf4j.Slf4j;
 public class CompanyServiceImpl implements CompanyService {
 
     S3Service s3Service;
+    MailService mailService;
+
     CompanyRepository companyRepository;
     CompanyMapper companyMapper;
     SocialLinkRepository socialLinkRepository;
@@ -233,6 +237,15 @@ public class CompanyServiceImpl implements CompanyService {
         User user = company.getUser();
         user.setDeleteAt(null);
         userRepository.save(user);
+
+        try {
+            String htmlBody = ResourceReader.readEmailTemplate("account-activated.html");
+            Company companyInfo = companyRepository.findByUser(user).orElseThrow(() -> new EntityNotFoundException("Company not found for user: " + user.getId()));
+            htmlBody = htmlBody.replace("{{name}}", "Công ty " + companyInfo.getName());
+            mailService.sendHtmlMessage(company.getEmail(), "Thông báo kích hoạt tài khoản doanh nghiệp - SmartRecruit", htmlBody);
+        } catch (Exception e) {
+            log.error("Fail to send activation mail to company." + e.getMessage());
+        }
     }
 
     @Override
@@ -242,6 +255,14 @@ public class CompanyServiceImpl implements CompanyService {
         User user = company.getUser();
         user.setDeleteAt(LocalDateTime.now());
         userRepository.save(user);
+
+        try {
+            String htmlBody = ResourceReader.readEmailTemplate("account-deactivated.html");
+            htmlBody = htmlBody.replace("{{name}}", "Công ty " + company.getName());
+            mailService.sendHtmlMessage(company.getEmail(), "Thông báo vô hiệu hóa tài khoản doanh nghiệp - SmartRecruit", htmlBody);
+        } catch (Exception e) {
+            log.error("Fail to send deactivation mail to company." + e.getMessage());
+        }
     }
 
     @Override
