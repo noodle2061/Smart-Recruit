@@ -89,6 +89,9 @@ public abstract class CompanyMapper {
             if (!locationRepository.existsByLatitudeAndLongitude(companyProfileRequest.getLocation().getLatitude(),
                     companyProfileRequest.getLocation().getLongitude())) {
                 LocationDTO locationDTO = companyProfileRequest.getLocation();
+                if (companyLocation == null) {
+                    companyLocation = new Location();
+                }
                 companyLocation.setCountry(locationDTO.getCountry());
                 companyLocation.setProvinceCity(locationDTO.getProvinceCity());
                 companyLocation.setCommune(locationDTO.getCommune());
