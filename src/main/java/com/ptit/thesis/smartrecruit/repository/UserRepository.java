@@ -2,6 +2,7 @@ package com.ptit.thesis.smartrecruit.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,7 +10,10 @@ import org.springframework.data.repository.query.Param;
 import com.ptit.thesis.smartrecruit.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUserFirebaseUid(String userFirebaseUid);
+
+    @EntityGraph(attributePaths = {"candidateProfile", "role"})
+    Optional<User> findByFirebaseUid(String userFirebaseUid);
+    
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByUserName(String userName);
@@ -28,4 +32,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "AND user_name REGEXP CONCAT('^', :userName, '[0-9]+$')",
         nativeQuery = true)
     Optional<Integer> findUserNameMaxSuffix(@Param("userName") String userName);
+
+    @Query(value = "SELECT email FROM users WHERE firebase_uid = :firebaseUid", nativeQuery = true)
+    String findUserEmailByFirebaseUid(String firebaseUid);
 }

@@ -1,22 +1,29 @@
 package com.ptit.thesis.smartrecruit.entity;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.FieldDefaults;
+import java.time.LocalDateTime;
+
+import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString
 public class BaseEntity {
 
     @Id
@@ -26,9 +33,9 @@ public class BaseEntity {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    LocalDateTime createdDate;
+    LocalDateTime createdAt;
 
     @LastModifiedDate
     @Column(nullable = false, updatable = false)
-    LocalDateTime lastModifiedDate;
+    LocalDateTime updatedAt;
 }

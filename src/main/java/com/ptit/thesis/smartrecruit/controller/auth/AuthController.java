@@ -2,8 +2,6 @@ package com.ptit.thesis.smartrecruit.controller.auth;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -16,19 +14,19 @@ import com.ptit.thesis.smartrecruit.dto.response.ApiResponse;
 import com.ptit.thesis.smartrecruit.dto.response.UserResponse;
 import com.ptit.thesis.smartrecruit.service.AuthService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-
-
 @RestController
 @RequestMapping("/api/auth")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "AuthController", description = "Xác thực người dùng")
 public class AuthController {
 
     AuthService authService;
@@ -47,10 +45,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserResponse>> handleLogin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<ApiResponse<UserResponse>> handleLogin(@RequestHeader("Authorization") String authToken) {
+        String cleanToken = authToken.substring(7);
 
-        UserResponse userResponse = authService.login(authentication);
+        UserResponse userResponse = authService.login(cleanToken); 
         ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder()
             .status(HttpStatus.OK.value())
             .message("User login successfully")
@@ -60,13 +58,13 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("/oauth2-callback")
+    @PostMapping("/callback")
     public ResponseEntity<ApiResponse<UserResponse>> handleOAuth2Callback(
                                     @RequestHeader("Authorization") String authorization,
-                                    @Valid @RequestBody OAuthRegisterRequest useroauth) {
-        String cleanToken = authorization.substring(7); // Loại bỏ "Bearer " khỏi đầu chuỗi
+                                    @RequestBody(required = false) OAuthRegisterRequest request) {
+        String cleanToken = authorization.substring(7);
 
-        UserResponse userResponse = authService.processAuth2CallBack(cleanToken, useroauth);
+        UserResponse userResponse = authService.processAuth2CallBack(cleanToken, request);
         ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder()
             .status(HttpStatus.OK.value())
             .message("User registered successfully")

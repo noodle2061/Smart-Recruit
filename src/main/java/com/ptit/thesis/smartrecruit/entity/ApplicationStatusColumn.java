@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.Set;
 
 @Entity
-@Table(name = "application_status_column")
+@Table(name = "application_status_columns")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,5 +25,5 @@ public class ApplicationStatusColumn extends BaseEntity{
     int columnOrder;
 
     @OneToMany(mappedBy = "statusColumn", fetch = FetchType.LAZY)
-    Set<JobApplication> jobApplications;
+    Set<Application> jobApplications;
 }

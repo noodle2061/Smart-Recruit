@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "resume")
+@Table(name = "resumes")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,28 +16,18 @@ import java.util.Set;
 public class Resume extends BaseEntity {
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    User user;
+    @JoinColumn(name = "candidate_id", nullable = false)
+    CandidateProfile candidate;
 
     @Column(nullable = false)
-    String resumeTitle;
+    String title;
 
     @Column(nullable = false, length = 512)
-    String fileUrl;
+    String storageKey;
 
     @Column(nullable = false)
-    Float fileSize;
-
-    @Column(nullable = false)
-    LocalDateTime uploadedAt;
+    Float size;
 
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<JobApplication> jobApplications;
-
-    @PrePersist
-    public void prePersist() {
-        if (uploadedAt == null) {
-            uploadedAt = LocalDateTime.now();
-        }
-    }
+    Set<Application> jobApplications;
 }

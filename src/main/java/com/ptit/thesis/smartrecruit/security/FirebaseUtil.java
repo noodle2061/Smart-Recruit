@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.UserRecord;
 import com.ptit.thesis.smartrecruit.exception.InvalidTokenException;
 
 @Component
@@ -21,5 +22,15 @@ public class FirebaseUtil {
         } catch (FirebaseAuthException e) {
             throw new InvalidTokenException("Invalid Firebase ID Token: " + e.getMessage());
         }
+    }
+
+    public UserRecord getUserByEmail(String email) {
+        try {
+            UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(email);
+            return userRecord;
+        } catch (FirebaseAuthException e) {
+            return null;
+        }
+
     }
 }

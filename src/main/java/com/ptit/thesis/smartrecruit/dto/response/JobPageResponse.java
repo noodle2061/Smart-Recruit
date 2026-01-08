@@ -1,0 +1,35 @@
+package com.ptit.thesis.smartrecruit.dto.response;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import com.ptit.thesis.smartrecruit.enums.ExperienceLevel;
+import com.ptit.thesis.smartrecruit.enums.EducationLevel;
+import com.ptit.thesis.smartrecruit.enums.JobType;
+import com.ptit.thesis.smartrecruit.enums.SalaryType;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@AllArgsConstructor
+public class JobPageResponse {
+    Long id;
+    String slug;
+    String jobTitle;
+    String companyName;
+    String companyLogoUrl;
+    String provinceCity;
+    JobType jobType;
+    BigDecimal minSalary;
+    BigDecimal maxSalary;
+    SalaryType salaryType;
+    LocalDate expirationDate;
+    ExperienceLevel experienceLevel;
+    EducationLevel ducationLevel;
+}

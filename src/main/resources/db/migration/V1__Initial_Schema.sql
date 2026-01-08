@@ -1,57 +1,45 @@
--- Flyway migration script for SmartRecruit application
--- Version: 1
--- Description: Creates the initial database schema with all tables.
-
--- =================================================================================
--- CORE TABLES (Users, Roles, Companies, Locations)
--- =================================================================================
-
--- Bảng người dùng chính
-CREATE TABLE app_user
+CREATE TABLE roles
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    user_firebase_uid  VARCHAR(255) NOT NULL UNIQUE,
-    full_name          VARCHAR(255) NOT NULL,
+    name               VARCHAR(50)  NOT NULL UNIQUE,
+    description        VARCHAR(150) NOT NULL,
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL
+);
+
+CREATE TABLE users
+(
+    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
+    firebase_uid       VARCHAR(255) NOT NULL UNIQUE,
     user_name          VARCHAR(50)  NOT NULL UNIQUE,
     email              VARCHAR(50)  NOT NULL UNIQUE,
-    is_deleted         BOOLEAN      NOT NULL DEFAULT FALSE
+    delete_at          DATETIME(6),
+    role_id            BIGINT       NOT NULL,
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL,
+    CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles (id)
 );
 
--- Bảng vai trò (Role)
-CREATE TABLE role
+CREATE TABLE locations
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    role_name          VARCHAR(50)  NOT NULL UNIQUE,
-    description        VARCHAR(150) NOT NULL
+    latitude           DECIMAL(10, 8) NOT NULL,
+    longitude          DECIMAL(11, 8) NOT NULL,
+    country            VARCHAR(255) NOT NULL,
+    province_city      VARCHAR(255) NOT NULL,
+    commune            VARCHAR(100),
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL,
+    UNIQUE KEY uk_location_lat_lng (latitude, longitude)
 );
 
--- Bảng quan hệ User-Role
-CREATE TABLE user_role
+CREATE TABLE companies
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    user_id            BIGINT      NOT NULL,
-    role_id            BIGINT      NOT NULL,
-    CONSTRAINT fk_userrole_user FOREIGN KEY (user_id) REFERENCES app_user (id),
-    CONSTRAINT fk_userrole_role FOREIGN KEY (role_id) REFERENCES role (id),
-    UNIQUE (user_id, role_id)
-);
-
--- Bảng công ty
-CREATE TABLE company
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    user_id            BIGINT       NOT NULL,
-    company_name       VARCHAR(255) NOT NULL UNIQUE,
+    user_id            BIGINT       NOT NULL UNIQUE,
+    name               VARCHAR(255) NOT NULL UNIQUE,
     logo_url           VARCHAR(512),
-    cover_photo_url    VARCHAR(512),
+    banner_url         VARCHAR(512),
     description        TEXT         NOT NULL,
     organization_type  VARCHAR(255) NOT NULL,
     industry_type      VARCHAR(255) NOT NULL,
@@ -59,468 +47,233 @@ CREATE TABLE company
     founded_in         INT,
     website            VARCHAR(512),
     company_vision     TEXT,
-    company_benefits   TEXT,
     phone              VARCHAR(20)  NOT NULL UNIQUE,
     email              VARCHAR(255) NOT NULL UNIQUE,
-    is_deleted         BOOLEAN      NOT NULL DEFAULT FALSE,
-    CONSTRAINT fk_company_user FOREIGN KEY (user_id) REFERENCES app_user (id)
+    delete_at          DATETIME(6),
+    location_id        BIGINT       NOT NULL,
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL,
+    CONSTRAINT fk_companies_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT fk_companies_location FOREIGN KEY (location_id) REFERENCES locations (id)
 );
 
--- Bảng địa điểm
-CREATE TABLE location
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    province_city      VARCHAR(255) NOT NULL,
-    commune            VARCHAR(100),
-    country            VARCHAR(255) NOT NULL,
-    slug               VARCHAR(150) NOT NULL UNIQUE
-);
-
--- Bảng quan hệ Công ty - Địa điểm
-CREATE TABLE company_location
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    company_id         BIGINT      NOT NULL,
-    location_id        BIGINT      NOT NULL,
-    is_headquarter     BOOLEAN     NOT NULL DEFAULT FALSE,
-    CONSTRAINT fk_companylocation_company FOREIGN KEY (company_id) REFERENCES company (id),
-    CONSTRAINT fk_companylocation_location FOREIGN KEY (location_id) REFERENCES location (id),
-    UNIQUE (company_id, location_id)
-);
-
--- =================================================================================
--- CANDIDATE & RESUME TABLES
--- =================================================================================
-
--- Bảng hồ sơ ứng viên
-CREATE TABLE candidate_profile
+CREATE TABLE candidate_profiles
 (
     id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date        DATETIME(6)  NOT NULL,
-    last_modified_date  DATETIME(6)  NOT NULL,
     user_id             BIGINT       NOT NULL UNIQUE,
-    profile_picture_url VARCHAR(512),
-    headline            VARCHAR(255) NOT NULL,
-    experience_level    VARCHAR(255) NOT NULL,
-    education_level     VARCHAR(255) NOT NULL,
+    full_name           VARCHAR(100) NULL,
+    avatar_url          VARCHAR(512),
+    headline            VARCHAR(255) NULL,
+    experience_level    VARCHAR(255) NULL,
+    education_level     VARCHAR(255) NULL,
     personal_website    VARCHAR(512),
     nationality         VARCHAR(255),
     date_of_birth       DATE,
     gender              VARCHAR(255),
     marital_status      VARCHAR(255),
     biography           VARCHAR(255),
-    is_public           BOOLEAN      NOT NULL DEFAULT TRUE,
-    CONSTRAINT fk_candidateprofile_user FOREIGN KEY (user_id) REFERENCES app_user (id)
+    phone               VARCHAR(20) UNIQUE,
+    is_public           BOOLEAN      NOT NULL,
+    location_id         BIGINT       NULL,
+    created_at          DATETIME(6)  NOT NULL,
+    updated_at          DATETIME(6)  NOT NULL,
+    CONSTRAINT fk_candidateprofiles_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT fk_candidateprofiles_location FOREIGN KEY (location_id) REFERENCES locations (id)
 );
 
--- Bảng CV/Resume
-CREATE TABLE resume
+CREATE TABLE resumes
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    user_id            BIGINT       NOT NULL,
-    resume_title       VARCHAR(255) NOT NULL,
-    file_url           VARCHAR(512) NOT NULL,
-    file_size          FLOAT        NOT NULL,
-    uploaded_at        DATETIME(6)  NOT NULL,
-    CONSTRAINT fk_resume_user FOREIGN KEY (user_id) REFERENCES app_user (id)
+    candidate_id            BIGINT       NOT NULL,
+    title              VARCHAR(255) NOT NULL,
+    storage_key        VARCHAR(512) NOT NULL,
+    size               FLOAT        NOT NULL,
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL,
+    CONSTRAINT fk_resumes_candidate FOREIGN KEY (candidate_id) REFERENCES candidate_profiles (id)
 );
 
--- =================================================================================
--- JOB & APPLICATION TABLES
--- =================================================================================
-
--- Bảng danh mục công việc
-CREATE TABLE job_category
+CREATE TABLE job_categories
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
     name               VARCHAR(100) NOT NULL UNIQUE,
-    slug               VARCHAR(150) NOT NULL UNIQUE,
-    icon_url           VARCHAR(512)
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL
 );
 
--- Bảng công việc (Job)
-CREATE TABLE job
+CREATE TABLE tags
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)    NOT NULL,
-    last_modified_date DATETIME(6)    NOT NULL,
+    name               VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE jobs
+(
+    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
     company_id         BIGINT         NOT NULL,
     title              VARCHAR(255)   NOT NULL,
     description        TEXT           NOT NULL,
     responsibilities   TEXT           NOT NULL,
-    tags               VARCHAR(255),
     min_salary         DECIMAL(10, 2) NOT NULL,
     max_salary         DECIMAL(10, 2) NOT NULL,
     salary_type        VARCHAR(255)   NOT NULL,
     location_id        BIGINT         NOT NULL,
     education_level    VARCHAR(255)   NOT NULL,
     experience_level   VARCHAR(255)   NOT NULL,
-    job_type           VARCHAR(255)   NOT NULL,
-    vacancies          INT            NOT NULL DEFAULT 1,
+    type               VARCHAR(255)   NOT NULL,
+    vacancies          INT            NOT NULL,
     expiration_date    DATE           NOT NULL,
     status             VARCHAR(255)   NOT NULL,
-    is_featured        BOOLEAN        NOT NULL DEFAULT FALSE,
-    is_highlighted     BOOLEAN        NOT NULL DEFAULT FALSE,
-    apply_on           VARCHAR(255)   NOT NULL,
-    apply_url_or_email VARCHAR(255),
-    is_deleted         BOOLEAN        NOT NULL DEFAULT FALSE,
-    posted_at          DATETIME(6)    NOT NULL,
-    CONSTRAINT fk_job_company FOREIGN KEY (company_id) REFERENCES company (id),
-    CONSTRAINT fk_job_location FOREIGN KEY (location_id) REFERENCES location (id)
+    slug               VARCHAR(255)   NOT NULL,
+    is_featured        BOOLEAN        DEFAULT FALSE,
+    posted_at          DATETIME(6),
+    delete_at          DATETIME(6),
+    created_at         DATETIME(6)    NOT NULL,
+    updated_at         DATETIME(6)    NOT NULL,
+    CONSTRAINT fk_jobs_company FOREIGN KEY (company_id) REFERENCES companies (id),
+    CONSTRAINT fk_jobs_location FOREIGN KEY (location_id) REFERENCES locations (id)
 );
 
--- Bảng quan hệ Công việc - Danh mục
-CREATE TABLE job_jobcategory
+CREATE TABLE job_jobcategories
 (
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    job_id             BIGINT      NOT NULL,
-    category_id        BIGINT      NOT NULL,
-    CONSTRAINT fk_jobcategory_job FOREIGN KEY (job_id) REFERENCES job (id),
-    CONSTRAINT fk_jobcategory_category FOREIGN KEY (category_id) REFERENCES job_category (id),
-    UNIQUE (job_id, category_id)
+    job_id             BIGINT NOT NULL,
+    category_id        BIGINT NOT NULL,
+    PRIMARY KEY (job_id, category_id),
+    CONSTRAINT fk_jobjobcategories_job FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE CASCADE,
+    CONSTRAINT fk_jobjobcategories_category FOREIGN KEY (category_id) REFERENCES job_categories (id) ON DELETE CASCADE
 );
 
--- Bảng cột trạng thái ứng tuyển (cho Kanban board)
-CREATE TABLE application_status_column
+CREATE TABLE job_tags
+(
+    job_id             BIGINT NOT NULL,
+    tag_id             BIGINT NOT NULL,
+    PRIMARY KEY (job_id, tag_id),
+    CONSTRAINT fk_jobtags_job FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE CASCADE,
+    CONSTRAINT fk_jobtags_tag FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE
+);
+
+CREATE TABLE application_status_columns
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
     company_id         BIGINT       NOT NULL,
     column_name        VARCHAR(100) NOT NULL,
     column_order       INT          NOT NULL,
-    CONSTRAINT fk_appstatuscol_company FOREIGN KEY (company_id) REFERENCES company (id)
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL,
+    CONSTRAINT fk_appstatuscols_company FOREIGN KEY (company_id) REFERENCES companies (id)
 );
 
--- Bảng đơn ứng tuyển
-CREATE TABLE job_application
+CREATE TABLE applications
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    job_id             BIGINT      NOT NULL,
-    user_id            BIGINT      NOT NULL,
-    resume_id          BIGINT      NOT NULL,
+    job_id             BIGINT       NOT NULL,
+    candidate_id       BIGINT       NOT NULL,
+    resume_id          BIGINT       NOT NULL,
     cover_letter       TEXT,
     status             VARCHAR(255) NOT NULL,
-    applied_at         DATETIME(6) NOT NULL,
     status_column_id   BIGINT,
-    CONSTRAINT fk_jobapp_job FOREIGN KEY (job_id) REFERENCES job (id),
-    CONSTRAINT fk_jobapp_user FOREIGN KEY (user_id) REFERENCES app_user (id),
-    CONSTRAINT fk_jobapp_resume FOREIGN KEY (resume_id) REFERENCES resume (id),
-    CONSTRAINT fk_jobapp_statuscolumn FOREIGN KEY (status_column_id) REFERENCES application_status_column (id),
-    UNIQUE (user_id, job_id)
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL,
+    CONSTRAINT fk_applications_job FOREIGN KEY (job_id) REFERENCES jobs (id),
+    CONSTRAINT fk_applications_candidate FOREIGN KEY (candidate_id) REFERENCES candidate_profiles (id),
+    CONSTRAINT fk_applications_resume FOREIGN KEY (resume_id) REFERENCES resumes (id),
+    CONSTRAINT fk_applications_statuscolumn FOREIGN KEY (status_column_id) REFERENCES application_status_columns (id),
+    UNIQUE KEY uk_application_candidate_job (candidate_id, job_id)
 );
 
-
--- =================================================================================
--- INTERACTION TABLES (Saved, Followed, Alerts)
--- =================================================================================
-
--- Bảng công việc đã lưu
-CREATE TABLE saved_job
+CREATE TABLE saved_jobs
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    user_id            BIGINT      NOT NULL,
+    candidate_id       BIGINT      NOT NULL,
     job_id             BIGINT      NOT NULL,
-    CONSTRAINT fk_savedjob_user FOREIGN KEY (user_id) REFERENCES app_user (id),
-    CONSTRAINT fk_savedjob_job FOREIGN KEY (job_id) REFERENCES job (id),
-    UNIQUE (user_id, job_id)
+    created_at         DATETIME(6) NOT NULL,
+    updated_at         DATETIME(6) NOT NULL,
+    CONSTRAINT fk_savedjobs_candidate FOREIGN KEY (candidate_id) REFERENCES candidate_profiles (id),
+    CONSTRAINT fk_savedjobs_job FOREIGN KEY (job_id) REFERENCES jobs (id),
+    UNIQUE KEY uk_savedjob_candidate_job (candidate_id, job_id)
 );
 
--- Bảng ứng viên đã lưu (bởi nhà tuyển dụng)
-CREATE TABLE saved_candidate
-(
-    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date        DATETIME(6) NOT NULL,
-    last_modified_date  DATETIME(6) NOT NULL,
-    employer_user_id    BIGINT      NOT NULL,
-    candidate_user_id   BIGINT      NOT NULL,
-    CONSTRAINT fk_savedcand_employer FOREIGN KEY (employer_user_id) REFERENCES app_user (id),
-    CONSTRAINT fk_savedcand_candidate FOREIGN KEY (candidate_user_id) REFERENCES app_user (id),
-    UNIQUE (employer_user_id, candidate_user_id)
-);
-
--- Bảng công ty đang theo dõi
-CREATE TABLE followed_company
+CREATE TABLE candidate_companies
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    user_id            BIGINT      NOT NULL,
+    candidate_id       BIGINT      NOT NULL,
     company_id         BIGINT      NOT NULL,
-    CONSTRAINT fk_followedcomp_user FOREIGN KEY (user_id) REFERENCES app_user (id),
-    CONSTRAINT fk_followedcomp_company FOREIGN KEY (company_id) REFERENCES company (id),
-    UNIQUE (user_id, company_id)
+    type               VARCHAR(255),
+    created_at         DATETIME(6) NOT NULL,
+    updated_at         DATETIME(6) NOT NULL,
+    CONSTRAINT fk_candidatecompanies_candidate FOREIGN KEY (candidate_id) REFERENCES candidate_profiles (id),
+    CONSTRAINT fk_candidatecompanies_company FOREIGN KEY (company_id) REFERENCES companies (id),
+    UNIQUE KEY uk_candidate_company_type (candidate_id, company_id, type)
 );
 
--- Bảng thông báo việc làm
-CREATE TABLE job_alert
+CREATE TABLE blog_categories
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    user_id            BIGINT       NOT NULL,
-    keywords           VARCHAR(255),
-    location_id        BIGINT,
-    category_id        BIGINT,
-    frequency          VARCHAR(255) NOT NULL,
-    CONSTRAINT fk_jobalert_user FOREIGN KEY (user_id) REFERENCES app_user (id),
-    CONSTRAINT fk_jobalert_location FOREIGN KEY (location_id) REFERENCES location (id),
-    CONSTRAINT fk_jobalert_category FOREIGN KEY (category_id) REFERENCES job_category (id),
-    UNIQUE (user_id, keywords, location_id, category_id)
-);
-
-
--- =================================================================================
--- BLOG & CONTENT TABLES
--- =================================================================================
-
--- Bảng danh mục Blog
-CREATE TABLE blog_category
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
     name               VARCHAR(100) NOT NULL UNIQUE,
-    slug               VARCHAR(150) NOT NULL UNIQUE
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL
 );
 
--- Bảng thẻ (Tag) Blog
-CREATE TABLE blog_tag
+CREATE TABLE blogs
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    name               VARCHAR(20) NOT NULL,
-    slug               VARCHAR(20) NOT NULL UNIQUE
-);
-
--- Bảng bài viết (Post)
-CREATE TABLE post
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
     user_id            BIGINT       NOT NULL,
     title              VARCHAR(255) NOT NULL,
     slug               VARCHAR(150) NOT NULL UNIQUE,
     content            TEXT         NOT NULL,
-    excerpt            VARCHAR(255),
-    cover_image_url    VARCHAR(512),
+    description        VARCHAR(255),
     status             VARCHAR(255) NOT NULL,
     published_at       DATETIME(6)  NOT NULL,
-    CONSTRAINT fk_post_user FOREIGN KEY (user_id) REFERENCES app_user (id)
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL,
+    CONSTRAINT fk_blogs_user FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
--- Bảng quan hệ Bài viết - Danh mục
-CREATE TABLE post_category
+CREATE TABLE blog_blogcategories
 (
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    post_id            BIGINT      NOT NULL,
-    category_id        BIGINT      NOT NULL,
-    CONSTRAINT fk_postcategory_post FOREIGN KEY (post_id) REFERENCES post (id),
-    CONSTRAINT fk_postcategory_category FOREIGN KEY (category_id) REFERENCES blog_category (id),
-    UNIQUE (post_id, category_id)
+    blog_id            BIGINT NOT NULL,
+    blogcategory_id    BIGINT NOT NULL,
+    PRIMARY KEY (blog_id, blogcategory_id),
+    CONSTRAINT fk_blogblogcategories_blog FOREIGN KEY (blog_id) REFERENCES blogs (id) ON DELETE CASCADE,
+    CONSTRAINT fk_blogblogcategories_category FOREIGN KEY (blogcategory_id) REFERENCES blog_categories (id) ON DELETE CASCADE
 );
 
--- Bảng quan hệ Bài viết - Thẻ
-CREATE TABLE post_tag
+CREATE TABLE blog_tags
 (
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    post_id            BIGINT      NOT NULL,
-    tag_id             BIGINT      NOT NULL,
-    CONSTRAINT fk_posttag_post FOREIGN KEY (post_id) REFERENCES post (id),
-    CONSTRAINT fk_posttag_tag FOREIGN KEY (tag_id) REFERENCES blog_tag (id),
-    UNIQUE (post_id, tag_id)
+    blog_id            BIGINT NOT NULL,
+    tag_id             BIGINT NOT NULL,
+    PRIMARY KEY (blog_id, tag_id),
+    CONSTRAINT fk_blogtags_blog FOREIGN KEY (blog_id) REFERENCES blogs (id) ON DELETE CASCADE,
+    CONSTRAINT fk_blogtags_tag FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE
 );
 
--- Bảng bình luận Blog
-CREATE TABLE blog_comment
+CREATE TABLE comments
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    post_id            BIGINT      NOT NULL,
-    user_id            BIGINT      NOT NULL,
-    parent_comment_id  BIGINT,
-    content            TEXT,
-    CONSTRAINT fk_blogcomment_post FOREIGN KEY (post_id) REFERENCES post (id),
-    CONSTRAINT fk_blogcomment_user FOREIGN KEY (user_id) REFERENCES app_user (id),
-    CONSTRAINT fk_blogcomment_parent FOREIGN KEY (parent_comment_id) REFERENCES blog_comment (id)
+    commentable_id     BIGINT       NOT NULL,
+    commentable_type   VARCHAR(255) NOT NULL,
+    user_id            BIGINT       NOT NULL,
+    parent_id          BIGINT,
+    content            TEXT         NOT NULL,
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL,
+    CONSTRAINT fk_comments_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT fk_comments_parent FOREIGN KEY (parent_id) REFERENCES comments (id)
 );
 
-
--- =================================================================================
--- PAYMENT & SUBSCRIPTION TABLES
--- =================================================================================
-
--- Bảng gói dịch vụ
-CREATE TABLE pricing_plan
+CREATE TABLE social_links
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)    NOT NULL,
-    last_modified_date DATETIME(6)    NOT NULL,
-    name               VARCHAR(100)   NOT NULL UNIQUE,
-    price              DECIMAL(10, 2) NOT NULL,
-    duration_days      INT            NOT NULL,
-    features           TEXT           NOT NULL
-);
-
--- Bảng đăng ký dịch vụ
-CREATE TABLE subscription
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    company_id         BIGINT       NOT NULL,
-    plan_id            BIGINT       NOT NULL,
-    start_date         DATE         NOT NULL,
-    end_date           DATE         NOT NULL,
-    status             VARCHAR(255) NOT NULL,
-    CONSTRAINT fk_subscription_company FOREIGN KEY (company_id) REFERENCES company (id),
-    CONSTRAINT fk_subscription_plan FOREIGN KEY (plan_id) REFERENCES pricing_plan (id)
-);
-
--- Bảng hóa đơn
-CREATE TABLE invoice
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)    NOT NULL,
-    last_modified_date DATETIME(6)    NOT NULL,
-    subscription_id    BIGINT         NOT NULL,
-    amount             DECIMAL(10, 2) NOT NULL,
-    status             VARCHAR(255)   NOT NULL,
-    issued_date        DATETIME(6)    NOT NULL,
-    paid_date          DATETIME(6),
-    CONSTRAINT fk_invoice_subscription FOREIGN KEY (subscription_id) REFERENCES subscription (id)
-);
-
-
--- =================================================================================
--- MISCELLANEOUS TABLES (FAQ, Contact, etc.)
--- =================================================================================
-
--- Bảng danh mục FAQ
-CREATE TABLE faq_category
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    name               VARCHAR(100) NOT NULL UNIQUE,
-    display_order      INT DEFAULT 0
-);
-
--- Bảng câu hỏi thường gặp (FAQ)
-CREATE TABLE faq_item
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6) NOT NULL,
-    last_modified_date DATETIME(6) NOT NULL,
-    category_id        BIGINT      NOT NULL,
-    question           TEXT        NOT NULL,
-    answer             TEXT        NOT NULL,
-    display_order      INT DEFAULT 0,
-    CONSTRAINT fk_faqitem_category FOREIGN KEY (category_id) REFERENCES faq_category (id)
-);
-
--- Bảng tin nhắn liên hệ
-CREATE TABLE contact_message
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    name               VARCHAR(100) NOT NULL,
-    email              VARCHAR(100) NOT NULL,
-    subject            VARCHAR(255) NOT NULL,
-    message            TEXT         NOT NULL,
-    status             VARCHAR(255) NOT NULL
-);
-
--- Bảng đăng ký nhận tin
-CREATE TABLE newsletter_subscriber
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    email              VARCHAR(100) NOT NULL UNIQUE
-);
-
--- Bảng các trang tĩnh (ví dụ: About Us, Privacy Policy)
-CREATE TABLE page
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    slug               VARCHAR(150) NOT NULL UNIQUE,
-    title              VARCHAR(255) NOT NULL,
-    content            TEXT         NOT NULL
-);
-
--- Bảng liên kết mạng xã hội (Polymorphic)
-CREATE TABLE social_link
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
     linkable_id        BIGINT       NOT NULL,
     linkable_type      VARCHAR(255) NOT NULL,
     platform_name      VARCHAR(255) NOT NULL,
     url                VARCHAR(512) NOT NULL,
-    INDEX idx_social_link_polymorphic (linkable_type, linkable_id)
+    created_at         DATETIME(6)  NOT NULL,
+    updated_at         DATETIME(6)  NOT NULL,
+    INDEX idx_social_links_polymorphic (linkable_type, linkable_id)
 );
 
--- Bảng nhận xét, đánh giá
-CREATE TABLE testimonial
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    created_date       DATETIME(6)  NOT NULL,
-    last_modified_date DATETIME(6)  NOT NULL,
-    author_name        VARCHAR(100) NOT NULL,
-    author_title       VARCHAR(100) NOT NULL,
-    author_avatar_url  VARCHAR(512),
-    content            TEXT         NOT NULL
-);
-
--- =================================================================================
--- INITIAL DATA SEEDING
--- =================================================================================
--- Dữ liệu khởi tạo mặc định cho các bảng hệ thống cốt lõi.
--- Bao gồm: vai trò người dùng, trạng thái, cấu hình mặc định, v.v.
-
--- =================================================================================
--- ROLE TABLE: Các vai trò người dùng trong hệ thống
--- =================================================================================
--- Mục đích: Thiết lập các vai trò cơ bản để quản lý quyền truy cập và chức năng theo từng nhóm người dùng.
--- Các vai trò:
---   - ADMIN: Quản trị viên toàn hệ thống, có quyền cao nhất.
---   - EMPLOYER: Nhà tuyển dụng, có quyền đăng tin tuyển dụng, quản lý hồ sơ ứng viên.
---   - CANDIDATE: Ứng viên, có quyền tìm việc, nộp hồ sơ, theo dõi trạng thái ứng tuyển.
---
--- Lưu ý: Không nên xóa hoặc sửa đổi role_name của các bản ghi này vì chúng được sử dụng cứng trong code.
--- =================================================================================
-
-INSERT INTO role (created_date, last_modified_date, role_name, description)
-VALUES (NOW(), NOW(), 'ADMIN', 'Quản trị viên hệ thống');
-
-INSERT INTO role (created_date, last_modified_date, role_name, description)
-VALUES (NOW(), NOW(), 'EMPLOYER', 'Nhà tuyển dụng');
-
-INSERT INTO role (created_date, last_modified_date, role_name, description)
-VALUES (NOW(), NOW(), 'CANDIDATE', 'Ứng viên');
+INSERT INTO roles (name, description, created_at, updated_at)
+VALUES ('ADMIN', 'Quản trị viên hệ thống', NOW(), NOW()),
+       ('EMPLOYER', 'Nhà tuyển dụng', NOW(), NOW()),
+       ('CANDIDATE', 'Ứng viên', NOW(), NOW());

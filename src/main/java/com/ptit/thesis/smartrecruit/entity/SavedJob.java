@@ -5,8 +5,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "saved_job",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "job_id"})
+@Table(name = "saved_jobs",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"candidate_id", "job_id"})
 )
 @Getter
 @Setter
@@ -15,8 +15,8 @@ import lombok.experimental.FieldDefaults;
 public class SavedJob extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    User user;
+    @JoinColumn(name = "candidate_id", nullable = false)
+    CandidateProfile candidate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id", nullable = false)

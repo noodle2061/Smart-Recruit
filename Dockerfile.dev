@@ -1,0 +1,13 @@
+FROM maven:3-eclipse-temurin-21
+
+WORKDIR /app
+
+COPY pom.xml .
+
+RUN mvn dependency:go-offline \
+    && apt-get update && apt-get install -y inotify-tools
+
+COPY /scripts/watch-and-run.sh /usr/local/bin/watch-and-run.sh
+RUN chmod +x /usr/local/bin/watch-and-run.sh
+
+ENTRYPOINT ["/usr/local/bin/watch-and-run.sh"]

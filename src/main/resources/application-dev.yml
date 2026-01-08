@@ -18,8 +18,13 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: redis-19189.c252.ap-southeast-1-1.ec2.cloud.redislabs.com
+      port: 19189
+      username: default
+      password: vcICgjUKkNQmB6L8KNgYPhNzozUtDNv8
+    web:
+      pageable:
+        one-indexed-parameters: true
 
   flyway:
     enabled: true
@@ -38,18 +43,35 @@ spring:
             enable: true
           ssl:
             enable: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  rabbitmq:
+    host: chameleon.lmq.cloudamqp.com
+    port: 5672
+    username: abkqvbjm
+    password: 4vwaChdSYTuiz6cPNzyy2FPZ041TVpOX
+    virtual-host: abkqvbjm
+    listener:
+      direct:
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000ms
+          multiplier: 2.0
+          max-interval: 10000ms
+        
 
 springdoc:
   api-docs:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
-  default-produces-media-type: application/json
-  info:
-    title: SmartRecruit API
-    description: "API Document for project"
-    version: ${project.version}
-  show-actuator: true
+    persist-authorization: true
+    tags-sorter: alpha
 
 firebase:
   service-account-path: "classpath:firebase-service-account.json"
@@ -59,5 +81,21 @@ admin:
     enabled: true
     email: ${ADMIN_EMAIL}
     password: ${ADMIN_PASSWORD}
-    full-name: ${ADMIN_FULLNAME}
     username: "admin"
+
+aws:
+  s3:
+    region: ${AWS_REGION}
+    bucket-name: ${AWS_S3_BUCKET_NAME}
+    access-key-id: ${AWS_ACCESS_KEY_ID}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+
+rabbitmq:
+  queue:
+    cv-processing: cv_processing_queue
+    cv-result: cv_result_queue
+  exchange:
+    internal: internal_exchange
+  routing-key:
+    cv-upload: cv_upload_key
+    cv_result: cv_result_key

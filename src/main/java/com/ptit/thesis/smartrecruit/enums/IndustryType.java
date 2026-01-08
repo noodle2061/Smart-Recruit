@@ -26,6 +26,6 @@ public enum IndustryType {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }

@@ -2,13 +2,16 @@ package com.ptit.thesis.smartrecruit.entity;
 
 import com.ptit.thesis.smartrecruit.enums.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
-@Table(name = "candidate_profile")
+@Table(name = "candidate_profiles")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,17 +22,17 @@ public class CandidateProfile extends BaseEntity{
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     User user;
 
-    @Column(length = 512)
-    String profilePictureUrl;
+    @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
+    String fullName;
 
-    @Column(nullable = false, length = 255)
+    @Column(length = 512)
+    String avatarUrl;
+
     String headline;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     ExperienceLevel experienceLevel;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     EducationLevel educationLevel;
 
@@ -50,8 +53,23 @@ public class CandidateProfile extends BaseEntity{
     @Column(length = 255)
     String biography;
 
+    @Column(unique = true, length = 20)
+    String phone;
+
     @Column(nullable = false)
     Boolean isPublic;
+
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<Application> applications;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    Location location;
+
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<SavedJob> savedJobs;
+
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<Resume> resumes;
 
     @PrePersist
     public void prePersist() {

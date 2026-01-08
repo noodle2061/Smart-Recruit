@@ -1,11 +1,23 @@
 package com.ptit.thesis.smartrecruit.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
+import java.math.BigDecimal;
 import java.util.Set;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+
+@Table(name = "locations",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"latitude", "longitude"}))
 @Entity
 @Getter
 @Setter
@@ -13,24 +25,27 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Location extends BaseEntity {
 
+    @Column(precision = 10, scale = 8, nullable = false)
+    BigDecimal latitude;
+
+    @Column(precision = 11, scale = 8, nullable = false)
+    BigDecimal longitude;
+
+    @Column(unique = true, nullable = false)
+    String country;
+
     @Column(unique = true, nullable = false)
     String provinceCity;
 
     @Column(length = 100)
     String commune;
 
-    @Column(unique = true, nullable = false)
-    String country;
-
-    @Column(unique = true, nullable = false, length = 150)
-    String slug;
-
-    @OneToMany(mappedBy = "location")
-    Set<CompanyLocation> companyLocations;
-
-    @OneToMany(mappedBy = "location")
-    Set<JobAlert> jobAlerts;
+    @OneToMany(mappedBy = "location", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    Set<Company> companies;
 
     @OneToMany(mappedBy = "location", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     Set<Job> jobs;
+
+    @OneToMany(mappedBy = "location", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    Set<CandidateProfile> candidateProfiles;
 }

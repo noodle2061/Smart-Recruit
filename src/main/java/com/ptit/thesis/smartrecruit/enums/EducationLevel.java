@@ -1,11 +1,11 @@
 package com.ptit.thesis.smartrecruit.enums;
 
 public enum EducationLevel {
-    HIGH_SCHOOL("High School"),
-    INTERMEDIATE("Intermediate"),
-    BACHELOR_DEGREE("Bachelor Degree"),
-    MASTER_DEGREE("Master Degree"),
-    DOCTORATE("Doctorate");
+    HIGH_SCHOOL("HIGH_SCHOOL"),
+    INTERMEDIATE("INTERMEDIATE"),
+    BACHELOR_DEGREE("BACHELOR_DEGREE"),
+    MASTER_DEGREE("MASTER_DEGREE"),
+    DOCTORATE("DOCTORATE");
 
     private final String displayValue;
 
@@ -19,6 +19,6 @@ public enum EducationLevel {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }

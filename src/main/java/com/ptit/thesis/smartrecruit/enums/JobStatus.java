@@ -18,6 +18,6 @@ public enum JobStatus {
 
     @Override
     public String toString() {
-        return displayValue;
+        return name();
     }
 }
